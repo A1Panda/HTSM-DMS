@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>产品编码管理系统</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/fontawesome/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+    <script src="config.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-content">
+                <img src="/assets/Icon.jpg" alt="公司Logo" class="company-logo">
+                <h1>航天石墨有限公司标签管理系统</h1>
+            </div>
+        </header>
+
+        <main>
+            <!-- 统计面板 -->
+            <section class="stats-section">
+                <div class="stats-container" id="statsContainer">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalProducts">0</div>
+                        <div class="stat-label"><i class="fas fa-box"></i> 总产品数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalCodes">0</div>
+                        <div class="stat-label"><i class="fas fa-barcode"></i> 总编码数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="recentActivity">0</div>
+                        <div class="stat-label"><i class="fas fa-clock"></i> 今日活动</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 产品管理区域 -->
+            <section class="product-section">
+                <h2><i class="fas fa-boxes"></i> 产品管理</h2>
+                <div class="add-product-form">
+                    <div class="input-group">
+                        <i class="fas fa-tag input-icon"></i>
+                        <input type="text" id="productName" placeholder="产品名称" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-align-left input-icon"></i>
+                        <input type="text" id="productDescription" placeholder="产品描述（可选）">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-layer-group input-icon"></i>
+                        <input type="text" id="productCategory" placeholder="产品分类（可选）" list="categoryList">
+                        <datalist id="categoryList">
+                            <!-- 动态生成的分类选项 -->
+                        </datalist>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-hashtag input-icon"></i>
+                        <input type="number" id="productRequiredQuantity" placeholder="需求数量" min="0" value="0">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-sort-numeric-down input-icon"></i>
+                        <input type="text" id="productCodeStart" placeholder="编码起始值 (如: 168000)">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-sort-numeric-up input-icon"></i>
+                        <input type="text" id="productCodeEnd" placeholder="编码结束值 (如: 168050)">
+                    </div>
+                    <button onclick="addProduct()">
+                        <i class="fas fa-plus"></i> 添加产品
+                    </button>
+                </div>
+                
+                <!-- 搜索和筛选 -->
+                <div class="filter-section">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchProducts" placeholder="搜索产品..." onkeyup="filterProducts()">
+                    </div>
+                    <div class="filter-buttons" id="filterButtons">
+                        <button class="filter-btn active" onclick="filterByCategory('all')">全部</button>
+                        <!-- 动态生成的分类按钮 -->
+                    </div>
+                </div>
+                
+                <div class="products-list" id="productsList">
+                    <!-- 产品列表将在这里动态生成 -->
+                </div>
+            </section>
+
+            <!-- 编码管理区域 -->
+            <section class="codes-section" id="codesSection" style="display: none;">
+                <div class="section-header">
+                    <h2><i class="fas fa-barcode"></i> 编码管理 - <span id="currentProductName"></span></h2>
+                    <button onclick="backToProducts()" class="back-btn">
+                        <i class="fas fa-arrow-left"></i> 返回产品列表
+                    </button>
+                </div>
+                <div class="add-code-form">
+                    <div class="input-group">
+                        <i class="fas fa-hashtag input-icon"></i>
+                        <input type="text" id="codeInput" placeholder="产品编码" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-align-left input-icon"></i>
+                        <input type="text" id="codeDescription" placeholder="编码描述（可选）">
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-calendar input-icon"></i>
+                        <input type="date" id="codeDate" title="生产日期（可选）">
+                    </div>
+                    <button onclick="addCode()">
+                        <i class="fas fa-plus"></i> 添加编码
+                    </button>
+                    <button onclick="startScan()" class="scan-btn" id="scanBtn">
+                        <i class="fas fa-qrcode"></i> 扫码添加
+                    </button>
+                    <button onclick="exportCodes()" class="secondary-btn">
+                        <i class="fas fa-download"></i> 导出编码
+                    </button>
+                </div>
+                
+                <!-- 编码搜索 -->
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchCodes" placeholder="搜索编码..." onkeyup="filterCodes()">
+                </div>
+                
+                <!-- 编码统计信息 -->
+                <div class="code-stats-container" id="codeStatsContainer">
+                    <!-- 统计信息将在这里动态生成 -->
+                </div>
+                
+                <div class="codes-list" id="codesList">
+                    <!-- 编码列表将在这里动态生成 -->
+                </div>
+            </section>
+        </main>
+
+        <!-- 消息提示 -->
+        <div id="message" class="message"></div>
+        
+        <!-- 确认对话框 -->
+        <div id="confirmDialog" class="modal">
+            <div class="modal-content">
+                <h3><i class="fas fa-exclamation-triangle"></i> 确认操作</h3>
+                <p id="confirmMessage"></p>
+                <div class="modal-actions">
+                    <button id="confirmYes" class="delete-btn">确认</button>
+                    <button id="confirmNo" class="secondary-btn">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 扫码对话框 -->
+        <div id="scanDialog" class="modal">
+            <div class="modal-content scan-modal">
+                <h3><i class="fas fa-qrcode"></i> 扫描二维码</h3>
+                <div class="scan-container">
+                    <video id="scanVideo" autoplay playsinline></video>
+                    <div class="scan-overlay">
+                        <div class="scan-frame"></div>
+                    </div>
+                    <div class="scan-result" id="scanResult" style="display: none;">
+                        <p>扫描结果：<span id="scanResultText"></span></p>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button id="useScanResult" class="view-btn" style="display: none;">
+                        <i class="fas fa-check"></i> 使用并添加
+                    </button>
+                    <button id="fillScanResult" class="secondary-btn" style="display: none;">
+                        <i class="fas fa-edit"></i> 仅填入
+                    </button>
+                    <button id="closeScan" class="secondary-btn">关闭扫码</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/zxing.min.js"></script>
+    <script src="script.js"></script>
+    <script src="script-extended.js"></script>
+    <script src="scanner.js"></script>
+</body>
+</html>

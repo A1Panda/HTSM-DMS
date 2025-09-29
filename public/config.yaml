@@ -1,0 +1,15 @@
+# 系统配置文件
+
+# 界面配置
+ui:
+  # 默认显示的编码数量
+  defaultDisplayCodeCount: 10
+  # 提示框最大高度
+  tooltipMaxHeight: 300px
+  # 提示框网格列数
+  tooltipGridColumns: 2
+
+# 数据配置
+data:
+  # 每页显示的产品数量
+  productsPerPage: 12

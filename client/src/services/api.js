@@ -79,7 +79,10 @@ export const codeAPI = {
 // 统计相关API
 export const statsAPI = {
   // 获取统计数据
-  getStats: () => api.get('/stats')
+  getStats: () => api.get('/stats'),
+  
+  // 获取最近7天活动数据
+  getActivityData: () => api.get('/stats/activity')
 };
 
 export default {

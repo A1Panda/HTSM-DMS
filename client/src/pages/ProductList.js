@@ -10,12 +10,17 @@ import {
   message, 
   Typography,
   Empty,
-  Spin
+  Spin,
+  Checkbox,
+  Space
 } from 'antd';
 import { 
   PlusOutlined, 
   SearchOutlined, 
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  DeleteOutlined,
+  CheckOutlined,
+  CloseOutlined
 } from '@ant-design/icons';
 import { productAPI, codeAPI } from '../services/api';
 import ProductCard from '../components/ProductCard';
@@ -35,6 +40,8 @@ const ProductList = () => {
   const [searchText, setSearchText] = useState('');
   const [currentFilter, setCurrentFilter] = useState('all');
   const [productCodes, setProductCodes] = useState({});
+  const [selectedProducts, setSelectedProducts] = useState([]);
+  const [batchMode, setBatchMode] = useState(false);
 
   // 加载产品列表
   const loadProducts = async () => {
@@ -137,6 +144,60 @@ const ProductList = () => {
     });
   };
 
+  // 批量删除产品
+  const confirmBatchDeleteProducts = () => {
+    if (selectedProducts.length === 0) {
+      message.warning('请先选择要删除的产品');
+      return;
+    }
+    
+    confirm({
+      title: `确定要删除这 ${selectedProducts.length} 个产品吗？`,
+      icon: <ExclamationCircleOutlined />,
+      content: '这将同时删除这些产品的所有编码，此操作不可恢复。',
+      okText: '确定',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          // 批量删除
+          await Promise.all(selectedProducts.map(id => productAPI.deleteProduct(id)));
+          message.success(`成功删除 ${selectedProducts.length} 个产品`);
+          setSelectedProducts([]);
+          setBatchMode(false);
+          loadProducts();
+        } catch (error) {
+          console.error('批量删除产品失败:', error);
+          message.error('批量删除产品失败');
+        }
+      }
+    });
+  };
+
+  // 处理产品选择
+  const handleProductSelect = (productId, checked) => {
+    if (checked) {
+      setSelectedProducts(prev => [...prev, productId]);
+    } else {
+      setSelectedProducts(prev => prev.filter(id => id !== productId));
+    }
+  };
+
+  // 全选/取消全选
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      setSelectedProducts(filteredProducts.map(product => product.id));
+    } else {
+      setSelectedProducts([]);
+    }
+  };
+
+  // 切换批量模式
+  const toggleBatchMode = () => {
+    setBatchMode(!batchMode);
+    setSelectedProducts([]);
+  };
+
   // 搜索产品
   const handleSearch = (value) => {
     setSearchText(value);
@@ -228,34 +289,77 @@ const ProductList = () => {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
         <Title level={2}>产品管理</Title>
-        <Button 
-          type="primary" 
-          icon={<PlusOutlined />} 
-          onClick={() => setModalVisible(true)}
-        >
-          添加产品
-        </Button>
+        <Space>
+          {batchMode ? (
+            <>
+              <Button 
+                icon={<CloseOutlined />} 
+                onClick={toggleBatchMode}
+              >
+                取消批量
+              </Button>
+              <Button 
+                type="primary" 
+                danger
+                icon={<DeleteOutlined />} 
+                onClick={confirmBatchDeleteProducts}
+                disabled={selectedProducts.length === 0}
+              >
+                删除选中 ({selectedProducts.length})
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button 
+                icon={<CheckOutlined />} 
+                onClick={toggleBatchMode}
+                disabled={filteredProducts.length === 0}
+              >
+                批量选择
+              </Button>
+              <Button 
+                type="primary" 
+                icon={<PlusOutlined />} 
+                onClick={() => setModalVisible(true)}
+              >
+                添加产品
+              </Button>
+            </>
+          )}
+        </Space>
       </div>
       
       <div style={{ marginBottom: 16 }}>
-        <Input.Search
-          placeholder="搜索产品..."
-          allowClear
-          enterButton={<SearchOutlined />}
-          onSearch={handleSearch}
-          style={{ width: 300, marginRight: 16 }}
-        />
-        
-        <Select 
-          defaultValue="all" 
-          style={{ width: 200 }} 
-          onChange={handleCategoryFilter}
-        >
-          <Option value="all">所有分类</Option>
-          {categories.map(category => (
-            <Option key={category} value={category}>{category}</Option>
-          ))}
-        </Select>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          {batchMode && (
+            <Checkbox
+              indeterminate={selectedProducts.length > 0 && selectedProducts.length < filteredProducts.length}
+              onChange={(e) => handleSelectAll(e.target.checked)}
+              checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
+            >
+              全选 ({selectedProducts.length}/{filteredProducts.length})
+            </Checkbox>
+          )}
+          
+          <Input.Search
+            placeholder="搜索产品..."
+            allowClear
+            enterButton={<SearchOutlined />}
+            onSearch={handleSearch}
+            style={{ width: 300 }}
+          />
+          
+          <Select 
+            defaultValue="all" 
+            style={{ width: 200 }} 
+            onChange={handleCategoryFilter}
+          >
+            <Option value="all">所有分类</Option>
+            {categories.map(category => (
+              <Option key={category} value={category}>{category}</Option>
+            ))}
+          </Select>
+        </div>
       </div>
       
       {loading ? (
@@ -288,6 +392,9 @@ const ProductList = () => {
                   codeCount={codeCount}
                   onDelete={confirmDeleteProduct}
                   codeRangeStatus={codeRangeStatus}
+                  batchMode={batchMode}
+                  selected={selectedProducts.includes(product.id)}
+                  onSelect={(checked) => handleProductSelect(product.id, checked)}
                 />
               </Col>
             );

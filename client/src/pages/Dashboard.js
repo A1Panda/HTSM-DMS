@@ -117,21 +117,16 @@ const Dashboard = () => {
   // 加载活动数据
   const fetchActivityData = async () => {
     try {
-      // 获取最近7天的日期
-      const dates = [];
-      const productCounts = [];
-      const codeCounts = [];
+      const response = await statsAPI.getActivityData();
+      const activityData = response.data;
       
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split('T')[0];
-        dates.push(dateStr);
-        
-        // 这里应该从API获取每天的数据，但为了简化，我们使用随机数据
-        productCounts.push(Math.floor(Math.random() * 5));
-        codeCounts.push(Math.floor(Math.random() * 20));
-      }
+      // 提取日期标签和数据
+      const dates = activityData.map(item => {
+        const date = new Date(item.date);
+        return `${date.getMonth() + 1}-${date.getDate()}`;
+      });
+      const productCounts = activityData.map(item => item.products);
+      const codeCounts = activityData.map(item => item.codes);
       
       setActivityData({
         labels: dates,
@@ -154,6 +149,26 @@ const Dashboard = () => {
       });
     } catch (err) {
       console.error('获取活动数据失败:', err);
+      // 如果API失败，显示空数据而不是随机数据
+      setActivityData({
+        labels: [],
+        datasets: [
+          {
+            label: '新增产品',
+            data: [],
+            borderColor: 'rgb(255, 99, 132)',
+            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            tension: 0.1,
+          },
+          {
+            label: '新增编码',
+            data: [],
+            borderColor: 'rgb(53, 162, 235)',
+            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+            tension: 0.1,
+          },
+        ],
+      });
     }
   };
 

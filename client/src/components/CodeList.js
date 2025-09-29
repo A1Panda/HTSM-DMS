@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, Button, Tag, Space } from 'antd';
+import { List, Button, Tag, Space, Checkbox } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 
@@ -9,8 +9,18 @@ import PropTypes from 'prop-types';
  * @param {Array} props.codes 编码数据
  * @param {Function} props.onDelete 删除回调
  * @param {boolean} props.loading 是否加载中
+ * @param {boolean} props.batchMode 是否为批量模式
+ * @param {Array} props.selectedCodes 选中的编码ID列表
+ * @param {Function} props.onSelect 选择回调
  */
-const CodeList = ({ codes, onDelete, loading = false }) => {
+const CodeList = ({ 
+  codes, 
+  onDelete, 
+  loading = false, 
+  batchMode = false,
+  selectedCodes = [],
+  onSelect 
+}) => {
   return (
     <List
       itemLayout="horizontal"
@@ -25,8 +35,18 @@ const CodeList = ({ codes, onDelete, loading = false }) => {
       }}
       renderItem={code => (
         <List.Item
-          actions={[
+          style={{
+            backgroundColor: selectedCodes.includes(code.id) ? '#f0f8ff' : undefined
+          }}
+          actions={batchMode ? [
+            <Checkbox
+              key="select"
+              checked={selectedCodes.includes(code.id)}
+              onChange={(e) => onSelect && onSelect(code.id, e.target.checked)}
+            />
+          ] : [
             <Button 
+              key="delete"
               type="text" 
               danger 
               icon={<DeleteOutlined />} 
@@ -55,7 +75,10 @@ const CodeList = ({ codes, onDelete, loading = false }) => {
 CodeList.propTypes = {
   codes: PropTypes.array.isRequired,
   onDelete: PropTypes.func.isRequired,
-  loading: PropTypes.bool
+  loading: PropTypes.bool,
+  batchMode: PropTypes.bool,
+  selectedCodes: PropTypes.array,
+  onSelect: PropTypes.func
 };
 
 export default CodeList;

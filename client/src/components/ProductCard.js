@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Tag, Progress, Tooltip } from 'antd';
+import { Card, Tag, Progress, Tooltip, Checkbox } from 'antd';
 import { Link } from 'react-router-dom';
 import { EyeOutlined, DeleteOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
@@ -14,8 +14,20 @@ const { Meta } = Card;
  * @param {Function} props.onDelete 删除回调
  * @param {Object} props.codeRangeStatus 编码范围状态信息
  * @param {Object} props.missingCodes 缺失编码信息（兼容旧版本）
+ * @param {boolean} props.batchMode 是否为批量模式
+ * @param {boolean} props.selected 是否被选中
+ * @param {Function} props.onSelect 选择回调
  */
-const ProductCard = ({ product, codeCount = 0, onDelete, codeRangeStatus, missingCodes }) => {
+const ProductCard = ({ 
+  product, 
+  codeCount = 0, 
+  onDelete, 
+  codeRangeStatus, 
+  missingCodes, 
+  batchMode = false,
+  selected = false,
+  onSelect 
+}) => {
   // 支持新旧两种数据格式
   const rangeStatus = codeRangeStatus || missingCodes || { 
     hasMissing: false, 
@@ -36,7 +48,9 @@ const ProductCard = ({ product, codeCount = 0, onDelete, codeRangeStatus, missin
       style={{ 
         height: '100%',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        border: selected ? '2px solid #1890ff' : undefined,
+        backgroundColor: selected ? '#f0f8ff' : undefined
       }}
       styles={{
         body: {
@@ -45,7 +59,7 @@ const ProductCard = ({ product, codeCount = 0, onDelete, codeRangeStatus, missin
           flexDirection: 'column'
         }
       }}
-      actions={[
+      actions={batchMode ? [] : [
         <Tooltip title="查看编码">
           <Link to={`/products/${product.id}`}>
             <EyeOutlined key="view" />
@@ -59,6 +73,16 @@ const ProductCard = ({ product, codeCount = 0, onDelete, codeRangeStatus, missin
         </Tooltip>
       ]}
     >
+      {/* 批量选择模式下的选择框 */}
+      {batchMode && (
+        <div style={{ marginBottom: 12, textAlign: 'right' }}>
+          <Checkbox
+            checked={selected}
+            onChange={(e) => onSelect && onSelect(e.target.checked)}
+          />
+        </div>
+      )}
+
       {/* 产品标题和描述区域 */}
       <div style={{ marginBottom: 16 }}>
         <div style={{ 
@@ -178,7 +202,10 @@ ProductCard.propTypes = {
   missingCodes: PropTypes.shape({
     hasMissing: PropTypes.bool,
     missingCodes: PropTypes.array
-  })
+  }),
+  batchMode: PropTypes.bool,
+  selected: PropTypes.bool,
+  onSelect: PropTypes.func
 };
 
 export default ProductCard;

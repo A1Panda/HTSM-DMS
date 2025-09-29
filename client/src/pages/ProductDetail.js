@@ -14,7 +14,8 @@ import {
   Tooltip,
   Empty,
   Tag,
-  Divider
+  Divider,
+  Checkbox
 } from 'antd';
 import { 
   ArrowLeftOutlined, 
@@ -22,7 +23,10 @@ import {
   SearchOutlined, 
   DownloadOutlined,
   QrcodeOutlined,
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  DeleteOutlined,
+  CheckOutlined,
+  CloseOutlined
 } from '@ant-design/icons';
 import { productAPI, codeAPI } from '../services/api';
 import CodeList from '../components/CodeList';
@@ -47,6 +51,8 @@ const ProductDetail = () => {
   const [formLoading, setFormLoading] = useState(false);
   const [quickInputLoading, setQuickInputLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [selectedCodes, setSelectedCodes] = useState([]);
+  const [codeBatchMode, setCodeBatchMode] = useState(false);
 
   // 加载产品详情
   const loadProduct = async () => {
@@ -143,6 +149,60 @@ const ProductDetail = () => {
         }
       }
     });
+  };
+
+  // 批量删除编码
+  const confirmBatchDeleteCodes = () => {
+    if (selectedCodes.length === 0) {
+      message.warning('请先选择要删除的编码');
+      return;
+    }
+    
+    confirm({
+      title: `确定要删除这 ${selectedCodes.length} 个编码吗？`,
+      icon: <ExclamationCircleOutlined />,
+      content: '此操作不可恢复。',
+      okText: '确定',
+      okType: 'danger',
+      cancelText: '取消',
+      onOk: async () => {
+        try {
+          // 批量删除
+          await Promise.all(selectedCodes.map(codeId => codeAPI.deleteCode(id, codeId)));
+          message.success(`成功删除 ${selectedCodes.length} 个编码`);
+          setSelectedCodes([]);
+          setCodeBatchMode(false);
+          loadCodes();
+        } catch (error) {
+          console.error('批量删除编码失败:', error);
+          message.error('批量删除编码失败');
+        }
+      }
+    });
+  };
+
+  // 处理编码选择
+  const handleCodeSelect = (codeId, checked) => {
+    if (checked) {
+      setSelectedCodes(prev => [...prev, codeId]);
+    } else {
+      setSelectedCodes(prev => prev.filter(id => id !== codeId));
+    }
+  };
+
+  // 全选/取消全选编码
+  const handleSelectAllCodes = (checked) => {
+    if (checked) {
+      setSelectedCodes(filteredCodes.map(code => code.id));
+    } else {
+      setSelectedCodes([]);
+    }
+  };
+
+  // 切换编码批量模式
+  const toggleCodeBatchMode = () => {
+    setCodeBatchMode(!codeBatchMode);
+    setSelectedCodes([]);
   };
 
   // 搜索编码
@@ -341,26 +401,55 @@ const ProductDetail = () => {
         title="编码管理"
         extra={
           <Space>
-            <Button 
-              icon={<DownloadOutlined />} 
-              onClick={handleExportCodes}
-              disabled={codes.length === 0}
-            >
-              导出编码
-            </Button>
-            <Button 
-              icon={<QrcodeOutlined />} 
-              onClick={() => setScanModalVisible(true)}
-            >
-              扫码添加
-            </Button>
-            <Button 
-              type="primary" 
-              icon={<PlusOutlined />} 
-              onClick={() => setAddModalVisible(true)}
-            >
-              添加编码
-            </Button>
+            {codeBatchMode ? (
+              <>
+                <Button 
+                  icon={<CloseOutlined />} 
+                  onClick={toggleCodeBatchMode}
+                >
+                  取消批量
+                </Button>
+                <Button 
+                  type="primary" 
+                  danger
+                  icon={<DeleteOutlined />} 
+                  onClick={confirmBatchDeleteCodes}
+                  disabled={selectedCodes.length === 0}
+                >
+                  删除选中 ({selectedCodes.length})
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  icon={<DownloadOutlined />} 
+                  onClick={handleExportCodes}
+                  disabled={codes.length === 0}
+                >
+                  导出编码
+                </Button>
+                <Button 
+                  icon={<CheckOutlined />} 
+                  onClick={toggleCodeBatchMode}
+                  disabled={filteredCodes.length === 0}
+                >
+                  批量选择
+                </Button>
+                <Button 
+                  icon={<QrcodeOutlined />} 
+                  onClick={() => setScanModalVisible(true)}
+                >
+                  扫码添加
+                </Button>
+                <Button 
+                  type="primary" 
+                  icon={<PlusOutlined />} 
+                  onClick={() => setAddModalVisible(true)}
+                >
+                  添加编码
+                </Button>
+              </>
+            )}
           </Space>
         }
       >
@@ -374,18 +463,33 @@ const ProductDetail = () => {
         <Divider style={{ margin: '0 0 16px 0' }} />
         
         <div style={{ marginBottom: 16 }}>
-          <Search
-            placeholder="搜索编码..."
-            allowClear
-            enterButton={<SearchOutlined />}
-            onSearch={handleSearch}
-            style={{ width: 300 }}
-          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {codeBatchMode && (
+              <Checkbox
+                indeterminate={selectedCodes.length > 0 && selectedCodes.length < filteredCodes.length}
+                onChange={(e) => handleSelectAllCodes(e.target.checked)}
+                checked={selectedCodes.length === filteredCodes.length && filteredCodes.length > 0}
+              >
+                全选 ({selectedCodes.length}/{filteredCodes.length})
+              </Checkbox>
+            )}
+            
+            <Search
+              placeholder="搜索编码..."
+              allowClear
+              enterButton={<SearchOutlined />}
+              onSearch={handleSearch}
+              style={{ width: 300 }}
+            />
+          </div>
         </div>
         
         <CodeList 
           codes={filteredCodes}
           onDelete={confirmDeleteCode}
+          batchMode={codeBatchMode}
+          selectedCodes={selectedCodes}
+          onSelect={handleCodeSelect}
         />
       </Card>
       

@@ -3,8 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Layout, Menu } from 'antd';
 import { 
   DashboardOutlined, 
-  AppstoreOutlined, 
-  BarcodeOutlined 
+  AppstoreOutlined
 } from '@ant-design/icons';
 import config from '../config';
 
@@ -25,7 +24,17 @@ const AppHeader = () => {
   return (
     <Header style={{ position: 'fixed', zIndex: 1, width: '100%', display: 'flex', alignItems: 'center' }}>
       <div className="logo">
-        <BarcodeOutlined style={{ fontSize: '24px', marginRight: '8px' }} />
+        <img 
+          src="/Icon.jpg" 
+          alt="Logo" 
+          style={{ 
+            height: '32px', 
+            width: '32px', 
+            marginRight: '12px',
+            borderRadius: '4px',
+            objectFit: 'contain'
+          }} 
+        />
         {company.systemName}
       </div>
       <Menu

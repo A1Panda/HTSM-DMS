@@ -20,12 +20,14 @@ const ScannerModal = ({ visible, onCancel, onScan }) => {
 
   // 初始化扫码器
   useEffect(() => {
+    let timeoutId;
+    
     if (visible && !scannerInstanceRef.current) {
       setLoading(true);
       setError('');
       
-      // 延迟初始化扫码器，确保DOM已经渲染
-      setTimeout(() => {
+      // 延迟初始化扫码器，确保模态框完全显示
+      const initScanner = () => {
         try {
           const scanner = new Scanner('scanner', config.scanner);
           
@@ -43,17 +45,23 @@ const ScannerModal = ({ visible, onCancel, onScan }) => {
           );
           
           scannerInstanceRef.current = scanner;
+          setLoading(false);
         } catch (err) {
           console.error('初始化扫码器失败:', err);
           setError('初始化扫码器失败，请检查摄像头权限或尝试使用其他浏览器');
-        } finally {
           setLoading(false);
         }
-      }, 500);
+      };
+      
+      // 等待模态框完全显示后再初始化
+      timeoutId = setTimeout(initScanner, 800);
     }
     
-    // 组件卸载时清理扫码器
+    // 组件卸载时清理扫码器和定时器
     return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
       if (scannerInstanceRef.current) {
         scannerInstanceRef.current.clear();
         scannerInstanceRef.current = null;
@@ -114,28 +122,56 @@ const ScannerModal = ({ visible, onCancel, onScan }) => {
       width={600}
     >
       <div style={{ textAlign: 'center' }}>
-        {loading ? (
-          <div style={{ padding: '40px 0' }}>
-            <Spin size="large" />
-            <p style={{ marginTop: 16 }}>正在初始化扫码器...</p>
+        {/* 始终渲染scanner容器，但在加载时显示遮罩 */}
+        <div style={{ position: 'relative' }}>
+          <div id="scanner" style={{ width: '100%', maxWidth: '500px', margin: '0 auto' }}></div>
+          
+          {loading && (
+            <div style={{ 
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '200px'
+            }}>
+              <Spin size="large" />
+              <p style={{ marginTop: 16 }}>正在初始化扫码器...</p>
+            </div>
+          )}
+          
+          {error && (
+            <div style={{ 
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(255, 255, 255, 0.9)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '200px',
+              color: '#ff4d4f'
+            }}>
+              <p>{error}</p>
+            </div>
+          )}
+        </div>
+        
+        {scanResult && (
+          <div style={{ marginTop: 16, padding: 16, border: '1px solid #d9d9d9', borderRadius: 4 }}>
+            <p>扫描结果:</p>
+            <Tag color="green" style={{ fontSize: 16, padding: '4px 8px' }}>
+              {scanResult}
+            </Tag>
           </div>
-        ) : error ? (
-          <div style={{ padding: '20px 0', color: '#ff4d4f' }}>
-            <p>{error}</p>
-          </div>
-        ) : (
-          <>
-            <div id="scanner" style={{ width: '100%', maxWidth: '500px', margin: '0 auto' }}></div>
-            
-            {scanResult && (
-              <div style={{ marginTop: 16, padding: 16, border: '1px solid #d9d9d9', borderRadius: 4 }}>
-                <p>扫描结果:</p>
-                <Tag color="green" style={{ fontSize: 16, padding: '4px 8px' }}>
-                  {scanResult}
-                </Tag>
-              </div>
-            )}
-          </>
         )}
       </div>
     </Modal>

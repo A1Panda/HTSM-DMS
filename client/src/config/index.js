@@ -29,13 +29,23 @@ const config = {
     // 扫码框大小
     qrbox: { width: 250, height: 250 },
     // 记住上次使用的摄像头
-    rememberLastUsedCamera: true
+    rememberLastUsedCamera: true,
+    // 支持的格式
+    supportedScanTypes: [
+      'QR_CODE', 
+      'CODE_128', 
+      'CODE_39', 
+      'EAN_13', 
+      'EAN_8',
+      'UPC_A',
+      'UPC_E'
+    ]
   },
   
   // 公司信息
   company: {
     // 公司名称
-    name: '航天石墨有限公司',
+    name: '航天石墨有限公司 By:A1_Panda',
     // 系统名称
     systemName: '产品编码管理系统',
     // 版本号

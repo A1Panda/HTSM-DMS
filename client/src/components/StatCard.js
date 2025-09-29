@@ -13,7 +13,15 @@ import PropTypes from 'prop-types';
  * @param {string} props.prefix 前缀
  * @param {Object} props.style 自定义样式
  */
-const StatCard = ({ title, value, icon, color, suffix, prefix, style }) => {
+const StatCard = ({ 
+  title, 
+  value, 
+  icon, 
+  color = '#1890ff', 
+  suffix, 
+  prefix, 
+  style = {} 
+}) => {
   return (
     <Card className="dashboard-card" style={style}>
       <Statistic
@@ -35,11 +43,6 @@ StatCard.propTypes = {
   suffix: PropTypes.node,
   prefix: PropTypes.node,
   style: PropTypes.object
-};
-
-StatCard.defaultProps = {
-  color: '#1890ff',
-  style: {}
 };
 
 export default StatCard;

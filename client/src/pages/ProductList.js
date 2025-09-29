@@ -170,27 +170,57 @@ const ProductList = () => {
     setFilteredProducts(filtered);
   };
 
-  // 检查范围内是否有缺失编码
-  const checkMissingCodes = (product) => {
-    if (!product.codeStart || !product.codeEnd) return { hasMissing: false, missingCodes: [] };
+  // 检查范围内缺失编码和超出范围的编码
+  const checkCodeRangeStatus = (product) => {
+    if (!product.codeStart || !product.codeEnd) {
+      return { 
+        hasMissing: false, 
+        missingCodes: [], 
+        hasExcess: false, 
+        excessCodes: [] 
+      };
+    }
     
     const start = parseInt(product.codeStart);
     const end = parseInt(product.codeEnd);
-    if (isNaN(start) || isNaN(end)) return { hasMissing: false, missingCodes: [] };
+    if (isNaN(start) || isNaN(end)) {
+      return { 
+        hasMissing: false, 
+        missingCodes: [], 
+        hasExcess: false, 
+        excessCodes: [] 
+      };
+    }
     
     const codes = productCodes[product.id] || [];
-    const existingCodes = new Set(codes.map(code => code.code));
+    const existingCodes = codes.map(code => code.code);
+    const existingCodesSet = new Set(existingCodes);
     
+    // 检查缺失的编码
     const missingCodes = [];
     for (let i = start; i <= end; i++) {
-      if (!existingCodes.has(i.toString())) {
+      if (!existingCodesSet.has(i.toString())) {
         missingCodes.push(i);
       }
     }
     
+    // 检查超出范围的编码
+    const excessCodes = [];
+    existingCodes.forEach(code => {
+      const codeNum = parseInt(code);
+      if (!isNaN(codeNum) && (codeNum < start || codeNum > end)) {
+        excessCodes.push(code);
+      } else if (isNaN(codeNum)) {
+        // 非数字编码也算超出范围
+        excessCodes.push(code);
+      }
+    });
+    
     return { 
       hasMissing: missingCodes.length > 0,
-      missingCodes
+      missingCodes,
+      hasExcess: excessCodes.length > 0,
+      excessCodes
     };
   };
 
@@ -249,7 +279,7 @@ const ProductList = () => {
           {filteredProducts.map(product => {
             const codes = productCodes[product.id] || [];
             const codeCount = codes.length;
-            const missingCodesInfo = checkMissingCodes(product);
+            const codeRangeStatus = checkCodeRangeStatus(product);
             
             return (
               <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
@@ -257,7 +287,7 @@ const ProductList = () => {
                   product={product}
                   codeCount={codeCount}
                   onDelete={confirmDeleteProduct}
-                  missingCodes={missingCodesInfo}
+                  codeRangeStatus={codeRangeStatus}
                 />
               </Col>
             );

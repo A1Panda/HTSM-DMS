@@ -8,5 +8,35 @@
     "codeStart": "10",
     "codeEnd": "100",
     "createdAt": "2025-09-29T04:17:29.733Z"
+  },
+  {
+    "id": "1759122046720",
+    "name": "123",
+    "description": "",
+    "category": "",
+    "requiredQuantity": 123,
+    "codeStart": "",
+    "codeEnd": "",
+    "createdAt": "2025-09-29T05:00:46.720Z"
+  },
+  {
+    "id": "1759122055299",
+    "name": "1235",
+    "description": "",
+    "category": "",
+    "requiredQuantity": 0,
+    "codeStart": "",
+    "codeEnd": "",
+    "createdAt": "2025-09-29T05:00:55.299Z"
+  },
+  {
+    "id": "1759122360692",
+    "name": "123123",
+    "description": "",
+    "category": "客户23",
+    "requiredQuantity": 0,
+    "codeStart": "",
+    "codeEnd": "",
+    "createdAt": "2025-09-29T05:06:00.692Z"
   }
 ]

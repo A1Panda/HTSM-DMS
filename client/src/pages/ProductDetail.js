@@ -188,26 +188,56 @@ const ProductDetail = () => {
     }, 100);
   };
 
-  // 检查范围内是否有缺失编码
-  const checkMissingCodes = () => {
-    if (!product || !product.codeStart || !product.codeEnd) return { hasMissing: false, missingCodes: [] };
+  // 检查范围内缺失编码和超出范围的编码
+  const checkCodeRangeStatus = () => {
+    if (!product || !product.codeStart || !product.codeEnd) {
+      return { 
+        hasMissing: false, 
+        missingCodes: [], 
+        hasExcess: false, 
+        excessCodes: [] 
+      };
+    }
     
     const start = parseInt(product.codeStart);
     const end = parseInt(product.codeEnd);
-    if (isNaN(start) || isNaN(end)) return { hasMissing: false, missingCodes: [] };
+    if (isNaN(start) || isNaN(end)) {
+      return { 
+        hasMissing: false, 
+        missingCodes: [], 
+        hasExcess: false, 
+        excessCodes: [] 
+      };
+    }
     
-    const existingCodes = new Set(codes.map(code => code.code));
+    const existingCodes = codes.map(code => code.code);
+    const existingCodesSet = new Set(existingCodes);
     
+    // 检查缺失的编码
     const missingCodes = [];
     for (let i = start; i <= end; i++) {
-      if (!existingCodes.has(i.toString())) {
+      if (!existingCodesSet.has(i.toString())) {
         missingCodes.push(i);
       }
     }
     
+    // 检查超出范围的编码
+    const excessCodes = [];
+    existingCodes.forEach(code => {
+      const codeNum = parseInt(code);
+      if (!isNaN(codeNum) && (codeNum < start || codeNum > end)) {
+        excessCodes.push(code);
+      } else if (isNaN(codeNum)) {
+        // 非数字编码也算超出范围
+        excessCodes.push(code);
+      }
+    });
+    
     return { 
       hasMissing: missingCodes.length > 0,
-      missingCodes
+      missingCodes,
+      hasExcess: excessCodes.length > 0,
+      excessCodes
     };
   };
 
@@ -231,7 +261,7 @@ const ProductDetail = () => {
     );
   }
 
-  const { hasMissing, missingCodes } = checkMissingCodes();
+  const { hasMissing, missingCodes, hasExcess, excessCodes } = checkCodeRangeStatus();
   const codeCount = codes.length;
   const requiredQuantity = product.requiredQuantity || 0;
   const completionRate = requiredQuantity > 0 
@@ -281,7 +311,24 @@ const ProductDetail = () => {
                   }
                 >
                   <Tag color="red" style={{ marginLeft: 8 }}>
-                    有 {missingCodes.length} 个缺失编码
+                    缺失 {missingCodes.length} 个编码
+                  </Tag>
+                </Tooltip>
+              )}
+              {hasExcess && (
+                <Tooltip 
+                  title={
+                    <div>
+                      超出范围编码: 
+                      {excessCodes.length > 20 
+                        ? `${excessCodes.slice(0, 20).join(', ')}... 等${excessCodes.length}个` 
+                        : excessCodes.join(', ')
+                      }
+                    </div>
+                  }
+                >
+                  <Tag color="orange" style={{ marginLeft: 8 }}>
+                    超出 {excessCodes.length} 个编码
                   </Tag>
                 </Tooltip>
               )}

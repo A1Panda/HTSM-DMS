@@ -26,13 +26,26 @@ class Scanner {
       return;
     }
 
+    // 检查DOM元素是否存在
+    const element = document.getElementById(this.elementId);
+    if (!element) {
+      const error = `找不到ID为 "${this.elementId}" 的DOM元素`;
+      console.error(error);
+      if (onError) onError(new Error(error));
+      return;
+    }
+
     this.onScanSuccess = onSuccess;
     this.onScanError = onError || (() => {});
 
     try {
       this.scanner = new Html5QrcodeScanner(
         this.elementId,
-        this.options
+        {
+          fps: this.options.fps || 10,
+          qrbox: this.options.qrbox || { width: 250, height: 250 },
+          rememberLastUsedCamera: this.options.rememberLastUsedCamera || true
+        }
       );
 
       this.scanner.render(
@@ -42,6 +55,10 @@ class Scanner {
           }
         },
         (error) => {
+          // 只记录非常见的错误
+          if (!error.includes('NotFoundException') && !error.includes('No MultiFormat Readers')) {
+            console.warn('扫描错误:', error);
+          }
           if (this.onScanError) {
             this.onScanError(error);
           }
@@ -78,8 +95,14 @@ class Scanner {
    */
   clear() {
     if (this.scanner) {
-      this.scanner.clear();
+      try {
+        this.scanner.clear();
+      } catch (error) {
+        console.warn('清理扫码器时出现警告:', error);
+      }
       this.scanner = null;
+      this.onScanSuccess = null;
+      this.onScanError = null;
     }
   }
 }

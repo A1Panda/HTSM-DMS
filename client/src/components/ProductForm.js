@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Select, InputNumber, Button } from 'antd';
+import { Form, Input, Select, InputNumber, Button, AutoComplete } from 'antd';
 import PropTypes from 'prop-types';
 
 const { Option } = Select;
@@ -61,23 +61,17 @@ const ProductForm = ({ onFinish, onCancel, categories = [], initialValues = {}, 
         name="category"
         label="产品分类"
       >
-        <Select
-          placeholder="请选择产品分类（可选）"
+        <AutoComplete
+          placeholder="请选择或输入产品分类（可选）"
           allowClear
-          showSearch
-          dropdownRender={menu => (
-            <div>
-              {menu}
-              <div style={{ padding: '8px', textAlign: 'center' }}>
-                <span style={{ color: '#999' }}>可以输入新分类</span>
-              </div>
-            </div>
-          )}
-        >
-          {categories.map(category => (
-            <Option key={category} value={category}>{category}</Option>
-          ))}
-        </Select>
+          filterOption={(inputValue, option) =>
+            option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+          }
+          options={categories.map(category => ({
+            value: category,
+            label: category
+          }))}
+        />
       </Form.Item>
       
       <Form.Item

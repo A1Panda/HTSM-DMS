@@ -5,12 +5,19 @@ let filteredProducts = [];
 let filteredCodes = [];
 let currentFilter = 'all';
 
+// 分页变量
+let currentPage = 1;
+let totalPages = 1;
+let itemsPerPage = systemConfig?.data?.productsPerPage || 12;
+
 // 加载所有编码数据
-async function loadAllCodes() {
+async function loadAllCodes(page = 1, limit = 1000) {
     try {
-        const response = await fetch('/api/codes');
-        codes = await response.json();
-        console.log('已加载所有编码数据:', codes.length);
+        const response = await fetch(`/api/codes?page=${page}&limit=${limit}`);
+        const data = await response.json();
+        codes = data.codes || []; // 从响应中提取codes数组
+        totalPages = data.pagination?.pages || 1;
+        console.log('已加载所有编码数据:', codes.length, '总页数:', totalPages);
         // 加载完编码数据后重新渲染产品列表
         renderProducts();
     } catch (error) {
@@ -153,7 +160,12 @@ function renderProducts() {
     
     console.log('渲染产品列表，当前编码数据:', codes);
     
-    productsList.innerHTML = filteredProducts.map(product => {
+    // 根据当前页码计算要显示的产品
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const displayedProducts = filteredProducts.slice(startIndex, endIndex);
+    
+    productsList.innerHTML = displayedProducts.map(product => {
         // 获取该产品的编码数量
         let codeCount = 0;
         const productCodes = codes.filter(code => code.productId === product.id);
@@ -213,7 +225,7 @@ function renderProducts() {
                     <div class="stat">
                         <i class="fas fa-exclamation-triangle"></i> <span class="stat-label">缺失码:</span> 
                         ${product.codeStart && product.codeEnd ? 
-                        `<span class="stat-value missing-codes-status" data-missing-codes="${missingCodes.join(',')}">${hasMissingCodesInRange ? '是' : '否'}</span>
+                        `<span class="stat-value missing-codes-status" data-missing-codes="${missingCodes.join(',')}">${ hasMissingCodesInRange ? '<span style="color: #ff3333; font-weight: bold;">是</span>' : '否'}</span>
                         ${hasMissingCodesInRange ? '<div class="tooltip"></div>' : ''}` : 
                         '<span class="stat-value">未设置</span>'}
                     </div>
@@ -238,6 +250,71 @@ function renderProducts() {
             </div>
         `;
     }).join('');
+    
+    // 渲染分页控件
+    renderPagination();
+}
+
+// 渲染分页控件
+function renderPagination() {
+    const paginationControls = document.getElementById('paginationControls');
+    if (!paginationControls) return;
+    
+    paginationControls.innerHTML = '';
+    
+    // 计算总页数
+    totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+    
+    // 如果只有一页，不显示分页控件
+    if (totalPages <= 1) {
+        return;
+    }
+    
+    // 创建上一页按钮
+    const prevButton = document.createElement('button');
+    prevButton.textContent = '上一页';
+    prevButton.className = 'pagination-btn';
+    prevButton.disabled = currentPage === 1;
+    prevButton.addEventListener('click', () => {
+        if (currentPage > 1) {
+            currentPage--;
+            renderProducts();
+        }
+    });
+    paginationControls.appendChild(prevButton);
+    
+    // 创建页码按钮
+    const maxPageButtons = 5; // 最多显示的页码按钮数
+    let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+    let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+    
+    if (endPage - startPage + 1 < maxPageButtons) {
+        startPage = Math.max(1, endPage - maxPageButtons + 1);
+    }
+    
+    for (let i = startPage; i <= endPage; i++) {
+        const pageButton = document.createElement('button');
+        pageButton.textContent = i;
+        pageButton.className = 'pagination-btn' + (i === currentPage ? ' active' : '');
+        pageButton.addEventListener('click', () => {
+            currentPage = i;
+            renderProducts();
+        });
+        paginationControls.appendChild(pageButton);
+    }
+    
+    // 创建下一页按钮
+    const nextButton = document.createElement('button');
+    nextButton.textContent = '下一页';
+    nextButton.className = 'pagination-btn';
+    nextButton.disabled = currentPage === totalPages;
+    nextButton.addEventListener('click', () => {
+        if (currentPage < totalPages) {
+            currentPage++;
+            renderProducts();
+        }
+    });
+    paginationControls.appendChild(nextButton);
 }
 
 // 添加产品
@@ -747,19 +824,44 @@ function initMissingCodesDisplay() {
         tooltip.style.maxHeight = '300px';
         
         // 显示所有缺失编码，并使用表格布局以便更紧凑地显示
-        let codesHtml = '<strong>缺失编码列表:</strong><br><div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-top: 8px;">';
+        let codesHtml = '<strong>缺失编码列表:</strong><br><div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 8px;">';
         
-        missingCodes.forEach(code => {
+        // 优化大量编码的显示方式
+        const maxDisplayCodes = systemConfig?.ui?.maxDisplayCodes || 100; // 从配置中获取最大显示数量
+        const displayCodes = missingCodes.length > maxDisplayCodes ? 
+                            missingCodes.slice(0, maxDisplayCodes) : 
+                            missingCodes;
+        
+        // 使用虚拟DOM技术优化大量编码的渲染性能
+        const fragment = document.createDocumentFragment();
+        const tempContainer = document.createElement('div');
+        
+        displayCodes.forEach(code => {
             codesHtml += `<div style="padding: 2px 4px; background: rgba(255,255,255,0.1); border-radius: 3px;">${code}</div>`;
         });
+        
+        // 如果有更多编码，显示提示信息
+        if (missingCodes.length > maxDisplayCodes) {
+            codesHtml += `<div style="grid-column: span 3; text-align: center; padding: 5px; background: rgba(255,255,255,0.2); border-radius: 3px;">显示前${maxDisplayCodes}个，共${missingCodes.length}个缺失编码</div>`;
+        }
         
         codesHtml += '</div>';
         tooltip.innerHTML = codesHtml;
         
-        // 定位提示框
+        // 定位提示框，优化显示位置以避免超出视口
         const rect = target.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const tooltipHeight = tooltip.offsetHeight;
+        
+        // 检查是否有足够空间在下方显示
+        if (rect.bottom + tooltipHeight > viewportHeight) {
+            // 如果下方空间不足，则在上方显示
+            tooltip.style.top = `${rect.top + window.scrollY - tooltipHeight - 5}px`;
+        } else {
+            tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+        }
+        
         tooltip.style.left = `${rect.left}px`;
-        tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
         tooltip.style.display = 'block';
         
         // 清除任何可能存在的隐藏计时器

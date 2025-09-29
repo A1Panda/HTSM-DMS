@@ -1,0 +1,85 @@
+/* 统计组件 */
+.stat {
+    font-size: 14px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #f8fafc;
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.stat i {
+    color: var(--primary-color);
+    font-size: 16px;
+    min-width: 16px;
+}
+
+.stat-label {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-right: 4px;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.range-info {
+    width: 100%;
+    margin-top: 4px;
+    background-color: #eff6ff;
+    border-color: #bfdbfe;
+}
+
+.code-range {
+    font-family: monospace;
+    font-weight: 600;
+}
+
+/* 统计卡片 */
+.stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 0;
+}
+
+.stat-card {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.stat-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 8px;
+    display: block;
+}
+
+.stat-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.stat-label i {
+    color: var(--text-muted);
+}

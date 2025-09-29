@@ -8,8 +8,18 @@ ui:
   tooltipMaxHeight: 300px
   # 提示框网格列数
   tooltipGridColumns: 2
+  # 启用动画效果
+  enableAnimations: true
+  # 显示性能指标
+  showPerformanceMetrics: false
 
 # 数据配置
 data:
   # 每页显示的产品数量
   productsPerPage: 12
+  # 每页显示的编码数量
+  codesPerPage: 50
+  # 使用并行加载
+  useParallelLoading: true
+  # 缓存结果
+  cacheResults: true

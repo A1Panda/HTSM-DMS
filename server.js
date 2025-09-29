@@ -34,32 +34,75 @@ app.get('/api/products', async (req, res) => {
   }
 });
 
-// 获取所有编码
+// 获取所有编码（优化版本）
 app.get('/api/codes', async (req, res) => {
   try {
     const productsFile = path.join(DATA_DIR, 'products.json');
     let products = [];
     let allCodes = [];
     
+    // 添加分页支持
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 1000; // 默认每页1000条
+    const skip = (page - 1) * limit;
+    
+    // 添加筛选支持
+    const productId = req.query.productId;
+    
     if (await fs.pathExists(productsFile)) {
       products = await fs.readJson(productsFile);
       
-      // 获取每个产品的编码
-      for (const product of products) {
-        const codesFile = path.join(DATA_DIR, `${product.id}_codes.json`);
-        if (await fs.pathExists(codesFile)) {
-          const productCodes = await fs.readJson(codesFile);
-          // 为每个编码添加产品ID
-          const codesWithProductId = productCodes.map(code => ({
-            ...code,
-            productId: product.id
-          }));
-          allCodes = [...allCodes, ...codesWithProductId];
+      // 如果指定了产品ID，只加载该产品的编码
+      if (productId) {
+        const product = products.find(p => p.id === productId);
+        if (product) {
+          const codesFile = path.join(DATA_DIR, `${product.id}_codes.json`);
+          if (await fs.pathExists(codesFile)) {
+            const productCodes = await fs.readJson(codesFile);
+            // 为每个编码添加产品ID
+            const codesWithProductId = productCodes.map(code => ({
+              ...code,
+              productId: product.id
+            }));
+            allCodes = codesWithProductId;
+          }
         }
+      } else {
+        // 否则，并行加载所有产品的编码
+        const codePromises = products.map(async (product) => {
+          const codesFile = path.join(DATA_DIR, `${product.id}_codes.json`);
+          if (await fs.pathExists(codesFile)) {
+            const productCodes = await fs.readJson(codesFile);
+            return productCodes.map(code => ({
+              ...code,
+              productId: product.id
+            }));
+          }
+          return [];
+        });
+        
+        // 并行处理所有Promise
+        const codesArrays = await Promise.all(codePromises);
+        allCodes = codesArrays.flat();
       }
     }
     
-    res.json(allCodes);
+    // 计算总数
+    const total = allCodes.length;
+    
+    // 应用分页
+    const paginatedCodes = allCodes.slice(skip, skip + limit);
+    
+    // 返回分页数据和元数据
+    res.json({
+      codes: paginatedCodes,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
     console.error('获取所有编码失败:', error);
     res.status(500).json({ error: '获取所有编码失败' });

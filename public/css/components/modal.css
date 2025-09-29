@@ -1,0 +1,139 @@
+/* 模态框样式 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    overflow: auto;
+    pointer-events: auto;
+}
+
+.modal-content {
+    background: var(--surface-color);
+    margin: 15% auto;
+    padding: 24px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-content h3 {
+    color: var(--text-primary);
+    margin-bottom: 16px;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.modal-content h3 i {
+    color: var(--warning-color);
+}
+
+.modal-content p {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+    line-height: 1.5;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.modal-actions button {
+    min-width: 80px;
+}
+
+/* 扫码对话框样式 */
+.scan-modal {
+    max-width: 500px;
+    width: 95%;
+}
+
+.scan-container {
+    position: relative;
+    margin: 20px 0;
+    background: #000;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+#scanVideo {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    display: block;
+}
+
+.scan-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.scan-frame {
+    width: 200px;
+    height: 200px;
+    border: 2px solid var(--primary-color);
+    border-radius: 8px;
+    position: relative;
+    background: transparent;
+}
+
+.scan-frame::before,
+.scan-frame::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 3px solid var(--primary-color);
+}
+
+.scan-frame::before {
+    top: -3px;
+    left: -3px;
+    border-right: none;
+    border-bottom: none;
+}
+
+.scan-frame::after {
+    bottom: -3px;
+    right: -3px;
+    border-left: none;
+    border-top: none;
+}
+
+.scan-result {
+    padding: 12px;
+    background: var(--success-color);
+    color: white;
+    text-align: center;
+    font-weight: 500;
+}
+
+.scan-result p {
+    margin: 0;
+    color: white;
+}
+
+#scanResultText {
+    font-family: monospace;
+    font-weight: bold;
+}

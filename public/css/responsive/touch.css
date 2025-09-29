@@ -1,0 +1,57 @@
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+    button:hover {
+        background: var(--primary-color); /* 移除hover效果 */
+    }
+    
+    .secondary-btn:hover {
+        background: var(--secondary-color);
+    }
+    
+    .view-btn:hover {
+        background: var(--success-color);
+    }
+    
+    .delete-btn:hover {
+        background: var(--danger-color);
+    }
+    
+    .filter-btn:hover {
+        background: var(--surface-color);
+        border-color: var(--border-color);
+    }
+    
+    .filter-btn.active:hover {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .pagination-btn:hover:not(:disabled) {
+        background-color: #f8f9fa;
+        border-color: #ddd;
+    }
+    
+    .pagination-btn.active:hover {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    
+    /* 增加触摸目标大小 */
+    button {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    .filter-btn {
+        min-height: 40px;
+    }
+    
+    .card-actions button {
+        min-height: 40px;
+    }
+    
+    .pagination-btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}

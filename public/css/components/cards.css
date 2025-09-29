@@ -1,0 +1,89 @@
+/* 卡片组件 */
+.products-list,
+.codes-list {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    margin-top: 20px;
+}
+
+.product-card,
+.code-card {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.product-card:hover,
+.code-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+}
+
+.product-card h3,
+.code-card h3 {
+    color: var(--text-primary);
+    margin-bottom: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.product-card h3 i,
+.code-card h3 i {
+    color: var(--primary-color);
+    font-size: 14px;
+}
+
+.product-card p,
+.code-card p {
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.product-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.product-card .meta,
+.code-card .meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    padding: 8px 12px;
+    background: var(--background-color);
+    border-radius: 4px;
+    border-left: 3px solid var(--primary-color);
+}
+
+.card-actions {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.card-actions button {
+    flex: 1;
+    margin: 0 4px;
+}
+
+.card-actions button:first-child {
+    margin-left: 0;
+}
+
+.card-actions button:last-child {
+    margin-right: 0;
+}

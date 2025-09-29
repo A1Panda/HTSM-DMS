@@ -1,0 +1,108 @@
+/* 按钮样式 */
+button {
+    padding: 10px 16px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+button:hover {
+    background: var(--primary-hover);
+}
+
+button:active {
+    transform: translateY(1px);
+}
+
+.secondary-btn {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.secondary-btn:hover {
+    background: #475569;
+}
+
+.view-btn {
+    background: var(--success-color);
+}
+
+.view-btn:hover {
+    background: #047857;
+}
+
+.delete-btn {
+    background: var(--danger-color);
+}
+
+.delete-btn:hover {
+    background: #b91c1c;
+}
+
+.scan-btn {
+    background: var(--warning-color);
+    color: white;
+}
+
+.scan-btn:hover {
+    background: #b45309;
+}
+
+.back-btn {
+    background: var(--secondary-color);
+    color: white;
+    padding: 8px 16px;
+    font-size: 14px;
+    border-radius: var(--border-radius);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.back-btn:hover {
+    background: #475569;
+}
+
+.back-btn:active {
+    transform: translateY(1px);
+}
+
+.filter-btn {
+    padding: 8px 12px;
+    background: var(--surface-color);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: var(--transition);
+    min-width: auto;
+    height: 36px;
+    display: flex;
+    align-items: center;
+}
+
+.filter-btn:hover {
+    background: var(--background-color);
+    border-color: var(--primary-color);
+}
+
+.filter-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}

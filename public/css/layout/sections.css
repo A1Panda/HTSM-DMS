@@ -1,0 +1,65 @@
+/* 区域标题样式 */
+h2 {
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+h2 i {
+    color: var(--primary-color);
+    font-size: 16px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.section-header h2 {
+    margin-bottom: 0;
+    flex: 1;
+}
+
+/* 搜索和筛选样式 */
+.filter-section {
+    margin-bottom: 24px;
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.camera-hint {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 16px 0;
+    padding: 8px 12px;
+    background: var(--background-color);
+    border-radius: var(--border-radius);
+    border-left: 3px solid var(--warning-color);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.camera-hint i {
+    color: var(--warning-color);
+    flex-shrink: 0;
+}

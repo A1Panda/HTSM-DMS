@@ -1,0 +1,42 @@
+/* 超小屏幕优化 */
+@media (max-width: 480px) {
+    .container {
+        padding: 8px;
+    }
+    
+    header h1 {
+        font-size: 18px;
+    }
+    
+    section {
+        padding: 12px;
+    }
+    
+    .add-product-form,
+    .add-code-form {
+        padding: 12px;
+    }
+    
+    .product-card,
+    .code-card {
+        padding: 12px;
+    }
+    
+    .stat-card {
+        padding: 12px;
+    }
+    
+    .modal-content {
+        margin: 5% auto;
+        padding: 16px;
+    }
+    
+    .pagination-controls {
+        gap: 3px;
+    }
+    
+    .pagination-btn {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
+}

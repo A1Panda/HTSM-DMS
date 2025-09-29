@@ -793,6 +793,39 @@ button:active {
     opacity: 0.8;
 }
 
+/* 分页控件样式 */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 5px;
+}
+
+.pagination-btn {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+}
+
+.pagination-btn.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 /* 移动端交互优化 */
 @media (max-width: 768px) {
     /* 防止双击缩放 */
@@ -1065,6 +1098,20 @@ button:active {
         -ms-user-select: none;
         user-select: none;
     }
+    
+    /* 分页控件移动端适配 */
+    .pagination-controls {
+        flex-wrap: wrap;
+        padding: 0 10px;
+    }
+    
+    .pagination-btn {
+        min-width: 40px;
+        min-height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 }
 
 /* 超小屏幕优化 */
@@ -1099,6 +1146,15 @@ button:active {
         margin: 5% auto;
         padding: 16px;
     }
+    
+    .pagination-controls {
+        gap: 3px;
+    }
+    
+    .pagination-btn {
+        padding: 6px 10px;
+        font-size: 13px;
+    }
 }
 
 /* 触摸设备优化 */
@@ -1129,6 +1185,16 @@ button:active {
         border-color: var(--primary-color);
     }
     
+    .pagination-btn:hover:not(:disabled) {
+        background-color: #f8f9fa;
+        border-color: #ddd;
+    }
+    
+    .pagination-btn.active:hover {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+    
     /* 增加触摸目标大小 */
     button {
         min-height: 44px;
@@ -1141,5 +1207,10 @@ button:active {
     
     .card-actions button {
         min-height: 40px;
+    }
+    
+    .pagination-btn {
+        min-height: 44px;
+        min-width: 44px;
     }
 }

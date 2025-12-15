@@ -16,8 +16,25 @@ const { TextArea } = Input;
 const CodeForm = ({ onFinish, onCancel, initialValues = {}, loading = false }) => {
   const [form] = Form.useForm();
 
+  // 清理编码，只保留数字
+  const cleanCode = (value) => {
+    if (!value) return value;
+    // 只保留数字
+    return value.replace(/\D/g, '');
+  };
+
+  // 处理编码输入变化
+  const handleCodeChange = (e) => {
+    const cleanedValue = cleanCode(e.target.value);
+    form.setFieldsValue({ code: cleanedValue });
+  };
+
   // 处理表单提交
   const handleFinish = (values) => {
+    // 清理编码，只保留数字
+    if (values.code) {
+      values.code = cleanCode(values.code);
+    }
     // 如果有日期，转换为字符串格式
     if (values.date) {
       values.date = values.date.format('YYYY-MM-DD');
@@ -46,7 +63,10 @@ const CodeForm = ({ onFinish, onCancel, initialValues = {}, loading = false }) =
         label="产品编码"
         rules={[{ required: true, message: '请输入产品编码' }]}
       >
-        <Input placeholder="请输入产品编码" />
+        <Input 
+          placeholder="请输入产品编码（仅数字）" 
+          onChange={handleCodeChange}
+        />
       </Form.Item>
       
       <Form.Item

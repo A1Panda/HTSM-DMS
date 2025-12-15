@@ -34,7 +34,9 @@ const ScannerModal = ({ visible, onCancel, onScan }) => {
           scanner.init(
             // 扫描成功回调
             (decodedText) => {
-              setScanResult(decodedText);
+              // 清理扫描结果，只保留数字
+              const cleanedText = decodedText.replace(/\D/g, '');
+              setScanResult(cleanedText);
               scanner.pause();
             },
             // 扫描错误回调
@@ -80,10 +82,19 @@ const ScannerModal = ({ visible, onCancel, onScan }) => {
     onCancel();
   };
 
+  // 清理编码，只保留数字
+  const cleanCode = (value) => {
+    if (!value) return value;
+    // 只保留数字
+    return value.replace(/\D/g, '');
+  };
+
   // 使用扫描结果
   const handleUseScanResult = () => {
     if (scanResult) {
-      onScan(scanResult);
+      // 清理扫描结果，只保留数字
+      const cleanedResult = cleanCode(scanResult);
+      onScan(cleanedResult);
       handleCancel();
     }
   };

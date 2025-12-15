@@ -41,7 +41,12 @@ exports.addCode = async (req, res) => {
   
   try {
     const { productId } = req.params;
-    const { code, description, date } = req.body;
+    let { code, description, date } = req.body;
+    
+    // 清理编码，只保留数字
+    if (code) {
+      code = code.replace(/\D/g, '');
+    }
     
     // 检查产品是否存在
     const product = await Product.findById(productId);

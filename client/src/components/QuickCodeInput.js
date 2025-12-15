@@ -32,9 +32,17 @@ const QuickCodeInput = ({
     }
   }, [autoFocus]);
 
+  // 清理编码，只保留数字
+  const cleanCode = (value) => {
+    if (!value) return value;
+    // 只保留数字
+    return value.replace(/\D/g, '');
+  };
+
   // 处理输入变化
   const handleChange = (e) => {
-    setCode(e.target.value);
+    const cleanedValue = cleanCode(e.target.value);
+    setCode(cleanedValue);
     // 清除重复警告
     if (duplicateWarning) {
       setDuplicateWarning(false);
@@ -59,16 +67,19 @@ const QuickCodeInput = ({
 
   // 处理提交
   const handleSubmit = () => {
-    if (!code.trim()) {
+    // 清理编码，只保留数字
+    const cleanedCode = cleanCode(code);
+    
+    if (!cleanedCode.trim()) {
       message.warning('请输入编码');
       return;
     }
 
-    // 检查是否重复
-    if (checkDuplicate(code)) {
+    // 检查是否重复（使用清理后的编码）
+    if (checkDuplicate(cleanedCode)) {
       // 显示重复警告
       setDuplicateWarning(true);
-      setDuplicateCode(code);
+      setDuplicateCode(cleanedCode);
       
       // 播放警告声音
       const audio = new Audio('data:audio/wav;base64,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');
@@ -76,7 +87,7 @@ const QuickCodeInput = ({
       
       // 调用重复回调
       if (onDuplicate) {
-        onDuplicate(code);
+        onDuplicate(cleanedCode);
       }
       
       // 显示确认对话框
@@ -86,7 +97,7 @@ const QuickCodeInput = ({
       return;
     }
 
-    onSubmit({ code });
+    onSubmit({ code: cleanedCode });
     setCode(''); // 清空输入框
     
     // 提交后重新聚焦输入框，方便连续扫码
@@ -105,7 +116,7 @@ const QuickCodeInput = ({
           value={code}
           onChange={handleChange}
           onKeyPress={handleKeyPress}
-          placeholder="输入或扫描编码"
+          placeholder="输入或扫描编码（仅数字）"
           prefix={<ScanOutlined style={{ color: '#1890ff' }} />}
           disabled={loading}
           style={{ flex: 1 }}

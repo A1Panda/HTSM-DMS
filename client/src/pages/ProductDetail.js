@@ -53,6 +53,9 @@ const ProductDetail = () => {
   const [searchText, setSearchText] = useState('');
   const [selectedCodes, setSelectedCodes] = useState([]);
   const [codeBatchMode, setCodeBatchMode] = useState(false);
+  const [codesModalVisible, setCodesModalVisible] = useState(false);
+  const [codesModalTitle, setCodesModalTitle] = useState('');
+  const [codesModalList, setCodesModalList] = useState([]);
 
   // 加载产品详情
   const loadProduct = async () => {
@@ -272,25 +275,30 @@ const ProductDetail = () => {
     
     const existingCodes = codes.map(code => code.code);
     const existingCodesSet = new Set(existingCodes);
+    const width = Math.max(
+      String(product.codeStart).trim().length, 
+      String(product.codeEnd).trim().length
+    );
     
     // 检查缺失的编码
     const missingCodes = [];
     for (let i = start; i <= end; i++) {
-      if (!existingCodesSet.has(i.toString())) {
-        missingCodes.push(i);
+      const expected = i.toString().padStart(width, '0');
+      if (!existingCodesSet.has(expected)) {
+        missingCodes.push(expected);
       }
     }
     
     // 检查超出范围的编码
     const excessCodes = [];
     existingCodes.forEach(code => {
-      const codeNum = parseInt(code);
-      if (!isNaN(codeNum) && (codeNum < start || codeNum > end)) {
+      const str = String(code).trim();
+      const codeNum = parseInt(str);
+      const inRange = !isNaN(codeNum) && codeNum >= start && codeNum <= end;
+      const formatOk = str.length === width;
+      if (!inRange || !formatOk) {
         excessCodes.push(code);
-      } else if (isNaN(codeNum)) {
-        // 非数字编码也算超出范围
-        excessCodes.push(code);
-      }
+      } 
     });
     
     return { 
@@ -370,7 +378,7 @@ const ProductDetail = () => {
                     </div>
                   }
                 >
-                  <Tag color="red" style={{ marginLeft: 8 }}>
+                  <Tag color="red" style={{ marginLeft: 8, cursor: 'pointer' }} onClick={() => { setCodesModalTitle(`${product.name} - 缺失编码`); setCodesModalList(missingCodes); setCodesModalVisible(true); }}>
                     缺失 {missingCodes.length} 个编码
                   </Tag>
                 </Tooltip>
@@ -387,7 +395,7 @@ const ProductDetail = () => {
                     </div>
                   }
                 >
-                  <Tag color="orange" style={{ marginLeft: 8 }}>
+                  <Tag color="orange" style={{ marginLeft: 8, cursor: 'pointer' }} onClick={() => { setCodesModalTitle(`${product.name} - 超出范围编码`); setCodesModalList(excessCodes); setCodesModalVisible(true); }}>
                     超出 {excessCodes.length} 个编码
                   </Tag>
                 </Tooltip>
@@ -505,6 +513,24 @@ const ProductDetail = () => {
           onCancel={() => setAddModalVisible(false)}
           loading={formLoading}
         />
+      </Modal>
+      
+      <Modal
+        title={codesModalTitle}
+        open={codesModalVisible}
+        onCancel={() => setCodesModalVisible(false)}
+        footer={null}
+        width={700}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+          {codesModalList && codesModalList.length > 0 ? (
+            codesModalList.map((c) => (
+              <div key={c} style={{ padding: '6px 8px', background: '#fafafa', borderRadius: 4 }}>{c}</div>
+            ))
+          ) : (
+            <div style={{ gridColumn: 'span 4', color: '#999' }}>暂无数据</div>
+          )}
+        </div>
       </Modal>
       
       {/* 扫码对话框 */}

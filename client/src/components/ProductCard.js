@@ -26,7 +26,9 @@ const ProductCard = ({
   missingCodes, 
   batchMode = false,
   selected = false,
-  onSelect 
+  onSelect,
+  onViewMissing,
+  onViewExcess
 }) => {
   // 支持新旧两种数据格式
   const rangeStatus = codeRangeStatus || missingCodes || { 
@@ -144,7 +146,7 @@ const ProductCard = ({
                     </div>
                   }
                 >
-                  <Tag color="red" size="small">
+                  <Tag color="red" size="small" style={{ cursor: 'pointer' }} onClick={() => onViewMissing && onViewMissing(missingCodesList)}>
                     缺失 {missingCodesList && missingCodesList.length} 个
                   </Tag>
                 </Tooltip>
@@ -161,7 +163,7 @@ const ProductCard = ({
                     </div>
                   }
                 >
-                  <Tag color="orange" size="small">
+                  <Tag color="orange" size="small" style={{ cursor: 'pointer' }} onClick={() => onViewExcess && onViewExcess(excessCodes)}>
                     超出 {excessCodes && excessCodes.length} 个
                   </Tag>
                 </Tooltip>
@@ -206,6 +208,9 @@ ProductCard.propTypes = {
   batchMode: PropTypes.bool,
   selected: PropTypes.bool,
   onSelect: PropTypes.func
+  ,
+  onViewMissing: PropTypes.func,
+  onViewExcess: PropTypes.func
 };
 
 export default ProductCard;

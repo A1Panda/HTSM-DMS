@@ -42,6 +42,9 @@ const ProductList = () => {
   const [productCodes, setProductCodes] = useState({});
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [batchMode, setBatchMode] = useState(false);
+  const [codesModalVisible, setCodesModalVisible] = useState(false);
+  const [codesModalTitle, setCodesModalTitle] = useState('');
+  const [codesModalList, setCodesModalList] = useState([]);
 
   // 加载产品列表
   const loadProducts = async () => {
@@ -256,25 +259,30 @@ const ProductList = () => {
     const codes = productCodes[product.id] || [];
     const existingCodes = codes.map(code => code.code);
     const existingCodesSet = new Set(existingCodes);
+    const width = Math.max(
+      String(product.codeStart).trim().length, 
+      String(product.codeEnd).trim().length
+    );
     
     // 检查缺失的编码
     const missingCodes = [];
     for (let i = start; i <= end; i++) {
-      if (!existingCodesSet.has(i.toString())) {
-        missingCodes.push(i);
+      const expected = i.toString().padStart(width, '0');
+      if (!existingCodesSet.has(expected)) {
+        missingCodes.push(expected);
       }
     }
     
     // 检查超出范围的编码
     const excessCodes = [];
     existingCodes.forEach(code => {
-      const codeNum = parseInt(code);
-      if (!isNaN(codeNum) && (codeNum < start || codeNum > end)) {
+      const str = String(code).trim();
+      const codeNum = parseInt(str);
+      const inRange = !isNaN(codeNum) && codeNum >= start && codeNum <= end;
+      const formatOk = str.length === width;
+      if (!inRange || !formatOk) {
         excessCodes.push(code);
-      } else if (isNaN(codeNum)) {
-        // 非数字编码也算超出范围
-        excessCodes.push(code);
-      }
+      } 
     });
     
     return { 
@@ -283,6 +291,12 @@ const ProductList = () => {
       hasExcess: excessCodes.length > 0,
       excessCodes
     };
+  };
+
+  const openCodesModal = (product, type, list) => {
+    setCodesModalTitle(`${product.name} - ${type === 'missing' ? '缺失编码' : '超出范围编码'}`);
+    setCodesModalList(list || []);
+    setCodesModalVisible(true);
   };
 
   return (
@@ -395,6 +409,8 @@ const ProductList = () => {
                   batchMode={batchMode}
                   selected={selectedProducts.includes(product.id)}
                   onSelect={(checked) => handleProductSelect(product.id, checked)}
+                  onViewMissing={(list) => openCodesModal(product, 'missing', list)}
+                  onViewExcess={(list) => openCodesModal(product, 'excess', list)}
                 />
               </Col>
             );
@@ -415,6 +431,24 @@ const ProductList = () => {
           categories={categories}
           loading={formLoading}
         />
+      </Modal>
+
+      <Modal
+        title={codesModalTitle}
+        open={codesModalVisible}
+        onCancel={() => setCodesModalVisible(false)}
+        footer={null}
+        width={700}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+          {codesModalList && codesModalList.length > 0 ? (
+            codesModalList.map((c) => (
+              <div key={c} style={{ padding: '6px 8px', background: '#fafafa', borderRadius: 4 }}>{c}</div>
+            ))
+          ) : (
+            <div style={{ gridColumn: 'span 4', color: '#999' }}>暂无数据</div>
+          )}
+        </div>
       </Modal>
     </div>
   );

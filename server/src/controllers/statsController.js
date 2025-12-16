@@ -101,6 +101,10 @@ exports.getQualityStats = async (req, res) => {
       // 检查是否有有效的编码范围
       const start = parseInt(product.codeStart);
       const end = parseInt(product.codeEnd);
+      const width = Math.max(
+        String(product.codeStart).trim().length,
+        String(product.codeEnd).trim().length
+      );
       
       if (!isNaN(start) && !isNaN(end) && start <= end) {
         validProducts++;
@@ -112,7 +116,8 @@ exports.getQualityStats = async (req, res) => {
         const expectedCount = end - start + 1;
         let missingCount = 0;
         for (let i = start; i <= end; i++) {
-          if (!existingCodesSet.has(i.toString())) {
+          const expected = i.toString().padStart(width, '0');
+          if (!existingCodesSet.has(expected)) {
             missingCount++;
           }
         }
@@ -120,11 +125,11 @@ exports.getQualityStats = async (req, res) => {
         // 计算超出范围编码
         let excessCount = 0;
         existingCodes.forEach(code => {
-          const codeNum = parseInt(code);
-          if (!isNaN(codeNum) && (codeNum < start || codeNum > end)) {
-            excessCount++;
-          } else if (isNaN(codeNum)) {
-            // 非数字编码也算超出范围
+          const str = String(code).trim();
+          const codeNum = parseInt(str);
+          const inRange = !isNaN(codeNum) && codeNum >= start && codeNum <= end;
+          const formatOk = str.length === width;
+          if (!inRange || !formatOk) {
             excessCount++;
           }
         });

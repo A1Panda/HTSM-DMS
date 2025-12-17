@@ -25,11 +25,11 @@ const AppHeader = () => {
     <Header style={{ position: 'fixed', zIndex: 1, width: '100%', display: 'flex', alignItems: 'center' }}>
       <div className="logo">
         <img 
-          src="/Icon.jpg" 
+          src="/Icon.png" 
           alt="Logo" 
           style={{ 
-            height: '32px', 
-            width: '32px', 
+            height: '64px', 
+            width: '64px', 
             marginRight: '12px',
             borderRadius: '4px',
             objectFit: 'contain'

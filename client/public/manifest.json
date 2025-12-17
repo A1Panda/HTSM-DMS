@@ -3,14 +3,14 @@
   "name": "产品编码管理系统",
   "icons": [
     {
-      "src": "Icon.jpg",
+      "src": "Icon.png",
       "sizes": "192x192",
-      "type": "image/jpeg"
+      "type": "image/png"
     },
     {
-      "src": "Icon.jpg",
+      "src": "Icon.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png"
     }
   ],
   "start_url": ".",

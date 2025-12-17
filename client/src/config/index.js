@@ -5,7 +5,7 @@ const config = {
   // API配置
   api: {
     // API基础URL
-    baseURL: process.env.REACT_APP_API_URL || 'http://localhost:5100/api',
+    baseURL: process.env.REACT_APP_API_URL || (process.env.REACT_APP_BACKEND_TARGET ? `${process.env.REACT_APP_BACKEND_TARGET}/api` : 'http://localhost:5100/api'),
     // 请求超时时间（毫秒）
     timeout: 10000
   },

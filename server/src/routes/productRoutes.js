@@ -18,6 +18,14 @@ router.post('/',
   productController.createProduct
 );
 
+// 更新产品
+router.put('/:id',
+  [
+    body('name').notEmpty().withMessage('产品名称不能为空')
+  ],
+  productController.updateProduct
+);
+
 // 删除产品
 router.delete('/:id', productController.deleteProduct);
 

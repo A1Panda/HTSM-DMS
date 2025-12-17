@@ -53,6 +53,9 @@ export const productAPI = {
   // 创建新产品
   createProduct: (productData) => api.post('/products', productData),
   
+  // 更新产品
+  updateProduct: (id, productData) => api.put(`/products/${id}`, productData),
+
   // 删除产品
   deleteProduct: (id) => api.delete(`/products/${id}`)
 };

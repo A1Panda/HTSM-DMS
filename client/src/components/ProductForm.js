@@ -14,7 +14,7 @@ const { TextArea } = Input;
  * @param {Object} props.initialValues 初始值
  * @param {boolean} props.loading 是否加载中
  */
-const ProductForm = ({ onFinish, onCancel, categories = [], initialValues = {}, loading = false }) => {
+const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialValues = {}, loading = false, submitText = '提交' }) => {
   const [form] = Form.useForm();
 
   // 监听编码范围变化，自动计算需求数量
@@ -36,7 +36,7 @@ const ProductForm = ({ onFinish, onCancel, categories = [], initialValues = {}, 
     <Form
       form={form}
       layout="vertical"
-      onFinish={onFinish}
+      onFinish={onFinish || onSubmit}
       initialValues={{
         requiredQuantity: 0,
         ...initialValues
@@ -97,11 +97,11 @@ const ProductForm = ({ onFinish, onCancel, categories = [], initialValues = {}, 
       
       <Form.Item>
         <Button type="primary" htmlType="submit" loading={loading} style={{ marginRight: 8 }}>
-          提交
+          {submitText}
         </Button>
-        <Button onClick={onCancel}>
-          取消
-        </Button>
+        {onCancel && (
+          <Button onClick={onCancel}>取消</Button>
+        )}
       </Form.Item>
     </Form>
   );

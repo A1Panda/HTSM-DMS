@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, Tag, Progress, Tooltip, Checkbox } from 'antd';
 import { Link } from 'react-router-dom';
-import { EyeOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EyeOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 
 const { Meta } = Card;
@@ -28,7 +28,8 @@ const ProductCard = ({
   selected = false,
   onSelect,
   onViewMissing,
-  onViewExcess
+  onViewExcess,
+  onEdit
 }) => {
   // 支持新旧两种数据格式
   const rangeStatus = codeRangeStatus || missingCodes || { 
@@ -66,6 +67,12 @@ const ProductCard = ({
           <Link to={`/products/${product.id}`}>
             <EyeOutlined key="view" />
           </Link>
+        </Tooltip>,
+        <Tooltip title="编辑产品">
+          <EditOutlined 
+            key="edit" 
+            onClick={() => onEdit && onEdit(product)} 
+          />
         </Tooltip>,
         <Tooltip title="删除产品">
           <DeleteOutlined 

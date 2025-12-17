@@ -45,6 +45,9 @@ const ProductList = () => {
   const [codesModalVisible, setCodesModalVisible] = useState(false);
   const [codesModalTitle, setCodesModalTitle] = useState('');
   const [codesModalList, setCodesModalList] = useState([]);
+  
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
 
   // 加载产品列表
   const loadProducts = async () => {
@@ -120,6 +123,29 @@ const ProductList = () => {
     } catch (error) {
       console.error('添加产品失败:', error);
       message.error('添加产品失败: ' + (error.response?.data?.error || '未知错误'));
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
+  // 编辑产品
+  const handleEditProduct = (product) => {
+    setEditingProduct(product);
+    setEditModalVisible(true);
+  };
+
+  // 更新产品
+  const handleUpdateProduct = async (values) => {
+    try {
+      setFormLoading(true);
+      await productAPI.updateProduct(editingProduct.id, values);
+      message.success(`产品 "${values.name}" 更新成功`);
+      setEditModalVisible(false);
+      setEditingProduct(null);
+      loadProducts();
+    } catch (error) {
+      console.error('更新产品失败:', error);
+      message.error('更新产品失败: ' + (error.response?.data?.error || '未知错误'));
     } finally {
       setFormLoading(false);
     }
@@ -411,6 +437,7 @@ const ProductList = () => {
                   onSelect={(checked) => handleProductSelect(product.id, checked)}
                   onViewMissing={(list) => openCodesModal(product, 'missing', list)}
                   onViewExcess={(list) => openCodesModal(product, 'excess', list)}
+                  onEdit={handleEditProduct}
                 />
               </Col>
             );
@@ -430,6 +457,25 @@ const ProductList = () => {
           onCancel={() => setModalVisible(false)}
           categories={categories}
           loading={formLoading}
+        />
+      </Modal>
+
+      {/* 编辑产品模态框 */}
+      <Modal
+        title="编辑产品"
+        open={editModalVisible}
+        onCancel={() => {
+          setEditModalVisible(false);
+          setEditingProduct(null);
+        }}
+        footer={null}
+        destroyOnClose
+      >
+        <ProductForm 
+          initialValues={editingProduct}
+          onSubmit={handleUpdateProduct} 
+          loading={formLoading} 
+          submitText="更新产品"
         />
       </Modal>
 

@@ -1,8 +1,7 @@
 import React from 'react';
-import { Form, Input, Select, InputNumber, Button, AutoComplete } from 'antd';
+import { Form, Input, InputNumber, Button, AutoComplete } from 'antd';
 import PropTypes from 'prop-types';
 
-const { Option } = Select;
 const { TextArea } = Input;
 
 /**
@@ -108,11 +107,13 @@ const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialVal
 };
 
 ProductForm.propTypes = {
-  onFinish: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
+  onFinish: PropTypes.func,
+  onSubmit: PropTypes.func,
+  onCancel: PropTypes.func,
   categories: PropTypes.array,
   initialValues: PropTypes.object,
-  loading: PropTypes.bool
+  loading: PropTypes.bool,
+  submitText: PropTypes.string
 };
 
 export default ProductForm;

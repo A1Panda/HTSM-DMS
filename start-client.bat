@@ -1,10 +1,10 @@
 @echo off
-echo Setting up environment variables...
-set DANGEROUSLY_DISABLE_HOST_CHECK=true
-set WDS_SOCKET_HOST=localhost
-set WDS_SOCKET_PORT=0
+set NODE_ENV=production
 set PORT=3100
-
-echo Starting React development server on port 3100...
+echo Starting static production server on port %PORT%...
 cd client
-npm start
+if not exist build\index.html (
+  echo Building frontend...
+  npm run build
+)
+npx serve -s build -l %PORT%

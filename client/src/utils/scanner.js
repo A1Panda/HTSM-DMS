@@ -44,7 +44,9 @@ class Scanner {
         {
           fps: this.options.fps || 10,
           qrbox: this.options.qrbox || { width: 250, height: 250 },
-          rememberLastUsedCamera: this.options.rememberLastUsedCamera || true
+          rememberLastUsedCamera: this.options.rememberLastUsedCamera || true,
+          aspectRatio: this.options.aspectRatio,
+          showTorchButtonIfSupported: this.options.showTorchButtonIfSupported
         }
       );
 

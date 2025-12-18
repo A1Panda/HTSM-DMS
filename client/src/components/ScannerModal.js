@@ -11,12 +11,13 @@ import config from '../config';
  * @param {Function} props.onCancel 取消回调
  * @param {Function} props.onScan 扫描成功回调
  */
-const ScannerModal = ({ visible, onCancel, onScan }) => {
+const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
   const [scanResult, setScanResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const scannerRef = useRef(null);
   const scannerInstanceRef = useRef(null);
+  const lastScanRef = useRef({ code: '', time: 0 });
 
   // 初始化扫码器
   useEffect(() => {
@@ -34,10 +35,28 @@ const ScannerModal = ({ visible, onCancel, onScan }) => {
           scanner.init(
             // 扫描成功回调
             (decodedText) => {
-              // 清理扫描结果，只保留数字
               const cleanedText = decodedText.replace(/\D/g, '');
-              setScanResult(cleanedText);
-              scanner.pause();
+              if (!cleanedText) return;
+              const now = Date.now();
+              if (continuous) {
+                if (lastScanRef.current.code === cleanedText && now - lastScanRef.current.time < 1500) {
+                  return;
+                }
+                lastScanRef.current = { code: cleanedText, time: now };
+                setScanResult(cleanedText);
+                onScan(cleanedText);
+                if (scannerInstanceRef.current) {
+                  scannerInstanceRef.current.pause();
+                  setTimeout(() => {
+                    if (scannerInstanceRef.current) {
+                      scannerInstanceRef.current.resume();
+                    }
+                  }, 500);
+                }
+              } else {
+                setScanResult(cleanedText);
+                scanner.pause();
+              }
             },
             // 扫描错误回调
             (error) => {
@@ -116,24 +135,25 @@ const ScannerModal = ({ visible, onCancel, onScan }) => {
         <Button key="close" onClick={handleCancel}>
           关闭
         </Button>,
-        scanResult && (
+        !continuous && scanResult && (
           <Button key="rescan" onClick={handleRescan}>
             重新扫描
           </Button>
         ),
-        <Button 
-          key="use" 
-          type="primary" 
-          disabled={!scanResult} 
-          onClick={handleUseScanResult}
-        >
-          使用扫描结果
-        </Button>
-      ]}
+        !continuous && (
+          <Button 
+            key="use" 
+            type="primary" 
+            disabled={!scanResult} 
+            onClick={handleUseScanResult}
+          >
+            使用扫描结果
+          </Button>
+        )
+      ].filter(Boolean)}
       width={600}
     >
       <div style={{ textAlign: 'center' }}>
-        {/* 始终渲染scanner容器，但在加载时显示遮罩 */}
         <div style={{ position: 'relative' }}>
           <div id="scanner" style={{ width: '100%', maxWidth: '500px', margin: '0 auto' }}></div>
           

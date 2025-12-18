@@ -25,21 +25,13 @@ const config = {
   // 扫码配置
   scanner: {
     // 扫码器FPS
-    fps: 10,
+    fps: 15,
     // 扫码框大小
-    qrbox: { width: 250, height: 250 },
+    qrbox: { width: 300, height: 300 },
     // 记住上次使用的摄像头
     rememberLastUsedCamera: true,
-    // 支持的格式
-    supportedScanTypes: [
-      'QR_CODE', 
-      'CODE_128', 
-      'CODE_39', 
-      'EAN_13', 
-      'EAN_8',
-      'UPC_A',
-      'UPC_E'
-    ]
+    aspectRatio: 1.3333,
+    showTorchButtonIfSupported: true
   },
   
   // 公司信息

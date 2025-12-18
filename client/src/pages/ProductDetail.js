@@ -243,12 +243,8 @@ const ProductDetail = () => {
 
   // 处理扫码结果
   const handleScanResult = (result) => {
-    setAddModalVisible(true);
-    setTimeout(() => {
-      // 使用扫描结果填充表单
-      const initialValues = { code: result };
-      handleAddCode(initialValues);
-    }, 100);
+    const initialValues = { code: result };
+    handleAddCode(initialValues);
   };
 
   // 检查范围内缺失编码和超出范围的编码
@@ -538,6 +534,7 @@ const ProductDetail = () => {
         visible={scanModalVisible}
         onCancel={() => setScanModalVisible(false)}
         onScan={handleScanResult}
+        continuous
       />
     </div>
   );

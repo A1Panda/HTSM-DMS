@@ -10,10 +10,10 @@ import {
   message, 
   Typography,
   Empty,
-  Spin,
+  // Spin,
   Checkbox,
   Space,
-  Statistic,
+  // Statistic,
   Skeleton
 } from 'antd';
 import { 
@@ -23,7 +23,6 @@ import {
   DeleteOutlined,
   CheckOutlined,
   CloseOutlined,
-  AppstoreOutlined,
   SortAscendingOutlined,
   SortDescendingOutlined
 } from '@ant-design/icons';
@@ -388,26 +387,7 @@ const ProductList = () => {
     setCodesModalVisible(true);
   };
 
-  // 统计信息
-  const stats = useMemo(() => {
-    const totalCodes = Object.values(productCodes).reduce((sum, codes) => sum + codes.length, 0);
-    const totalRequired = filteredAndSortedProducts.reduce((sum, p) => sum + (p.requiredQuantity || 0), 0);
-    const totalEntered = filteredAndSortedProducts.reduce((sum, p) => {
-      const codes = productCodes[p.id] || [];
-      return sum + codes.length;
-    }, 0);
-    
-    return {
-      total: products.length,
-      filtered: filteredAndSortedProducts.length,
-      totalCodes,
-      totalRequired,
-      totalEntered,
-      avgCompletion: filteredAndSortedProducts.length > 0 
-        ? Math.round((totalEntered / totalRequired) * 100) || 0
-        : 0
-    };
-  }, [products, filteredAndSortedProducts, productCodes]);
+  // 已移除顶部统计信息卡片
 
   return (
     <div className="product-list-container">
@@ -453,48 +433,7 @@ const ProductList = () => {
         </Space>
       </div>
 
-      {/* 统计信息卡片 */}
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="总产品数"
-              value={stats.total}
-              prefix={<AppstoreOutlined />}
-              valueStyle={{ color: '#1890ff' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="当前显示"
-              value={stats.filtered}
-              suffix={`/ ${stats.total}`}
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="总编码数"
-              value={stats.totalCodes}
-              valueStyle={{ color: '#722ed1' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} md={6}>
-          <Card>
-            <Statistic
-              title="平均完成度"
-              value={stats.avgCompletion}
-              suffix="%"
-              valueStyle={{ color: stats.avgCompletion >= 80 ? '#52c41a' : '#faad14' }}
-            />
-          </Card>
-        </Col>
-      </Row>
+      {/* 顶部统计信息已移除 */}
       
       {/* 筛选和排序工具栏 */}
       <Card style={{ marginBottom: 16 }}>
@@ -649,7 +588,7 @@ const ProductList = () => {
           setEditingProduct(null);
         }}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <ProductForm 
           initialValues={editingProduct}

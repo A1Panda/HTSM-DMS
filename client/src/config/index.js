@@ -25,13 +25,32 @@ const config = {
   // 扫码配置
   scanner: {
     // 扫码器FPS
-    fps: 15,
+    fps: 10,
     // 扫码框大小
-    qrbox: { width: 300, height: 300 },
+    qrbox: { width: 350, height: 350 },
     // 记住上次使用的摄像头
     rememberLastUsedCamera: true,
     aspectRatio: 1.3333,
-    showTorchButtonIfSupported: true
+    showTorchButtonIfSupported: true,
+    // 优先使用后置摄像头和较高清分辨率，提升金属二维码识别率
+    videoConstraints: {
+      facingMode: { ideal: 'environment' },
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
+    },
+    // 如果浏览器支持 BarcodeDetector，则启用以提高识别成功率
+    experimentalFeatures: {
+      useBarCodeDetectorIfSupported: true
+    }
+  },
+  
+  // OCR 配置（LuckyCola 第三方服务）
+  ocr: {
+    // 建议通过环境变量配置，避免把密钥写死在代码里
+    appKey: process.env.REACT_APP_LUCKYCOLA_APPKEY || '',
+    uid: process.env.REACT_APP_LUCKYCOLA_UID || '',
+    // LuckyCola OCR 接口地址
+    baseUrl: 'https://luckycola.com.cn/openOcr/baseOCR'
   },
   
   // 公司信息

@@ -44,9 +44,14 @@ class Scanner {
         {
           fps: this.options.fps || 10,
           qrbox: this.options.qrbox || { width: 250, height: 250 },
-          rememberLastUsedCamera: this.options.rememberLastUsedCamera || true,
+          rememberLastUsedCamera: this.options.rememberLastUsedCamera ?? true,
           aspectRatio: this.options.aspectRatio,
-          showTorchButtonIfSupported: this.options.showTorchButtonIfSupported
+          showTorchButtonIfSupported: this.options.showTorchButtonIfSupported,
+          // 使用更高质量的视频输入和实验特性（如果支持）来提升识别率
+          videoConstraints: this.options.videoConstraints,
+          experimentalFeatures: this.options.experimentalFeatures,
+          // 金属铭牌上的二维码不会镜像，关闭翻转可以减少误判
+          disableFlip: true
         }
       );
 

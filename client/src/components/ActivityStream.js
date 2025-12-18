@@ -159,7 +159,7 @@ const ActivityStream = ({ activityData, loading }) => {
             size="small" 
             className="activity-stream"
             style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-            bodyStyle={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '300px' }}
+            styles={{ body: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: '300px' } }}
           >
             {recentActivities.length > 0 ? (
               <List
@@ -228,7 +228,7 @@ const ActivityStream = ({ activityData, loading }) => {
             title="今日操作时间分布" 
             size="small"
             style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-            bodyStyle={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '300px' }}
+            styles={{ body: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: '300px' } }}
           >
             {todayStats.totalToday > 0 ? (
               <div style={{ flex: 1, height: '300px', minHeight: '300px' }}>

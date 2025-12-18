@@ -68,7 +68,7 @@ const QualityPanel = ({ qualityStats, loading }) => {
               display: 'flex',
               flexDirection: 'column'
             }}
-            bodyStyle={{ 
+            styles={{ body: { 
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
@@ -76,7 +76,7 @@ const QualityPanel = ({ qualityStats, loading }) => {
               alignItems: 'center',
               minHeight: '160px',
               padding: '16px'
-            }}
+            } }}
           >
             <Progress
               type="circle"
@@ -101,7 +101,7 @@ const QualityPanel = ({ qualityStats, loading }) => {
               display: 'flex',
               flexDirection: 'column'
             }}
-            bodyStyle={{ 
+            styles={{ body: { 
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
@@ -109,7 +109,7 @@ const QualityPanel = ({ qualityStats, loading }) => {
               alignItems: 'center',
               minHeight: '160px',
               padding: '16px'
-            }}
+            } }}
           >
             <Progress
               type="circle"
@@ -134,7 +134,7 @@ const QualityPanel = ({ qualityStats, loading }) => {
               display: 'flex',
               flexDirection: 'column'
             }}
-            bodyStyle={{ 
+            styles={{ body: { 
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
@@ -142,7 +142,7 @@ const QualityPanel = ({ qualityStats, loading }) => {
               alignItems: 'center',
               minHeight: '160px',
               padding: '16px'
-            }}
+            } }}
           >
             <Statistic
               title="缺失编码"
@@ -175,7 +175,7 @@ const QualityPanel = ({ qualityStats, loading }) => {
               display: 'flex',
               flexDirection: 'column'
             }}
-            bodyStyle={{ 
+            styles={{ body: { 
               flex: 1,
               display: 'flex',
               flexDirection: 'column',
@@ -183,7 +183,7 @@ const QualityPanel = ({ qualityStats, loading }) => {
               alignItems: 'center',
               minHeight: '160px',
               padding: '16px'
-            }}
+            } }}
           >
             <Statistic
               title="超出范围编码"

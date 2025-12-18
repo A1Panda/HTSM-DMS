@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, Button, Tag, Spin } from 'antd';
+import { Modal, Button, Tag, Spin, message } from 'antd';
 import PropTypes from 'prop-types';
 import Scanner from '../utils/scanner';
 import config from '../config';
@@ -15,6 +15,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
   const [scanResult, setScanResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [ocrLoading, setOcrLoading] = useState(false);
   const scannerRef = useRef(null);
   const scannerInstanceRef = useRef(null);
   const lastScanRef = useRef({ code: '', time: 0 });
@@ -126,6 +127,127 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
     }
   };
 
+  // 使用第三方 OCR 识别铭牌上的数字（当二维码无法识别时）
+  const handleOcrRecognizeDigits = async () => {
+    try {
+      setOcrLoading(true);
+      setError('');
+
+       // 校验 OCR 配置是否已设置
+      if (!config.ocr || !config.ocr.appKey || !config.ocr.uid) {
+        setError('OCR 配置未完成，请先在前端环境变量中配置 REACT_APP_LUCKYCOLA_APPKEY 和 REACT_APP_LUCKYCOLA_UID');
+        setOcrLoading(false);
+        return;
+      }
+
+      // html5-qrcode 在 #scanner 容器内会生成一个 <video> 元素
+      const scannerElement = document.getElementById('scanner');
+      if (!scannerElement) {
+        setError('找不到扫码区域，请关闭后重试');
+        setOcrLoading(false);
+        return;
+      }
+
+      const video = scannerElement.querySelector('video');
+      if (!video) {
+        setError('未检测到摄像头画面，请确认摄像头已启动');
+        setOcrLoading(false);
+        return;
+      }
+
+      // 创建临时 canvas 截图当前画面
+      const canvas = document.createElement('canvas');
+      const srcWidth = video.videoWidth || 640;
+      const srcHeight = video.videoHeight || 480;
+
+      // 为了满足第三方接口“图片不大于 1M”的要求，同时提升数字区域清晰度，
+      // 我们限制截图最大宽度为 800 像素，并按比例缩放高度
+      const maxWidth = 800;
+      const scale = srcWidth > maxWidth ? maxWidth / srcWidth : 1;
+      const width = Math.round(srcWidth * scale);
+      const height = Math.round(srcHeight * scale);
+
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, width, height);
+
+      // 将截图转为 base64（使用 jpeg 格式减小体积，降低超过 1M 的风险）
+      const imgBase64 = canvas.toDataURL('image/jpeg', 0.85);
+
+      // 调用 LuckyCola OCR 接口
+      const response = await fetch(config.ocr.baseUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          appKey: config.ocr.appKey,
+          uid: config.ocr.uid,
+          imgBase64
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || result.code !== 0) {
+        const msg = result.msg || response.statusText || 'OCR 接口调用失败';
+        console.error('OCR 接口返回错误:', result);
+        setError(`数字识别失败：${msg}`);
+        setOcrLoading(false);
+        return;
+      }
+
+      const ocrText = result.data?.content || '';
+
+      // 只保留数字（去掉所有非数字字符，包括 '-'）
+      const digitsOnly = (ocrText || '').replace(/\D/g, '');
+
+      if (!digitsOnly) {
+        message.warning('未能识别出清晰的数字，请靠近一些或调整光线后重试');
+        setOcrLoading(false);
+        return;
+      }
+
+      setScanResult(digitsOnly);
+      message.success('已通过 OCR 识别出数字');
+
+      // 直接回调上层使用这个数字
+      if (onScan) {
+        onScan(digitsOnly);
+      }
+    } catch (err) {
+      console.error('OCR 识别失败:', err);
+      setError('数字识别失败，请调整镜头距离和光线后重试');
+    } finally {
+      setOcrLoading(false);
+    }
+  };
+
+  // 绑定快捷键：F2 触发 OCR 数字识别
+  useEffect(() => {
+    if (!visible) return;
+
+    const handleKeyDown = (e) => {
+      // 避免在输入框聚焦时误触
+      const target = e.target;
+      const isInputLike =
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable;
+
+      if (isInputLike) return;
+
+      if (e.key === 'F2' && !ocrLoading && !loading) {
+        e.preventDefault();
+        handleOcrRecognizeDigits();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [visible, ocrLoading, loading]);
+
   return (
     <Modal
       title="扫描二维码/条形码"
@@ -134,6 +256,13 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       footer={[
         <Button key="close" onClick={handleCancel}>
           关闭
+        </Button>,
+        <Button 
+          key="ocr" 
+          onClick={handleOcrRecognizeDigits} 
+          loading={ocrLoading}
+        >
+          OCR数字识别
         </Button>,
         !continuous && scanResult && (
           <Button key="rescan" onClick={handleRescan}>

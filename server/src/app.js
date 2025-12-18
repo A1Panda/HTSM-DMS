@@ -8,6 +8,8 @@ const fs = require('fs');
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 const fetch = require('node-fetch');
+const axios = require('axios');
+const FormData = require('form-data');
 require('dotenv').config();
 
 // 导入路由
@@ -158,6 +160,86 @@ app.post('/api/ocr/iflytek', async (req, res, next) => {
   } catch (err) {
     console.error('调用讯飞 OCR 失败:', err);
     next(err);
+  }
+});
+
+// 使用第三方 API（2dcode.biz）进行二维码图片识别
+// 前端可以传入单个 imageBase64 或 images 数组（原始帧和反色帧），后端依次尝试识别
+app.post('/api/qr/decode', async (req, res, next) => {
+  try {
+    const { imageBase64, images } = req.body || {};
+    
+    // 支持两种格式：单个图片或图片数组
+    const imageList = images && Array.isArray(images) && images.length > 0 
+      ? images 
+      : imageBase64 
+        ? [imageBase64] 
+        : [];
+
+    if (imageList.length === 0) {
+      return res.status(400).json({ error: '缺少 imageBase64 或 images 参数' });
+    }
+
+    const url = 'https://api.2dcode.biz/v1/read-qr-code';
+    let lastError = null;
+    let lastResult = null;
+
+    // 依次尝试识别每张图片，直到成功或全部失败
+    for (let i = 0; i < imageList.length; i++) {
+      try {
+        const imgBase64 = imageList[i];
+        // 去掉 data:image/png;base64, 之类前缀，只保留纯 base64
+        const base64Data = imgBase64.replace(/^data:image\/\w+;base64,/, '');
+        const buffer = Buffer.from(base64Data, 'base64');
+
+        const form = new FormData();
+        form.append('file', buffer, { filename: `qrcode_${i}.png` });
+
+        const response = await axios.post(url, form, {
+          headers: form.getHeaders()
+        });
+
+        const result = response.data || {};
+        const contents = result.data?.contents || [];
+
+        // 如果识别成功（有内容），立即返回
+        if (contents && contents.length > 0) {
+          return res.json({
+            contents,
+            raw: result,
+            successIndex: i // 标识是哪张图片识别成功的
+          });
+        }
+
+        // 记录最后一次尝试的结果（即使为空）
+        lastResult = result;
+      } catch (err) {
+        // 记录错误，但继续尝试下一张
+        lastError = err;
+        console.warn(`尝试识别第 ${i + 1} 张图片失败:`, err.response?.data || err.message);
+      }
+    }
+
+    // 所有图片都尝试失败
+    if (lastError) {
+      return res.status(500).json({
+        error: '二维码识别失败',
+        detail: lastError.response?.data || lastError.message
+      });
+    }
+
+    // 所有图片都识别了但没有内容
+    res.json({
+      contents: [],
+      raw: lastResult,
+      message: '所有图片均未识别到二维码内容'
+    });
+  } catch (err) {
+    console.error('调用 2dcode.biz QR 解码失败:', err.response?.data || err.message);
+    res.status(500).json({
+      error: '二维码识别失败',
+      detail: err.response?.data || err.message
+    });
   }
 });
 

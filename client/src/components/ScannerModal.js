@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal, Button, Tag, Spin, message } from 'antd';
+import { Modal, Button, Tag, Spin, message, Switch, Space } from 'antd';
 import PropTypes from 'prop-types';
 import Scanner from '../utils/scanner';
 import config from '../config';
@@ -20,6 +20,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
   const [qrSnapshotLoading, setQrSnapshotLoading] = useState(false);
   const [qrPreview, setQrPreview] = useState(null);
   const [qrPreviewInverted, setQrPreviewInverted] = useState(null);
+  const [enableInvertedApi, setEnableInvertedApi] = useState(false); // 控制是否启用反色帧 API 调用
   const scannerRef = useRef(null);
   const scannerInstanceRef = useRef(null);
   const lastScanRef = useRef({ code: '', time: 0 });
@@ -194,14 +195,16 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       }
 
       // 生成原始预览图
+      let originalBase64 = null;
       try {
-        const previewUrl = canvas.toDataURL('image/png');
-        setQrPreview(previewUrl);
+        originalBase64 = canvas.toDataURL('image/png');
+        setQrPreview(originalBase64);
       } catch (err) {
         // 生成预览失败不影响识别，静默忽略
       }
 
-      // 生成反色预览图：对像素做一次真正的反色处理（仅用于 UI 预览，不参与识别）
+      // 生成反色预览图：对像素做一次真正的反色处理（用于 UI 预览和第三方 API 识别）
+      let invertedBase64 = null;
       try {
         const invertedData = new Uint8ClampedArray(imageData.data);
         for (let i = 0; i < invertedData.length; i += 4) {
@@ -215,8 +218,8 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
         invertCanvas.height = height;
         const invertCtx = invertCanvas.getContext('2d');
         invertCtx.putImageData(invertedImageData, 0, 0);
-        const invertedUrl = invertCanvas.toDataURL('image/png');
-        setQrPreviewInverted(invertedUrl);
+        invertedBase64 = invertCanvas.toDataURL('image/png');
+        setQrPreviewInverted(invertedBase64);
       } catch (err) {
         // 生成预览失败不影响识别，静默忽略
       }
@@ -227,7 +230,101 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
         inversionAttempts: 'attemptBoth'
       });
 
+      // 如果 jsQR 识别失败，尝试使用后端第三方 API（先尝试原始帧，失败后再尝试反色帧）
       if (!result || !result.data) {
+        // 先尝试原始帧
+        if (originalBase64) {
+          try {
+            const response = await fetch(config.qrDecode.proxyUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                imageBase64: originalBase64
+              })
+            });
+
+            const apiResult = await response.json();
+            const contents = apiResult.contents || [];
+
+            if (contents && contents.length > 0) {
+              // 取第一个识别到的内容
+              const decoded = String(contents[0]).trim();
+              const cleanedDecoded = decoded.replace(/\D/g, '');
+              
+              if (cleanedDecoded) {
+                // 与连续扫描逻辑保持一致：对同一编码做节流
+                const now = Date.now();
+                if (
+                  lastScanRef.current.code === cleanedDecoded &&
+                  now - lastScanRef.current.time < 1500
+                ) {
+                  setQrSnapshotLoading(false);
+                  return;
+                }
+                lastScanRef.current = { code: cleanedDecoded, time: now };
+
+                setScanResult(cleanedDecoded);
+                if (onScan) {
+                  onScan(cleanedDecoded);
+                }
+                setQrSnapshotLoading(false);
+                return;
+              }
+            }
+
+            // 原始帧识别失败，尝试反色帧（仅在开关启用时）
+            if (invertedBase64 && enableInvertedApi) {
+              try {
+                const invertedResponse = await fetch(config.qrDecode.proxyUrl, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    imageBase64: invertedBase64
+                  })
+                });
+
+                const invertedResult = await invertedResponse.json();
+                const invertedContents = invertedResult.contents || [];
+
+                if (invertedContents && invertedContents.length > 0) {
+                  const decoded = String(invertedContents[0]).trim();
+                  const cleanedDecoded = decoded.replace(/\D/g, '');
+                  
+                  if (cleanedDecoded) {
+                    // 与连续扫描逻辑保持一致：对同一编码做节流
+                    const now = Date.now();
+                    if (
+                      lastScanRef.current.code === cleanedDecoded &&
+                      now - lastScanRef.current.time < 1500
+                    ) {
+                      setQrSnapshotLoading(false);
+                      return;
+                    }
+                    lastScanRef.current = { code: cleanedDecoded, time: now };
+
+                    setScanResult(cleanedDecoded);
+                    if (onScan) {
+                      onScan(cleanedDecoded);
+                    }
+                    setQrSnapshotLoading(false);
+                    return;
+                  }
+                }
+              } catch (invertedErr) {
+                // 反色帧 API 调用失败，静默失败
+                console.warn('[QR-SNAPSHOT] 反色帧第三方 API 识别失败:', invertedErr);
+              }
+            }
+          } catch (apiErr) {
+            // 原始帧 API 调用失败，静默失败，不影响正常流程
+            console.warn('[QR-SNAPSHOT] 原始帧第三方 API 识别失败:', apiErr);
+          }
+        }
+        
         setQrSnapshotLoading(false);
         return;
       }
@@ -405,7 +502,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       if (!qrSnapshotLoading && !loading) {
         handleQrSnapshotRecognize();
       }
-    }, 500);
+    }, 1000);
 
     return () => clearInterval(intervalId);
   }, [visible, qrSnapshotLoading, loading]);
@@ -415,33 +512,43 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       title="扫描二维码/条形码"
       open={visible}
       onCancel={handleCancel}
-      footer={[
-        <Button key="close" onClick={handleCancel}>
-          关闭
-        </Button>,
-        <Button 
-          key="ocr" 
-          onClick={handleOcrRecognizeDigits} 
-          loading={ocrLoading}
-        >
-          OCR数字识别
-        </Button>,
-        !continuous && scanResult && (
-          <Button key="rescan" onClick={handleRescan}>
-            重新扫描
-          </Button>
-        ),
-        !continuous && (
-          <Button 
-            key="use" 
-            type="primary" 
-            disabled={!scanResult} 
-            onClick={handleUseScanResult}
-          >
-            使用扫描结果
-          </Button>
-        )
-      ].filter(Boolean)}
+      footer={
+        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+          <Space>
+            <span style={{ fontSize: 12, color: '#666' }}>启用反色帧识别:</span>
+            <Switch 
+              checked={enableInvertedApi}
+              onChange={setEnableInvertedApi}
+              size="small"
+            />
+          </Space>
+          <Space>
+            <Button onClick={handleCancel}>
+              关闭
+            </Button>
+            <Button 
+              onClick={handleOcrRecognizeDigits} 
+              loading={ocrLoading}
+            >
+              OCR数字识别
+            </Button>
+            {!continuous && scanResult && (
+              <Button onClick={handleRescan}>
+                重新扫描
+              </Button>
+            )}
+            {!continuous && (
+              <Button 
+                type="primary" 
+                disabled={!scanResult} 
+                onClick={handleUseScanResult}
+              >
+                使用扫描结果
+              </Button>
+            )}
+          </Space>
+        </Space>
+      }
       width={600}
     >
       <div style={{ textAlign: 'center' }}>

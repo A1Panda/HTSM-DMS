@@ -35,8 +35,8 @@ const config = {
     // 优先使用后置摄像头和较高清分辨率，提升金属二维码识别率
     videoConstraints: {
       facingMode: { ideal: 'environment' },
-      width: { ideal: 1920 },
-      height: { ideal: 1080 }
+      width: { ideal: 1280 },
+      height: { ideal: 720 }
     },
     // 如果浏览器支持 BarcodeDetector，则启用以提高识别成功率
     experimentalFeatures: {
@@ -51,6 +51,14 @@ const config = {
     proxyUrl: process.env.REACT_APP_BACKEND_TARGET
       ? `${process.env.REACT_APP_BACKEND_TARGET}/api/ocr/iflytek`
       : 'http://localhost:5000/api/ocr/iflytek'
+  },
+  
+  // 二维码识别配置（后端代理到第三方服务 2dcode.biz）
+  qrDecode: {
+    // 直接调用本项目后端的二维码识别接口
+    proxyUrl: process.env.REACT_APP_BACKEND_TARGET
+      ? `${process.env.REACT_APP_BACKEND_TARGET}/api/qr/decode`
+      : 'http://localhost:5000/api/qr/decode'
   },
   
   // 公司信息

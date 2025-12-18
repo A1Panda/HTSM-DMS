@@ -133,13 +133,6 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       setOcrLoading(true);
       setError('');
 
-       // 校验 OCR 配置是否已设置
-      if (!config.ocr || !config.ocr.appKey || !config.ocr.uid) {
-        setError('OCR 配置未完成，请先在前端环境变量中配置 REACT_APP_LUCKYCOLA_APPKEY 和 REACT_APP_LUCKYCOLA_UID');
-        setOcrLoading(false);
-        return;
-      }
-
       // html5-qrcode 在 #scanner 容器内会生成一个 <video> 元素
       const scannerElement = document.getElementById('scanner');
       if (!scannerElement) {
@@ -175,30 +168,37 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       // 将截图转为 base64（使用 jpeg 格式减小体积，降低超过 1M 的风险）
       const imgBase64 = canvas.toDataURL('image/jpeg', 0.85);
 
-      // 调用 LuckyCola OCR 接口
-      const response = await fetch(config.ocr.baseUrl, {
+      // 调用后端 OCR 代理接口（由服务器转发到讯飞）
+      const response = await fetch(config.ocr.proxyUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          appKey: config.ocr.appKey,
-          uid: config.ocr.uid,
-          imgBase64
+          imageBase64: imgBase64
         })
       });
 
-      const result = await response.json();
+      const text = await response.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (parseErr) {
+        console.error('OCR 接口返回的不是 JSON，原始内容为:', text);
+        setError('数字识别失败：服务器返回了非 JSON 内容，请检查后端 /api/ocr/iflytek 是否正常运行');
+        setOcrLoading(false);
+        return;
+      }
 
-      if (!response.ok || result.code !== 0) {
-        const msg = result.msg || response.statusText || 'OCR 接口调用失败';
+      if (!response.ok || result.error) {
+        const msg = result.error || response.statusText || 'OCR 接口调用失败';
         console.error('OCR 接口返回错误:', result);
         setError(`数字识别失败：${msg}`);
         setOcrLoading(false);
         return;
       }
 
-      const ocrText = result.data?.content || '';
+      const ocrText = result.content || '';
 
       // 只保留数字（去掉所有非数字字符，包括 '-'）
       const digitsOnly = (ocrText || '').replace(/\D/g, '');

@@ -44,13 +44,13 @@ const config = {
     }
   },
   
-  // OCR 配置（LuckyCola 第三方服务）
+  // OCR 配置（后端代理到第三方服务，例如讯飞）
   ocr: {
-    // 建议通过环境变量配置，避免把密钥写死在代码里
-    appKey: process.env.REACT_APP_LUCKYCOLA_APPKEY || '',
-    uid: process.env.REACT_APP_LUCKYCOLA_UID || '',
-    // LuckyCola OCR 接口地址
-    baseUrl: 'https://luckycola.com.cn/openOcr/baseOCR'
+    // 直接调用本项目后端的 OCR 接口
+    // 注意：端口需要与 server/.env 中的 PORT 保持一致
+    proxyUrl: process.env.REACT_APP_BACKEND_TARGET
+      ? `${process.env.REACT_APP_BACKEND_TARGET}/api/ocr/iflytek`
+      : 'http://localhost:5000/api/ocr/iflytek'
   },
   
   // 公司信息

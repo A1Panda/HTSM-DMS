@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Spin, Alert, Typography, Divider } from 'antd';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Row, Col, Card, Spin, Alert, Typography, Divider, Button, Empty } from 'antd';
 import { 
   AppstoreOutlined, 
   BarcodeOutlined, 
-  ClockCircleOutlined 
+  ClockCircleOutlined,
+  ReloadOutlined
 } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { Line, Pie } from 'react-chartjs-2';
@@ -23,7 +24,7 @@ import StatCard from '../components/StatCard';
 import QualityPanel from '../components/QualityPanel';
 import ActivityStream from '../components/ActivityStream';
 
-// 注册Chart.js组件
+// 注册Chart.js组件（移到组件外部避免重复注册）
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -37,6 +38,25 @@ ChartJS.register(
 
 const { Title: TitleText } = Typography;
 
+// 图表颜色配置常量
+const CHART_COLORS = {
+  pie: [
+    'rgba(255, 99, 132, 0.6)',
+    'rgba(54, 162, 235, 0.6)',
+    'rgba(255, 206, 86, 0.6)',
+    'rgba(75, 192, 192, 0.6)',
+    'rgba(153, 102, 255, 0.6)',
+    'rgba(255, 159, 64, 0.6)',
+  ],
+  line: {
+    product: { border: 'rgb(255, 99, 132)', background: 'rgba(255, 99, 132, 0.5)' },
+    code: { border: 'rgb(53, 162, 235)', background: 'rgba(53, 162, 235, 0.5)' },
+  },
+};
+
+// 刷新间隔（毫秒）
+const REFRESH_INTERVAL = 60000;
+
 const Dashboard = () => {
   const [stats, setStats] = useState({
     totalProducts: 0,
@@ -45,6 +65,7 @@ const Dashboard = () => {
   });
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [categoryData, setCategoryData] = useState({
     labels: [],
@@ -59,36 +80,8 @@ const Dashboard = () => {
   const [qualityLoading, setQualityLoading] = useState(true);
   const [activityLoading, setActivityLoading] = useState(true);
 
-  // 加载统计数据
-  const fetchStats = async () => {
-    try {
-      setLoading(true);
-      const response = await statsAPI.getStats();
-      setStats(response.data);
-      setError(null);
-    } catch (err) {
-      console.error('获取统计数据失败:', err);
-      setError('获取统计数据失败，请稍后再试');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 加载产品数据
-  const fetchProducts = async () => {
-    try {
-      const response = await productAPI.getAllProducts();
-      setProducts(response.data);
-      
-      // 处理分类数据
-      processProductCategories(response.data);
-    } catch (err) {
-      console.error('获取产品数据失败:', err);
-    }
-  };
-
-  // 处理产品分类数据
-  const processProductCategories = (productsData) => {
+  // 处理产品分类数据（使用useCallback优化）
+  const processProductCategories = useCallback((productsData) => {
     // 按分类统计产品数量
     const categories = {};
     productsData.forEach(product => {
@@ -106,22 +99,42 @@ const Dashboard = () => {
         {
           label: '产品数量',
           data,
-          backgroundColor: [
-            'rgba(255, 99, 132, 0.6)',
-            'rgba(54, 162, 235, 0.6)',
-            'rgba(255, 206, 86, 0.6)',
-            'rgba(75, 192, 192, 0.6)',
-            'rgba(153, 102, 255, 0.6)',
-            'rgba(255, 159, 64, 0.6)',
-          ],
+          backgroundColor: CHART_COLORS.pie,
           borderWidth: 1,
         },
       ],
     });
-  };
+  }, []);
+
+  // 加载统计数据
+  const fetchStats = useCallback(async () => {
+    try {
+      const response = await statsAPI.getStats();
+      setStats(response.data);
+      setError(null);
+      return response.data;
+    } catch (err) {
+      console.error('获取统计数据失败:', err);
+      setError('获取统计数据失败，请稍后再试');
+      throw err;
+    }
+  }, []);
+
+  // 加载产品数据
+  const fetchProducts = useCallback(async () => {
+    try {
+      const response = await productAPI.getAllProducts();
+      setProducts(response.data);
+      processProductCategories(response.data);
+      return response.data;
+    } catch (err) {
+      console.error('获取产品数据失败:', err);
+      throw err;
+    }
+  }, [processProductCategories]);
 
   // 加载活动数据
-  const fetchActivityData = async () => {
+  const fetchActivityData = useCallback(async () => {
     try {
       const response = await statsAPI.getActivityData();
       const activityData = response.data;
@@ -140,46 +153,46 @@ const Dashboard = () => {
           {
             label: '新增产品',
             data: productCounts,
-            borderColor: 'rgb(255, 99, 132)',
-            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            borderColor: CHART_COLORS.line.product.border,
+            backgroundColor: CHART_COLORS.line.product.background,
             tension: 0.1,
           },
           {
             label: '新增编码',
             data: codeCounts,
-            borderColor: 'rgb(53, 162, 235)',
-            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+            borderColor: CHART_COLORS.line.code.border,
+            backgroundColor: CHART_COLORS.line.code.background,
             tension: 0.1,
           },
         ],
       });
     } catch (err) {
       console.error('获取活动数据失败:', err);
-      // 如果API失败，显示空数据而不是随机数据
+      // 如果API失败，显示空数据
       setActivityData({
         labels: [],
         datasets: [
           {
             label: '新增产品',
             data: [],
-            borderColor: 'rgb(255, 99, 132)',
-            backgroundColor: 'rgba(255, 99, 132, 0.5)',
+            borderColor: CHART_COLORS.line.product.border,
+            backgroundColor: CHART_COLORS.line.product.background,
             tension: 0.1,
           },
           {
             label: '新增编码',
             data: [],
-            borderColor: 'rgb(53, 162, 235)',
-            backgroundColor: 'rgba(53, 162, 235, 0.5)',
+            borderColor: CHART_COLORS.line.code.border,
+            backgroundColor: CHART_COLORS.line.code.background,
             tension: 0.1,
           },
         ],
       });
     }
-  };
+  }, []);
 
   // 获取数据质量统计
-  const fetchQualityStats = async () => {
+  const fetchQualityStats = useCallback(async () => {
     try {
       setQualityLoading(true);
       const response = await statsAPI.getQualityStats();
@@ -189,10 +202,10 @@ const Dashboard = () => {
     } finally {
       setQualityLoading(false);
     }
-  };
+  }, []);
 
   // 获取最近活动流
-  const fetchRecentActivity = async () => {
+  const fetchRecentActivity = useCallback(async () => {
     try {
       setActivityLoading(true);
       const response = await statsAPI.getRecentActivity();
@@ -202,46 +215,148 @@ const Dashboard = () => {
     } finally {
       setActivityLoading(false);
     }
-  };
-
-  // 初始加载
-  useEffect(() => {
-    fetchStats();
-    fetchProducts();
-    fetchActivityData();
-    fetchQualityStats();
-    fetchRecentActivity();
-    
-    // 每60秒刷新一次数据
-    const interval = setInterval(() => {
-      fetchStats();
-      fetchQualityStats();
-      fetchRecentActivity();
-    }, 60000);
-    
-    return () => clearInterval(interval);
   }, []);
 
+  // 并行加载所有数据（性能优化）
+  const loadAllData = useCallback(async (isInitial = false) => {
+    try {
+      if (isInitial) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
+      setError(null);
+
+      // 并行获取所有数据
+      await Promise.allSettled([
+        fetchStats(),
+        fetchProducts(),
+        fetchActivityData(),
+        fetchQualityStats(),
+        fetchRecentActivity(),
+      ]);
+    } catch (err) {
+      console.error('加载数据失败:', err);
+      if (!error) {
+        setError('部分数据加载失败，请稍后刷新');
+      }
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [fetchStats, fetchProducts, fetchActivityData, fetchQualityStats, fetchRecentActivity, error]);
+
+  // 手动刷新
+  const handleRefresh = useCallback(() => {
+    loadAllData(false);
+  }, [loadAllData]);
+
+  // 初始加载和定时刷新
+  useEffect(() => {
+    loadAllData(true);
+    
+    // 定时刷新关键数据（不刷新全部，避免影响性能）
+    const interval = setInterval(() => {
+      Promise.allSettled([
+        fetchStats(),
+        fetchQualityStats(),
+        fetchRecentActivity(),
+      ]);
+    }, REFRESH_INTERVAL);
+    
+    return () => clearInterval(interval);
+  }, [loadAllData, fetchStats, fetchQualityStats, fetchRecentActivity]);
+
+  // 使用useMemo优化图表配置
+  const pieChartOptions = useMemo(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const label = context.label || '';
+            const value = context.parsed || 0;
+            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+            const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+            return `${label}: ${value} (${percentage}%)`;
+          },
+        },
+      },
+    },
+  }), []);
+
+  const lineChartOptions = useMemo(() => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          precision: 0,
+        },
+        grid: {
+          color: 'rgba(0, 0, 0, 0.05)',
+        },
+      },
+      x: {
+        grid: {
+          display: false,
+        },
+      },
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index',
+    },
+  }), []);
+
+  // 初始加载状态
   if (loading && !stats.totalProducts) {
     return (
-      <div style={{ textAlign: 'center', padding: '50px' }}>
+      <div style={{ textAlign: 'center', padding: '80px 20px' }}>
         <Spin size="large" />
-        <p>加载统计数据...</p>
+        <p style={{ marginTop: 16, color: '#666' }}>正在加载仪表盘数据...</p>
       </div>
     );
   }
 
   return (
-    <div>
-      <TitleText level={2}>系统概览</TitleText>
+    <div className="dashboard-container">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+        <TitleText level={2} style={{ margin: 0 }}>系统概览</TitleText>
+        <Button
+          icon={<ReloadOutlined />}
+          onClick={handleRefresh}
+          loading={refreshing}
+          type="default"
+        >
+          刷新数据
+        </Button>
+      </div>
       
       {error && (
         <Alert
-          message="错误"
+          message="数据加载错误"
           description={error}
           type="error"
           showIcon
-          style={{ marginBottom: 16 }}
+          closable
+          onClose={() => setError(null)}
+          style={{ marginBottom: 24 }}
+          action={
+            <Button size="small" onClick={handleRefresh}>
+              重试
+            </Button>
+          }
         />
       )}
       
@@ -274,53 +389,60 @@ const Dashboard = () => {
       
       <Divider />
       
-      <Row gutter={16} style={{ marginTop: 24 }}>
+      <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         <Col xs={24} md={12}>
-          <Card title="产品分类分布" className="dashboard-card">
+          <Card 
+            title="产品分类分布" 
+            className="dashboard-card"
+            extra={categoryData.labels.length > 0 && (
+              <span style={{ fontSize: 12, color: '#999' }}>
+                共 {categoryData.labels.length} 个分类
+              </span>
+            )}
+          >
             {categoryData.labels.length > 0 ? (
-              <Pie data={categoryData} options={{ responsive: true, maintainAspectRatio: false }} height={300} />
-            ) : (
-              <div style={{ textAlign: 'center', padding: '40px 0' }}>
-                <p>暂无产品数据</p>
+              <div style={{ height: 300, position: 'relative' }}>
+                <Pie data={categoryData} options={pieChartOptions} />
               </div>
+            ) : (
+              <Empty 
+                description="暂无产品数据" 
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                style={{ padding: '40px 0' }}
+              />
             )}
           </Card>
         </Col>
         <Col xs={24} md={12}>
           <Card title="最近7天活动" className="dashboard-card">
-            <Line 
-              data={activityData} 
-              options={{ 
-                responsive: true, 
-                maintainAspectRatio: false,
-                scales: {
-                  y: {
-                    beginAtZero: true,
-                    ticks: {
-                      precision: 0
-                    }
-                  }
-                }
-              }} 
-              height={300} 
-            />
+            {activityData.labels.length > 0 ? (
+              <div style={{ height: 300, position: 'relative' }}>
+                <Line data={activityData} options={lineChartOptions} />
+              </div>
+            ) : (
+              <Empty 
+                description="暂无活动数据" 
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                style={{ padding: '40px 0' }}
+              />
+            )}
           </Card>
         </Col>
       </Row>
       
-      <Divider />
+      <Divider style={{ margin: '32px 0' }} />
       
       {/* 数据质量监控面板 */}
-      <Row gutter={16} style={{ marginTop: 24 }}>
+      <Row gutter={[16, 16]}>
         <Col xs={24}>
           <QualityPanel qualityStats={qualityStats} loading={qualityLoading} />
         </Col>
       </Row>
 
-      <Divider />
+      <Divider style={{ margin: '32px 0' }} />
 
       {/* 实时活动流 */}
-      <Row gutter={16} style={{ marginTop: 24 }}>
+      <Row gutter={[16, 16]}>
         <Col xs={24}>
           <Card title="实时活动流" className="dashboard-card">
             <ActivityStream activityData={recentActivity} loading={activityLoading} />
@@ -328,24 +450,54 @@ const Dashboard = () => {
         </Col>
       </Row>
       
-      <Row gutter={16} style={{ marginTop: 16 }}>
+      <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         <Col xs={24} sm={12}>
           <Card
             title="产品管理"
-            extra={<Link to="/products">查看全部</Link>}
+            extra={<Link to="/products">查看全部 →</Link>}
             className="dashboard-card"
+            hoverable
           >
-            <p>管理所有产品，添加新产品，查看产品详情。</p>
-            <p>当前共有 <strong>{stats.totalProducts}</strong> 个产品，<strong>{stats.totalCodes}</strong> 个编码。</p>
+            <p style={{ color: '#666', marginBottom: 12 }}>
+              管理所有产品，添加新产品，查看产品详情。
+            </p>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+              <div>
+                <span style={{ color: '#999', fontSize: 12 }}>产品总数</span>
+                <div style={{ fontSize: 24, fontWeight: 'bold', color: '#3f8600' }}>
+                  {stats.totalProducts}
+                </div>
+              </div>
+              <div>
+                <span style={{ color: '#999', fontSize: 12 }}>编码总数</span>
+                <div style={{ fontSize: 24, fontWeight: 'bold', color: '#1890ff' }}>
+                  {stats.totalCodes}
+                </div>
+              </div>
+            </div>
           </Card>
         </Col>
         <Col xs={24} sm={12}>
           <Card
             title="系统信息"
             className="dashboard-card"
+            hoverable
           >
-            <p>产品编码管理系统 v1.0.0</p>
-            <p>最后更新: {new Date().toLocaleDateString()}</p>
+            <div style={{ lineHeight: 1.8 }}>
+              <p style={{ marginBottom: 8 }}>
+                <strong>产品编码管理系统</strong>
+              </p>
+              <p style={{ color: '#666', fontSize: 13, marginBottom: 4 }}>
+                版本: v1.0.0
+              </p>
+              <p style={{ color: '#666', fontSize: 13 }}>
+                最后更新: {new Date().toLocaleDateString('zh-CN', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </p>
+            </div>
           </Card>
         </Col>
       </Row>

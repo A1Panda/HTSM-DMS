@@ -20,6 +20,57 @@
               0 3px 6px 0 rgba(0, 0, 0, 0.12),
               0 5px 12px 4px rgba(0, 0, 0, 0.09);
   margin-bottom: 24px;
+  transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* 仪表盘容器样式 */
+.dashboard-container {
+  width: 100%;
+}
+
+.dashboard-container .ant-typography {
+  margin-bottom: 0;
+}
+
+/* 产品列表容器样式 */
+.product-list-container {
+  width: 100%;
+}
+
+/* 响应式优化 */
+@media (max-width: 768px) {
+  .dashboard-card {
+    margin-bottom: 16px;
+  }
+  
+  .dashboard-container .ant-row {
+    margin-left: -8px !important;
+    margin-right: -8px !important;
+  }
+  
+  .dashboard-container .ant-col {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .product-list-container .ant-card {
+    margin-bottom: 16px;
+  }
+
+  .product-list-container .ant-space {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .product-list-container .ant-input-search {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }
 
 .product-card {
@@ -116,21 +167,50 @@
 }
 
 /* 数据质量面板样式 */
+.quality-panel .ant-row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.quality-panel .ant-row > .ant-col {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 16px;
+}
+
+.quality-panel .ant-row > .ant-col > .ant-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 .quality-panel .ant-progress-circle {
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 .quality-panel .ant-statistic-title {
-  font-size: 12px;
+  font-size: 13px;
   color: #666;
+  margin-bottom: 8px;
 }
 
 .quality-panel .ant-statistic-content {
-  font-size: 16px;
+  font-size: 28px;
   font-weight: bold;
+  line-height: 1.2;
+}
+
+/* 确保质量面板中的卡片高度一致 */
+.quality-panel .ant-card-body {
+  display: flex;
+  flex-direction: column;
 }
 
 /* 活动流样式 */
+.activity-stream {
+  height: 100%;
+}
+
 .activity-stream .ant-list-item {
   padding: 8px 0;
   border-bottom: 1px solid #f0f0f0;
@@ -152,6 +232,23 @@
 .activity-stream .ant-list-item-meta-description {
   font-size: 12px;
   color: #999;
+}
+
+/* 确保Row中的Col高度一致 */
+.dashboard-container .ant-row {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.dashboard-container .ant-row > .ant-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-container .ant-row > .ant-col > .ant-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 响应式优化 */

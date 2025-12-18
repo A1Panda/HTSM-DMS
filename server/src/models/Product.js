@@ -99,6 +99,37 @@ if (process.env.MONGODB_URI) {
       return newProduct;
     },
     
+    // 更新产品
+    findByIdAndUpdate: async (id, updateData, options = {}) => {
+      const productsFile = path.join(DATA_DIR, 'products.json');
+      if (!fs.existsSync(productsFile)) {
+        return null;
+      }
+      
+      const data = fs.readFileSync(productsFile, 'utf8');
+      let products = JSON.parse(data);
+      
+      const productIndex = products.findIndex(p => p.id === id);
+      if (productIndex === -1) {
+        return null;
+      }
+      
+      // 更新产品数据
+      const updatedProduct = {
+        ...products[productIndex],
+        ...updateData,
+        // 保留原有的 id 和 createdAt
+        id: products[productIndex].id,
+        createdAt: products[productIndex].createdAt
+      };
+      
+      products[productIndex] = updatedProduct;
+      fs.writeFileSync(productsFile, JSON.stringify(products, null, 2));
+      
+      // 如果 options.new 为 true，返回更新后的产品，否则返回更新前的产品
+      return options.new ? updatedProduct : products[productIndex];
+    },
+    
     // 删除产品
     findByIdAndDelete: async (id) => {
       const productsFile = path.join(DATA_DIR, 'products.json');

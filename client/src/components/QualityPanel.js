@@ -60,7 +60,24 @@ const QualityPanel = ({ qualityStats, loading }) => {
       <Row gutter={16}>
         {/* 质量评分 */}
         <Col xs={24} sm={12} md={6}>
-          <Card size="small" style={{ textAlign: 'center', marginBottom: 16 }}>
+          <Card 
+            size="small" 
+            style={{ 
+              textAlign: 'center', 
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+            bodyStyle={{ 
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '160px',
+              padding: '16px'
+            }}
+          >
             <Progress
               type="circle"
               percent={qualityScore}
@@ -68,7 +85,7 @@ const QualityPanel = ({ qualityStats, loading }) => {
               format={percent => `${percent}分`}
               size={80}
             />
-            <p style={{ marginTop: 8, marginBottom: 0, fontWeight: 'bold' }}>
+            <p style={{ marginTop: 12, marginBottom: 0, fontWeight: 'bold', fontSize: '14px' }}>
               数据质量评分
             </p>
           </Card>
@@ -76,7 +93,24 @@ const QualityPanel = ({ qualityStats, loading }) => {
 
         {/* 编码完整度 */}
         <Col xs={24} sm={12} md={6}>
-          <Card size="small" style={{ textAlign: 'center', marginBottom: 16 }}>
+          <Card 
+            size="small" 
+            style={{ 
+              textAlign: 'center', 
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+            bodyStyle={{ 
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '160px',
+              padding: '16px'
+            }}
+          >
             <Progress
               type="circle"
               percent={avgCompleteness}
@@ -84,7 +118,7 @@ const QualityPanel = ({ qualityStats, loading }) => {
               format={percent => `${percent}%`}
               size={80}
             />
-            <p style={{ marginTop: 8, marginBottom: 0, fontWeight: 'bold' }}>
+            <p style={{ marginTop: 12, marginBottom: 0, fontWeight: 'bold', fontSize: '14px' }}>
               平均完整度
             </p>
           </Card>
@@ -92,36 +126,84 @@ const QualityPanel = ({ qualityStats, loading }) => {
 
         {/* 缺失编码统计 */}
         <Col xs={24} sm={12} md={6}>
-          <div style={{ textAlign: 'center' }}>
+          <Card 
+            size="small" 
+            style={{ 
+              textAlign: 'center', 
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+            bodyStyle={{ 
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '160px',
+              padding: '16px'
+            }}
+          >
             <Statistic
               title="缺失编码"
               value={totalMissingCodes}
-              valueStyle={{ color: totalMissingCodes > 0 ? '#f5222d' : '#52c41a' }}
+              valueStyle={{ 
+                color: totalMissingCodes > 0 ? '#f5222d' : '#52c41a',
+                fontSize: '28px'
+              }}
               prefix={totalMissingCodes > 0 ? <ExclamationCircleOutlined /> : <CheckCircleOutlined />}
             />
             <Tooltip title={`${productsWithMissing} 个产品存在缺失编码`}>
-              <Tag color={productsWithMissing > 0 ? 'red' : 'green'} size="small">
+              <Tag 
+                color={productsWithMissing > 0 ? 'red' : 'green'} 
+                size="small"
+                style={{ marginTop: 8 }}
+              >
                 {productsWithMissing}/{validProducts} 产品
               </Tag>
             </Tooltip>
-          </div>
+          </Card>
         </Col>
 
         {/* 超出范围编码统计 */}
         <Col xs={24} sm={12} md={6}>
-          <div style={{ textAlign: 'center' }}>
+          <Card 
+            size="small" 
+            style={{ 
+              textAlign: 'center', 
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+            bodyStyle={{ 
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: '160px',
+              padding: '16px'
+            }}
+          >
             <Statistic
               title="超出范围编码"
               value={totalExcessCodes}
-              valueStyle={{ color: totalExcessCodes > 0 ? '#fa8c16' : '#52c41a' }}
+              valueStyle={{ 
+                color: totalExcessCodes > 0 ? '#fa8c16' : '#52c41a',
+                fontSize: '28px'
+              }}
               prefix={totalExcessCodes > 0 ? <WarningOutlined /> : <CheckCircleOutlined />}
             />
             <Tooltip title={`占总编码数的 ${excessCodeRatio}%`}>
-              <Tag color={totalExcessCodes > 0 ? 'orange' : 'green'} size="small">
+              <Tag 
+                color={totalExcessCodes > 0 ? 'orange' : 'green'} 
+                size="small"
+                style={{ marginTop: 8 }}
+              >
                 {productsWithExcess}/{totalProducts} 产品
               </Tag>
             </Tooltip>
-          </div>
+          </Card>
         </Col>
       </Row>
 

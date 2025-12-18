@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Card, Tag, Progress, Tooltip, Checkbox } from 'antd';
 import { Link } from 'react-router-dom';
 import { EyeOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
@@ -18,7 +18,7 @@ const { Meta } = Card;
  * @param {boolean} props.selected 是否被选中
  * @param {Function} props.onSelect 选择回调
  */
-const ProductCard = ({ 
+const ProductCard = memo(({ 
   product, 
   codeCount = 0, 
   onDelete, 
@@ -196,7 +196,9 @@ const ProductCard = ({
       </div>
     </Card>
   );
-};
+});
+
+ProductCard.displayName = 'ProductCard';
 
 ProductCard.propTypes = {
   product: PropTypes.object.isRequired,

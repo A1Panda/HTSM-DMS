@@ -154,12 +154,18 @@ const ActivityStream = ({ activityData, loading }) => {
       <Row gutter={16}>
         {/* 最近活动列表 */}
         <Col xs={24} md={12}>
-          <Card title="最近操作记录" size="small" className="activity-stream">
+          <Card 
+            title="最近操作记录" 
+            size="small" 
+            className="activity-stream"
+            style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+            bodyStyle={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '300px' }}
+          >
             {recentActivities.length > 0 ? (
               <List
                 size="small"
                 dataSource={recentActivities}
-                style={{ maxHeight: '300px', overflowY: 'auto' }}
+                style={{ flex: 1, maxHeight: '300px', overflowY: 'auto', minHeight: '300px' }}
                 renderItem={(item) => (
                   <List.Item>
                     <List.Item.Meta
@@ -206,28 +212,35 @@ const ActivityStream = ({ activityData, loading }) => {
                 )}
               />
             ) : (
-              <Empty 
-                description="暂无最近活动" 
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                style={{ margin: '20px 0' }}
-              />
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+                <Empty 
+                  description="暂无最近活动" 
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                />
+              </div>
             )}
           </Card>
         </Col>
 
         {/* 今日操作时间线 */}
         <Col xs={24} md={12}>
-          <Card title="今日操作时间分布" size="small">
+          <Card 
+            title="今日操作时间分布" 
+            size="small"
+            style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+            bodyStyle={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: '300px' }}
+          >
             {todayStats.totalToday > 0 ? (
-              <div style={{ height: '300px' }}>
+              <div style={{ flex: 1, height: '300px', minHeight: '300px' }}>
                 <Line data={timelineChartData} options={timelineChartOptions} />
               </div>
             ) : (
-              <Empty 
-                description="今日暂无操作记录" 
-                image={Empty.PRESENTED_IMAGE_SIMPLE}
-                style={{ margin: '60px 0' }}
-              />
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '300px' }}>
+                <Empty 
+                  description="今日暂无操作记录" 
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
+                />
+              </div>
             )}
           </Card>
         </Col>

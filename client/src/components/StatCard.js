@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Card, Statistic } from 'antd';
 import PropTypes from 'prop-types';
 
@@ -13,7 +13,7 @@ import PropTypes from 'prop-types';
  * @param {string} props.prefix 前缀
  * @param {Object} props.style 自定义样式
  */
-const StatCard = ({ 
+const StatCard = memo(({ 
   title, 
   value, 
   icon, 
@@ -23,17 +23,19 @@ const StatCard = ({
   style = {} 
 }) => {
   return (
-    <Card className="dashboard-card" style={style}>
+    <Card className="dashboard-card" style={style} hoverable>
       <Statistic
         title={title}
         value={value}
-        valueStyle={{ color }}
+        valueStyle={{ color, fontSize: 28 }}
         prefix={prefix || icon}
         suffix={suffix}
       />
     </Card>
   );
-};
+});
+
+StatCard.displayName = 'StatCard';
 
 StatCard.propTypes = {
   title: PropTypes.string.isRequired,

@@ -245,6 +245,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       }
 
       setScanResult(decoded);
+      //message.success('二维码识别成功（已尝试反色识别）');
       console.log('[QR-SNAPSHOT] 最终解码结果:', decoded);
 
       if (onScan) {

@@ -24,8 +24,8 @@ const config = {
   
   // 扫码配置
   scanner: {
-    // 扫码器FPS
-    fps: 10,
+    // 扫码器FPS（适当提高帧率，加快识别速度）
+    fps: 15,
     // 扫码框大小
     qrbox: { width: 350, height: 350 },
     // 记住上次使用的摄像头
@@ -35,8 +35,8 @@ const config = {
     // 优先使用后置摄像头和较高清分辨率，提升金属二维码识别率
     videoConstraints: {
       facingMode: { ideal: 'environment' },
-      width: { ideal: 1280 },
-      height: { ideal: 720 }
+      width: { ideal: 1920 },
+      height: { ideal: 1080 }
     },
     // 如果浏览器支持 BarcodeDetector，则启用以提高识别成功率
     experimentalFeatures: {

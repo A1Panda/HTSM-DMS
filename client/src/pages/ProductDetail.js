@@ -241,8 +241,26 @@ const ProductDetail = () => {
     }
   };
 
+  const lastErrorRef = React.useRef({ code: '', time: 0 });
+
   // 处理扫码结果
   const handleScanResult = (result) => {
+    // 1. 检查本地已存在的编码（预检查）
+    const isDuplicate = codes.some(c => c.code === result);
+    if (isDuplicate) {
+      const now = Date.now();
+      // 如果同一个重复编码在 2 秒内再次被扫到，则忽略，不弹窗提示
+      if (lastErrorRef.current.code === result && now - lastErrorRef.current.time < 2000) {
+        return;
+      }
+      
+      // 更新最后一次错误记录
+      lastErrorRef.current = { code: result, time: now };
+      message.error(`编码 "${result}" 已存在！`);
+      // 可以在这里播放错误提示音
+      return;
+    }
+
     const initialValues = { code: result };
     handleAddCode(initialValues);
   };

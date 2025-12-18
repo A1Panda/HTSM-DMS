@@ -18,6 +18,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  Filler,
 } from 'chart.js';
 import { statsAPI, productAPI, codeAPI } from '../services/api';
 import StatCard from '../components/StatCard';
@@ -33,7 +34,8 @@ ChartJS.register(
   ArcElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  Filler
 );
 
 const { Title: TitleText } = Typography;

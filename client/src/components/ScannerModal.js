@@ -23,6 +23,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
   const scannerRef = useRef(null);
   const scannerInstanceRef = useRef(null);
   const lastScanRef = useRef({ code: '', time: 0 });
+  const lastNoticeRef = useRef({ message: '', time: 0 });
 
   // 初始化扫码器
   useEffect(() => {
@@ -56,7 +57,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
                     if (scannerInstanceRef.current) {
                       scannerInstanceRef.current.resume();
                     }
-                  }, 500);
+                  }, 80);
                 }
               } else {
                 setScanResult(cleanedText);
@@ -79,8 +80,8 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
         }
       };
       
-      // 等待模态框完全显示后再初始化
-      timeoutId = setTimeout(initScanner, 800);
+      // 缩短等待时间，让扫码器更快可用
+      timeoutId = setTimeout(initScanner, 250);
     }
     
     // 组件卸载时清理扫码器和定时器
@@ -123,6 +124,19 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
     }
   };
 
+  // 统一的节流提示：同一条提示在短时间内只弹一次，避免刷屏
+  const showThrottledWarning = (msg, interval = 3000) => {
+    const now = Date.now();
+    if (
+      lastNoticeRef.current.message === msg &&
+      now - lastNoticeRef.current.time < interval
+    ) {
+      return;
+    }
+    lastNoticeRef.current = { message: msg, time: now };
+    message.warning(msg);
+  };
+
   // 重新扫描
   const handleRescan = () => {
     setScanResult('');
@@ -136,12 +150,10 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
     try {
       setQrSnapshotLoading(true);
       setError('');
-      console.log('[QR-SNAPSHOT] 开始快照识别');
 
       const scannerElement = document.getElementById('scanner');
       if (!scannerElement) {
         const msg = '找不到扫码区域，请关闭后重试';
-        console.warn('[QR-SNAPSHOT] scanner 容器不存在');
         setError(msg);
         setQrSnapshotLoading(false);
         return;
@@ -150,7 +162,6 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       const video = scannerElement.querySelector('video');
       if (!video) {
         const msg = '未检测到摄像头画面，请确认摄像头已启动';
-        console.warn('[QR-SNAPSHOT] 未找到 video 元素');
         setError(msg);
         setQrSnapshotLoading(false);
         return;
@@ -159,12 +170,10 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       const canvas = document.createElement('canvas');
       const width = video.videoWidth;
       const height = video.videoHeight;
-      console.log('[QR-SNAPSHOT] video 尺寸:', { width, height });
 
       // 有些浏览器在视频刚开始时 videoWidth/videoHeight 为 0，需要等一帧
       if (!width || !height) {
-        message.warning('摄像头画面尚未就绪，请稍等一两秒后再尝试快照识别');
-        console.warn('[QR-SNAPSHOT] videoWidth/videoHeight 未就绪');
+        showThrottledWarning('摄像头画面尚未就绪，请稍等一两秒后再尝试快照识别');
         setQrSnapshotLoading(false);
         return;
       }
@@ -189,19 +198,16 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
         const previewUrl = canvas.toDataURL('image/png');
         setQrPreview(previewUrl);
       } catch (err) {
-        console.warn('[QR-SNAPSHOT] 生成原始预览图失败:', err);
+        // 生成预览失败不影响识别，静默忽略
       }
 
-      console.log('[QR-SNAPSHOT] 像素数据长度:', imageData.data?.length);
-
-      // 生成反色预览图：对像素做一次真正的反色处理
+      // 生成反色预览图：对像素做一次真正的反色处理（仅用于 UI 预览，不参与识别）
       try {
         const invertedData = new Uint8ClampedArray(imageData.data);
         for (let i = 0; i < invertedData.length; i += 4) {
           invertedData[i] = 255 - invertedData[i];       // R
           invertedData[i + 1] = 255 - invertedData[i+1]; // G
           invertedData[i + 2] = 255 - invertedData[i+2]; // B
-          // alpha 通道不变
         }
         const invertedImageData = new ImageData(invertedData, width, height);
         const invertCanvas = document.createElement('canvas');
@@ -212,44 +218,43 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
         const invertedUrl = invertCanvas.toDataURL('image/png');
         setQrPreviewInverted(invertedUrl);
       } catch (err) {
-        console.warn('[QR-SNAPSHOT] 生成反色预览图失败:', err);
+        // 生成预览失败不影响识别，静默忽略
       }
 
-      // 先按正常模式识别
+      // 参考 Android 端 zbar/zxing 的做法，直接在同一次解析中同时尝试正色和反色二维码，
+      // 减少多次解码带来的延迟
       let result = jsQR(imageData.data, width, height, {
-        inversionAttempts: 'dontInvert'
+        inversionAttempts: 'attemptBoth'
       });
-      console.log('[QR-SNAPSHOT] 正常模式识别结果:', result ? { data: result.data, location: result.location } : null);
-
-      // 如果正常模式没有识别到，再尝试“只识别反色二维码”
-      if (!result) {
-        result = jsQR(imageData.data, width, height, {
-          inversionAttempts: 'onlyInvert'
-        });
-        console.log('[QR-SNAPSHOT] 反色模式识别结果:', result ? { data: result.data, location: result.location } : null);
-      }
 
       if (!result || !result.data) {
-        message.warning('未能从当前画面识别出二维码，请靠近一些或调整角度/光线后重试');
-        console.warn('[QR-SNAPSHOT] jsQR 未识别到二维码');
         setQrSnapshotLoading(false);
         return;
       }
 
       const decoded = result.data.trim();
-      if (!decoded) {
-        message.warning('二维码内容为空或无法解析');
-        console.warn('[QR-SNAPSHOT] 解码结果为空字符串');
+      const cleanedDecoded = decoded.replace(/\D/g, '');
+      if (!cleanedDecoded) {
+        showThrottledWarning('二维码内容为空或无法解析出数字');
         setQrSnapshotLoading(false);
         return;
       }
 
-      setScanResult(decoded);
-      //message.success('二维码识别成功（已尝试反色识别）');
-      console.log('[QR-SNAPSHOT] 最终解码结果:', decoded);
+      // 与连续扫描逻辑保持一致：对同一编码做节流，避免在短时间内重复触发 onScan
+      const now = Date.now();
+      if (
+        lastScanRef.current.code === cleanedDecoded &&
+        now - lastScanRef.current.time < 1500
+      ) {
+        setQrSnapshotLoading(false);
+        return;
+      }
+      lastScanRef.current = { code: cleanedDecoded, time: now };
+
+      setScanResult(cleanedDecoded);
 
       if (onScan) {
-        onScan(decoded);
+        onScan(cleanedDecoded);
       }
     } catch (err) {
       console.error('[QR-SNAPSHOT] 二维码快照识别失败:', err);
@@ -347,7 +352,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       const digitsOnly = (ocrText || '').replace(/\D/g, '');
 
       if (!digitsOnly) {
-        message.warning('未能识别出清晰的数字，请靠近一些或调整光线后重试');
+        showThrottledWarning('未能识别出清晰的数字，请靠近一些或调整光线后重试');
         setOcrLoading(false);
         return;
       }
@@ -400,7 +405,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       if (!qrSnapshotLoading && !loading) {
         handleQrSnapshotRecognize();
       }
-    }, 1000);
+    }, 500);
 
     return () => clearInterval(intervalId);
   }, [visible, qrSnapshotLoading, loading]);
@@ -462,24 +467,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
             </div>
           )}
           
-          {error && (
-            <div style={{ 
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: 'rgba(255, 255, 255, 0.9)',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              minHeight: '200px',
-              color: '#ff4d4f'
-            }}>
-              <p>{error}</p>
-            </div>
-          )}
+
         </div>
 
         {/* 二维码快照预览：原始帧 & 反色帧 */}

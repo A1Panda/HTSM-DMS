@@ -62,10 +62,8 @@ class Scanner {
           }
         },
         (error) => {
-          // 只记录非常见的错误
-          if (!error.includes('NotFoundException') && !error.includes('No MultiFormat Readers')) {
-            console.warn('扫描错误:', error);
-          }
+          // 扫描过程中会非常频繁地抛出 NotFoundException 等正常情况，这里完全静默不再打印日志，
+          // 仅在上层需要时通过回调处理
           if (this.onScanError) {
             this.onScanError(error);
           }

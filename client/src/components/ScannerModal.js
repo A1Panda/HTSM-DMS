@@ -493,7 +493,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [visible, ocrLoading, loading]);
 
-  // 定时自动执行二维码快照识别（1 秒一次），用于补救颜色反转等特殊二维码
+  // 定时自动执行二维码快照识别（频率略快一些，约 0.5 秒一次），用于补救颜色反转等特殊二维码
   useEffect(() => {
     if (!visible) return;
 
@@ -502,7 +502,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       if (!qrSnapshotLoading && !loading) {
         handleQrSnapshotRecognize();
       }
-    }, 1000);
+    }, 500);
 
     return () => clearInterval(intervalId);
   }, [visible, qrSnapshotLoading, loading]);

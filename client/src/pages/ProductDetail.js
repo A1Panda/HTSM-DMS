@@ -15,7 +15,8 @@ import {
   Empty,
   Tag,
   Divider,
-  Checkbox
+  Checkbox,
+  Select
 } from 'antd';
 import { 
   ArrowLeftOutlined, 
@@ -53,6 +54,7 @@ const ProductDetail = () => {
   const [formLoading, setFormLoading] = useState(false);
   const [quickInputLoading, setQuickInputLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [sortOrder, setSortOrder] = useState('timeDesc');
   const [selectedCodes, setSelectedCodes] = useState([]);
   const [codeBatchMode, setCodeBatchMode] = useState(false);
   const [codesModalVisible, setCodesModalVisible] = useState(false);
@@ -63,6 +65,38 @@ const ProductDetail = () => {
   const [recycleBinVisible, setRecycleBinVisible] = useState(false);
   const [deletedCodes, setDeletedCodes] = useState([]);
   const [recycleLoading, setRecycleLoading] = useState(false);
+
+  // 统一处理排序和过滤
+  useEffect(() => {
+    let result = [...codes];
+    
+    // 1. 过滤
+    if (searchText) {
+      const searchLower = searchText.toLowerCase();
+      result = result.filter(code => 
+        code.code.toLowerCase().includes(searchLower) ||
+        (code.description && code.description.toLowerCase().includes(searchLower))
+      );
+    }
+    
+    // 2. 排序
+    result.sort((a, b) => {
+      switch (sortOrder) {
+        case 'timeDesc':
+          return new Date(b.createdAt) - new Date(a.createdAt);
+        case 'timeAsc':
+          return new Date(a.createdAt) - new Date(b.createdAt);
+        case 'codeAsc':
+          return a.code.localeCompare(b.code, undefined, { numeric: true });
+        case 'codeDesc':
+          return b.code.localeCompare(a.code, undefined, { numeric: true });
+        default:
+          return 0;
+      }
+    });
+    
+    setFilteredCodes(result);
+  }, [codes, searchText, sortOrder]);
 
   // 加载产品详情
   const loadProduct = async () => {
@@ -85,11 +119,9 @@ const ProductDetail = () => {
       const response = await codeAPI.getProductCodes(id);
       const codesData = response.data;
       
-      // 按创建时间降序排序
-      codesData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-      
+      // 初始加载由useEffect处理排序
       setCodes(codesData);
-      setFilteredCodes(codesData);
+      // setFilteredCodes will be handled by useEffect
     } catch (error) {
       console.error('获取编码列表失败:', error);
       message.error('获取编码列表失败');
@@ -267,19 +299,6 @@ const ProductDetail = () => {
   // 搜索编码
   const handleSearch = (value) => {
     setSearchText(value);
-    
-    if (!value) {
-      setFilteredCodes(codes);
-      return;
-    }
-    
-    const searchLower = value.toLowerCase();
-    const filtered = codes.filter(code => 
-      code.code.toLowerCase().includes(searchLower) ||
-      code.description.toLowerCase().includes(searchLower)
-    );
-    
-    setFilteredCodes(filtered);
   };
 
   // 导出编码
@@ -297,27 +316,50 @@ const ProductDetail = () => {
     }
   };
 
+  // 智能提取编码（优先提取末尾数字）
+  const extractCode = (value) => {
+    if (!value) return '';
+    
+    // 1. 尝试匹配末尾的连续数字 (针对 "HTSM1/3SN69801" -> "69801" 场景)
+    const endMatch = value.match(/(\d+)$/);
+    if (endMatch) {
+      return endMatch[1];
+    }
+    
+    // 2. 如果没有末尾数字，回退到提取所有数字
+    const numbers = value.replace(/\D/g, '');
+    return numbers || value.trim();
+  };
+
   const lastErrorRef = React.useRef({ code: '', time: 0 });
 
   // 处理扫码结果
   const handleScanResult = (result) => {
+    // 智能提取有效编码
+    const extractedResult = extractCode(result);
+    
+    if (!extractedResult) {
+      message.warning('未能识别有效编码');
+      return;
+    }
+
     // 1. 检查本地已存在的编码（预检查）
-    const isDuplicate = codes.some(c => c.code === result);
+    const isDuplicate = codes.some(c => c.code === extractedResult);
     if (isDuplicate) {
       const now = Date.now();
       // 如果同一个重复编码在 2 秒内再次被扫到，则忽略，不弹窗提示
-      if (lastErrorRef.current.code === result && now - lastErrorRef.current.time < 2000) {
+      if (lastErrorRef.current.code === extractedResult && now - lastErrorRef.current.time < 2000) {
         return;
       }
       
       // 更新最后一次错误记录
-      lastErrorRef.current = { code: result, time: now };
-      message.error(`编码 "${result}" 已存在！`);
+      lastErrorRef.current = { code: extractedResult, time: now };
+      message.error(`编码 "${extractedResult}" 已存在！`);
       // 可以在这里播放错误提示音
       return;
     }
 
-    const initialValues = { code: result };
+    const initialValues = { code: extractedResult };
     handleAddCode(initialValues);
   };
 
@@ -564,6 +606,18 @@ const ProductDetail = () => {
               enterButton={<SearchOutlined />}
               onSearch={handleSearch}
               style={{ width: 300 }}
+            />
+            
+            <Select
+              defaultValue="timeDesc"
+              style={{ width: 160 }}
+              onChange={setSortOrder}
+              options={[
+                { value: 'timeDesc', label: '时间 (最新在前)' },
+                { value: 'timeAsc', label: '时间 (最早在前)' },
+                { value: 'codeAsc', label: '编码 (从小到大)' },
+                { value: 'codeDesc', label: '编码 (从大到小)' },
+              ]}
             />
           </div>
         </div>

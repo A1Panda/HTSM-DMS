@@ -5,7 +5,11 @@ const config = {
   // API配置
   api: {
     // API基础URL
-    baseURL: process.env.REACT_APP_API_URL || (process.env.REACT_APP_BACKEND_TARGET ? `${process.env.REACT_APP_BACKEND_TARGET}/api` : 'http://localhost:5100/api'),
+    // 生产环境(production)下直接使用 /api (相对路径)，这样会自动匹配当前域名和端口
+    // 开发环境(development)下优先使用环境变量，否则默认为 http://localhost:5000/api
+    baseURL: process.env.NODE_ENV === 'production'
+      ? '/api'
+      : (process.env.REACT_APP_API_URL || 'http://localhost:5000/api'),
     // 请求超时时间（毫秒）
     timeout: 10000
   },
@@ -47,18 +51,23 @@ const config = {
   // OCR 配置（后端代理到第三方服务，例如讯飞）
   ocr: {
     // 直接调用本项目后端的 OCR 接口
-    // 注意：端口需要与 server/.env 中的 PORT 保持一致
-    proxyUrl: process.env.REACT_APP_BACKEND_TARGET
-      ? `${process.env.REACT_APP_BACKEND_TARGET}/api/ocr/iflytek`
-      : 'http://localhost:5000/api/ocr/iflytek'
+    // 生产环境使用相对路径
+    proxyUrl: process.env.NODE_ENV === 'production'
+      ? '/api/ocr/iflytek'
+      : (process.env.REACT_APP_BACKEND_TARGET 
+          ? `${process.env.REACT_APP_BACKEND_TARGET}/api/ocr/iflytek` 
+          : 'http://localhost:5000/api/ocr/iflytek')
   },
   
   // 二维码识别配置（后端代理到第三方服务 2dcode.biz）
   qrDecode: {
     // 直接调用本项目后端的二维码识别接口
-    proxyUrl: process.env.REACT_APP_BACKEND_TARGET
-      ? `${process.env.REACT_APP_BACKEND_TARGET}/api/qr/decode`
-      : 'http://localhost:5000/api/qr/decode'
+    // 生产环境使用相对路径
+    proxyUrl: process.env.NODE_ENV === 'production'
+      ? '/api/qr/decode'
+      : (process.env.REACT_APP_BACKEND_TARGET 
+          ? `${process.env.REACT_APP_BACKEND_TARGET}/api/qr/decode` 
+          : 'http://localhost:5000/api/qr/decode')
   },
   
   // 公司信息

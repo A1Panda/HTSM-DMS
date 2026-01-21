@@ -35,8 +35,24 @@ const QuickCodeInput = ({
   // 清理编码，只保留数字
   const cleanCode = (value) => {
     if (!value) return value;
-    // 只保留数字
-    return value.replace(/\D/g, '');
+
+    // 1. 尝试匹配末尾的连续数字 (针对 "HTSM1/3SN69801" -> "69801" 场景)
+    const endMatch = value.match(/(\d+)$/);
+    if (endMatch) {
+      // 进一步过滤，如果提取出的数字长度超过 10 位，可能不是我们想要的编码，这里可以加更复杂的逻辑
+      // 目前简单返回提取到的末尾数字
+      return endMatch[1];
+    }
+    
+    // 2. 如果没有末尾数字，尝试提取任意位置的数字串
+    // 这里针对 "1369801" 这种纯数字或者中间有分隔符的情况
+    const numbers = value.replace(/\D/g, '');
+    
+    // 3. 如果提取后的数字长度依然很长（比如把前缀里的数字也提出来了），尝试智能截取
+    // 假设我们的编码通常是 5-8 位，如果提取出来太长，可能需要重新考虑规则
+    // 但根据用户需求 "1369801"，这看起来像是一个完整的数字编码
+    
+    return numbers || value.trim();
   };
 
   // 处理输入变化
@@ -116,7 +132,7 @@ const QuickCodeInput = ({
           value={code}
           onChange={handleChange}
           onKeyPress={handleKeyPress}
-          placeholder="输入或扫描编码（仅数字）"
+          placeholder="输入或扫描编码（支持自动提取末尾数字）"
           prefix={<ScanOutlined style={{ color: '#1890ff' }} />}
           disabled={loading}
           style={{ flex: 1 }}

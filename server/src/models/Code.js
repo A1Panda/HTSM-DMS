@@ -22,13 +22,24 @@ const codeSchema = new mongoose.Schema({
     ref: 'Product',
     required: true
   },
+  deleted: {
+    type: Boolean,
+    default: false
+  },
+  deletedAt: {
+    type: Date
+  },
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
 
-// 添加复合索引确保每个产品的编码唯一
+// 添加复合索引确保每个产品的编码唯一（仅针对未删除的）
+// 注意：如果软删除后允许再次添加相同编码，索引需要调整。
+// 这里暂时保持 unique: true，意味着即使软删除了，也不能添加重复的。
+// 如果用户想要"删除后重新添加"，则需要永久删除或者修改索引条件。
+// 为了简单起见，我们假设回收站里的东西也占位。
 codeSchema.index({ code: 1, productId: 1 }, { unique: true });
 
 // 如果MongoDB可用，使用Mongoose模型
@@ -58,10 +69,13 @@ if (process.env.MONGODB_URI) {
         if (fs.existsSync(codesFile)) {
           const codesData = fs.readFileSync(codesFile, 'utf8');
           const productCodes = JSON.parse(codesData);
-          return productCodes.map(code => ({
-            ...code,
-            productId: query.productId
-          }));
+          
+          // 过滤逻辑
+          const showDeleted = query.deleted === true;
+          
+          return productCodes
+            .map(code => ({ ...code, productId: query.productId }))
+            .filter(code => !!code.deleted === showDeleted);
         }
         return [];
       }
@@ -72,11 +86,14 @@ if (process.env.MONGODB_URI) {
         if (fs.existsSync(codesFile)) {
           const codesData = fs.readFileSync(codesFile, 'utf8');
           const productCodes = JSON.parse(codesData);
+          
+           // 过滤逻辑
+          const showDeleted = query.deleted === true;
+          
           allCodes = allCodes.concat(
-            productCodes.map(code => ({
-              ...code,
-              productId: product.id
-            }))
+            productCodes
+              .map(code => ({ ...code, productId: product.id }))
+              .filter(code => !!code.deleted === showDeleted)
           );
         }
       }
@@ -106,6 +123,7 @@ if (process.env.MONGODB_URI) {
         code: codeData.code,
         description: codeData.description || '',
         date: codeData.date || '',
+        deleted: false,
         createdAt: new Date().toISOString()
       };
       
@@ -115,7 +133,28 @@ if (process.env.MONGODB_URI) {
       return { ...newCode, productId };
     },
     
-    // 删除编码
+    // 更新编码 (用于软删除/恢复)
+    findByIdAndUpdate: async (id, updates, productId) => {
+       const codesFile = path.join(DATA_DIR, `${productId}_codes.json`);
+       if (!fs.existsSync(codesFile)) {
+         return null;
+       }
+
+       const data = fs.readFileSync(codesFile, 'utf8');
+       let codes = JSON.parse(data);
+       
+       const codeIndex = codes.findIndex(c => c.id === id);
+       if (codeIndex === -1) {
+         return null;
+       }
+
+       codes[codeIndex] = { ...codes[codeIndex], ...updates };
+       fs.writeFileSync(codesFile, JSON.stringify(codes, null, 2));
+       
+       return { ...codes[codeIndex], productId };
+    },
+
+    // 永久删除编码
     findByIdAndDelete: async (id, productId) => {
       const codesFile = path.join(DATA_DIR, `${productId}_codes.json`);
       if (!fs.existsSync(codesFile)) {
@@ -141,6 +180,7 @@ if (process.env.MONGODB_URI) {
       const { page = 1, limit = 1000 } = options;
       const skip = (page - 1) * limit;
       
+      // 使用上面定义的 find 方法，它已经处理了 query.deleted
       const allCodes = await Code.find(query);
       const total = allCodes.length;
       const paginatedCodes = allCodes.slice(skip, skip + limit);

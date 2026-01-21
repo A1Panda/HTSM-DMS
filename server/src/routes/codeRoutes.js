@@ -18,7 +18,13 @@ router.post('/product/:productId',
   codeController.addCode
 );
 
-// 删除编码
+// 删除编码 (软删除)
 router.delete('/product/:productId/:codeId', codeController.deleteCode);
+
+// 恢复编码
+router.post('/product/:productId/:codeId/restore', codeController.restoreCode);
+
+// 永久删除编码
+router.delete('/product/:productId/:codeId/permanent', codeController.permanentDeleteCode);
 
 module.exports = router;

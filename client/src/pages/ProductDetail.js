@@ -26,13 +26,15 @@ import {
   ExclamationCircleOutlined,
   DeleteOutlined,
   CheckOutlined,
-  CloseOutlined
+  CloseOutlined,
+  RestOutlined
 } from '@ant-design/icons';
 import { productAPI, codeAPI } from '../services/api';
 import CodeList from '../components/CodeList';
 import CodeForm from '../components/CodeForm';
 import ScannerModal from '../components/ScannerModal';
 import QuickCodeInput from '../components/QuickCodeInput';
+import RecycleBinModal from '../components/RecycleBinModal';
 import ExportUtils from '../utils/exportUtils';
 
 const { Title } = Typography;
@@ -56,6 +58,11 @@ const ProductDetail = () => {
   const [codesModalVisible, setCodesModalVisible] = useState(false);
   const [codesModalTitle, setCodesModalTitle] = useState('');
   const [codesModalList, setCodesModalList] = useState([]);
+  
+  // 回收站状态
+  const [recycleBinVisible, setRecycleBinVisible] = useState(false);
+  const [deletedCodes, setDeletedCodes] = useState([]);
+  const [recycleLoading, setRecycleLoading] = useState(false);
 
   // 加载产品详情
   const loadProduct = async () => {
@@ -86,6 +93,55 @@ const ProductDetail = () => {
     } catch (error) {
       console.error('获取编码列表失败:', error);
       message.error('获取编码列表失败');
+    }
+  };
+
+  // 加载已删除编码
+  const loadDeletedCodes = async () => {
+    try {
+      setRecycleLoading(true);
+      const response = await codeAPI.getProductCodes(id, true); // true for deleted
+      // Sort by deletedAt descending
+      const codes = response.data;
+      codes.sort((a, b) => new Date(b.deletedAt || 0) - new Date(a.deletedAt || 0));
+      setDeletedCodes(codes);
+    } catch (error) {
+      console.error('获取回收站数据失败:', error);
+      message.error('获取回收站数据失败');
+    } finally {
+      setRecycleLoading(false);
+    }
+  };
+
+  // 打开回收站
+  const handleOpenRecycleBin = () => {
+    // 刷新数据并显示
+    setRecycleBinVisible(true);
+    loadDeletedCodes();
+  };
+
+  // 恢复编码
+  const handleRestoreCode = async (codeId) => {
+    try {
+      await codeAPI.restoreCode(id, codeId);
+      message.success('编码已恢复');
+      loadDeletedCodes(); // Reload recycle bin
+      loadCodes(); // Reload main list
+    } catch (error) {
+      console.error('恢复编码失败:', error);
+      message.error('恢复编码失败');
+    }
+  };
+
+  // 永久删除编码
+  const handlePermanentDeleteCode = async (codeId) => {
+    try {
+      await codeAPI.permanentDeleteCode(id, codeId);
+      message.success('编码已永久删除');
+      loadDeletedCodes();
+    } catch (error) {
+      console.error('永久删除编码失败:', error);
+      message.error('永久删除编码失败');
     }
   };
 
@@ -137,14 +193,14 @@ const ProductDetail = () => {
     confirm({
       title: '确定要删除这个编码吗？',
       icon: <ExclamationCircleOutlined />,
-      content: '此操作不可恢复。',
-      okText: '确定',
+      content: '删除后可从回收站恢复。',
+      okText: '删除',
       okType: 'danger',
       cancelText: '取消',
       onOk: async () => {
         try {
           await codeAPI.deleteCode(id, codeId);
-          message.success('编码删除成功');
+          message.success('编码已移入回收站');
           loadCodes();
         } catch (error) {
           console.error('删除编码失败:', error);
@@ -164,15 +220,15 @@ const ProductDetail = () => {
     confirm({
       title: `确定要删除这 ${selectedCodes.length} 个编码吗？`,
       icon: <ExclamationCircleOutlined />,
-      content: '此操作不可恢复。',
-      okText: '确定',
+      content: '删除后可从回收站恢复。',
+      okText: '删除',
       okType: 'danger',
       cancelText: '取消',
       onOk: async () => {
         try {
           // 批量删除
           await Promise.all(selectedCodes.map(codeId => codeAPI.deleteCode(id, codeId)));
-          message.success(`成功删除 ${selectedCodes.length} 个编码`);
+          message.success(`已将 ${selectedCodes.length} 个编码移入回收站`);
           setSelectedCodes([]);
           setCodeBatchMode(false);
           loadCodes();
@@ -443,6 +499,12 @@ const ProductDetail = () => {
               </>
             ) : (
               <>
+                 <Button 
+                  icon={<RestOutlined />} 
+                  onClick={handleOpenRecycleBin}
+                >
+                  回收站
+                </Button>
                 <Button 
                   icon={<DownloadOutlined />} 
                   onClick={handleExportCodes}
@@ -553,6 +615,16 @@ const ProductDetail = () => {
         onCancel={() => setScanModalVisible(false)}
         onScan={handleScanResult}
         continuous
+      />
+
+      {/* 回收站对话框 */}
+      <RecycleBinModal
+        visible={recycleBinVisible}
+        onCancel={() => setRecycleBinVisible(false)}
+        codes={deletedCodes}
+        onRestore={handleRestoreCode}
+        onPermanentDelete={handlePermanentDeleteCode}
+        loading={recycleLoading}
       />
     </div>
   );

@@ -70,13 +70,19 @@ export const codeAPI = {
   },
   
   // 获取产品的所有编码
-  getProductCodes: (productId) => api.get(`/codes/product/${productId}`),
+  getProductCodes: (productId, deleted = false) => api.get(`/codes/product/${productId}?deleted=${deleted}`),
   
   // 为产品添加编码
   addCode: (productId, codeData) => api.post(`/codes/product/${productId}`, codeData),
   
-  // 删除编码
-  deleteCode: (productId, codeId) => api.delete(`/codes/product/${productId}/${codeId}`)
+  // 删除编码 (软删除)
+  deleteCode: (productId, codeId) => api.delete(`/codes/product/${productId}/${codeId}`),
+
+  // 恢复编码
+  restoreCode: (productId, codeId) => api.post(`/codes/product/${productId}/${codeId}/restore`),
+
+  // 永久删除编码
+  permanentDeleteCode: (productId, codeId) => api.delete(`/codes/product/${productId}/${codeId}/permanent`)
 };
 
 // 统计相关API

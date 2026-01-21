@@ -10,6 +10,9 @@ exports.getAllCodes = async (req, res) => {
     const productId = req.query.productId;
     
     const query = productId ? { productId } : {};
+    // 默认不显示已删除的
+    query.deleted = false;
+    
     const result = await Code.paginate(query, { page, limit });
     
     res.json(result);
@@ -23,7 +26,9 @@ exports.getAllCodes = async (req, res) => {
 exports.getProductCodes = async (req, res) => {
   try {
     const { productId } = req.params;
-    const codes = await Code.find({ productId });
+    const deleted = req.query.deleted === 'true';
+    
+    const codes = await Code.find({ productId, deleted });
     res.json(codes);
   } catch (error) {
     console.error('获取编码列表失败:', error);
@@ -72,8 +77,53 @@ exports.addCode = async (req, res) => {
   }
 };
 
-// 删除编码
+// 删除编码 (软删除)
 exports.deleteCode = async (req, res) => {
+  try {
+    const { productId, codeId } = req.params;
+    
+    // 使用 findByIdAndUpdate 进行软删除
+    const deletedCode = await Code.findByIdAndUpdate(
+      codeId, 
+      { deleted: true, deletedAt: new Date() },
+      productId
+    );
+    
+    if (!deletedCode) {
+      return res.status(404).json({ error: '编码不存在' });
+    }
+    
+    res.json({ success: true, message: '编码已移入回收站' });
+  } catch (error) {
+    console.error('删除编码失败:', error);
+    res.status(500).json({ error: '删除编码失败' });
+  }
+};
+
+// 恢复编码
+exports.restoreCode = async (req, res) => {
+  try {
+    const { productId, codeId } = req.params;
+    
+    const restoredCode = await Code.findByIdAndUpdate(
+      codeId,
+      { deleted: false, deletedAt: null },
+      productId
+    );
+    
+    if (!restoredCode) {
+      return res.status(404).json({ error: '编码不存在' });
+    }
+    
+    res.json({ success: true, message: '编码恢复成功' });
+  } catch (error) {
+    console.error('恢复编码失败:', error);
+    res.status(500).json({ error: '恢复编码失败' });
+  }
+};
+
+// 永久删除编码
+exports.permanentDeleteCode = async (req, res) => {
   try {
     const { productId, codeId } = req.params;
     
@@ -83,9 +133,9 @@ exports.deleteCode = async (req, res) => {
       return res.status(404).json({ error: '编码不存在' });
     }
     
-    res.json({ success: true, message: '编码删除成功' });
+    res.json({ success: true, message: '编码永久删除成功' });
   } catch (error) {
-    console.error('删除编码失败:', error);
-    res.status(500).json({ error: '删除编码失败' });
+    console.error('永久删除编码失败:', error);
+    res.status(500).json({ error: '永久删除编码失败' });
   }
 };

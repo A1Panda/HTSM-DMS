@@ -101,6 +101,7 @@ const ProductDetail = () => {
   // 加载产品详情
   const loadProduct = async () => {
     try {
+      if (!id || id === 'undefined') return; // 防止 id 为 undefined
       setLoading(true);
       const response = await productAPI.getProductById(id);
       setProduct(response.data);
@@ -116,6 +117,7 @@ const ProductDetail = () => {
   // 加载产品编码
   const loadCodes = async () => {
     try {
+      if (!id || id === 'undefined') return; // 防止 id 为 undefined
       const response = await codeAPI.getProductCodes(id);
       const codesData = response.data;
       
@@ -131,6 +133,7 @@ const ProductDetail = () => {
   // 加载已删除编码
   const loadDeletedCodes = async () => {
     try {
+      if (!id || id === 'undefined') return; // 防止 id 为 undefined
       setRecycleLoading(true);
       const response = await codeAPI.getProductCodes(id, true); // true for deleted
       // Sort by deletedAt descending

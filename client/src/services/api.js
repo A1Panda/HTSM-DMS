@@ -48,7 +48,12 @@ export const productAPI = {
   getAllProducts: () => api.get('/products'),
   
   // 获取单个产品
-  getProductById: (id) => api.get(`/products/${id}`),
+  getProductById: (id) => {
+    if (!id || id === 'undefined') {
+      return Promise.reject(new Error('Invalid Product ID'));
+    }
+    return api.get(`/products/${id}`);
+  },
   
   // 创建新产品
   createProduct: (productData) => api.post('/products', productData),
@@ -57,7 +62,12 @@ export const productAPI = {
   updateProduct: (id, productData) => api.put(`/products/${id}`, productData),
 
   // 删除产品
-  deleteProduct: (id) => api.delete(`/products/${id}`)
+  deleteProduct: (id) => {
+    if (!id || id === 'undefined') {
+      return Promise.reject(new Error('Invalid Product ID'));
+    }
+    return api.delete(`/products/${id}`);
+  },
 };
 
 // 编码相关API
@@ -70,7 +80,13 @@ export const codeAPI = {
   },
   
   // 获取产品的所有编码
-  getProductCodes: (productId, deleted = false) => api.get(`/codes/product/${productId}?deleted=${deleted}`),
+  getProductCodes: (productId, deleted = false) => {
+    // 防御性检查：如果 productId 无效，返回一个空的 Promise，避免发送请求
+    if (!productId || productId === 'undefined') {
+      return Promise.resolve({ data: [] });
+    }
+    return api.get(`/codes/product/${productId}?deleted=${deleted}`);
+  },
   
   // 为产品添加编码
   addCode: (productId, codeData) => api.post(`/codes/product/${productId}`, codeData),

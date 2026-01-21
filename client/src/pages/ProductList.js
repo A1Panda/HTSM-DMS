@@ -72,8 +72,15 @@ const ProductList = () => {
   // 加载产品编码
   const loadProductCodes = useCallback(async (productsData) => {
     try {
-      const codesPromises = productsData.map(product => 
-        codeAPI.getProductCodes(product.id)
+      const codesPromises = productsData.map(product => {
+        // 如果产品ID无效，直接返回空数组
+        if (!product.id || product.id === 'undefined') {
+          return Promise.resolve({
+            productId: product.id,
+            codes: []
+          });
+        }
+        return codeAPI.getProductCodes(product.id)
           .then(response => ({
             productId: product.id,
             codes: response.data
@@ -81,14 +88,16 @@ const ProductList = () => {
           .catch(() => ({
             productId: product.id,
             codes: []
-          }))
-      );
+          }));
+      });
       
       const codesResults = await Promise.all(codesPromises);
       const codesMap = {};
       
       codesResults.forEach(result => {
-        codesMap[result.productId] = result.codes;
+        if (result && result.productId) {
+          codesMap[result.productId] = result.codes;
+        }
       });
       
       setProductCodes(codesMap);

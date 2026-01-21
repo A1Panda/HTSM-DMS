@@ -25,7 +25,25 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 // 默认 json 限制只有 100KB，OCR 的 base64 图片会超过，放宽到 2MB（同时仍然小于讯飞 4MB 的要求）
 app.use(bodyParser.json({ limit: '2mb' }));
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "blob:"],
+        connectSrc: ["'self'", "ws:", "wss:"], // 允许 WebSocket 连接
+        fontSrc: ["'self'", "data:"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'self'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: false,
+  })
+);
 app.use(morgan('dev'));
 
 // 数据库连接

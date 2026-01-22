@@ -38,8 +38,10 @@ app.use(
         objectSrc: ["'none'"],
         mediaSrc: ["'self'"],
         frameSrc: ["'self'"],
+        upgradeInsecureRequests: null,
       },
     },
+    hsts: false,
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: false,
   })

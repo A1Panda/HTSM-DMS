@@ -104,6 +104,83 @@ cd ../server
 npm start
 ```
 
+## Docker 部署
+
+本系统支持使用 Docker 和 Docker Compose 进行容器化部署，这是生产环境推荐的部署方式。
+
+### 前置条件
+- 确保本机已安装 [Docker](https://www.docker.com/products/docker-desktop) 和 [Docker Compose](https://docs.docker.com/compose/install/)。
+
+### 方式一：使用 Docker Compose (推荐)
+
+在项目根目录下，运行以下命令一键启动所有服务（应用服务 + MongoDB）：
+
+```bash
+docker-compose up -d
+```
+
+启动后，访问 `http://localhost:5000` 即可使用系统。
+
+#### 代码更新与镜像重建
+
+当您修改了代码或拉取了最新代码 (`git pull`) 后，需要重新构建 Docker 镜像以应用更改。请执行以下命令：
+
+```bash
+# 强制重新构建镜像并后台启动
+docker-compose up -d --build
+```
+
+此命令会自动检测代码变更，重新构建 `api` 服务镜像，并重建容器。
+
+#### 常用管理命令
+
+```bash
+# 查看服务日志
+docker-compose logs -f
+
+# 停止所有服务
+docker-compose down
+```
+
+### 方式二：手动使用 Docker 命令部署
+
+如果您不想使用 docker-compose，也可以使用原生 Docker 命令手动构建和运行容器。
+
+#### 1. 构建镜像
+
+首先在项目根目录下构建应用镜像：
+
+```bash
+docker build -t htsm-dms .
+```
+
+#### 2. 启动 MongoDB
+
+启动 MongoDB 容器（如果您已有外部 MongoDB，可跳过此步）：
+
+```bash
+# 启动 MongoDB 容器，并将数据持久化到 mongo-data 卷
+docker run -d --name htsm-mongo -p 27017:27017 -v mongo-data:/data/db mongo:6
+```
+
+#### 3. 启动应用
+
+启动应用容器并链接到 MongoDB：
+
+```bash
+# 启动应用容器
+# --link htsm-mongo:mongo 将 MongoDB 容器链接为 hostname "mongo"
+# -e MONGODB_URI=... 设置连接字符串
+docker run -d \
+  --name htsm-app \
+  -p 5000:5000 \
+  --link htsm-mongo:mongo \
+  -e MONGODB_URI=mongodb://mongo:27017/htsm-dms \
+  htsm-dms
+```
+
+> **注意**：如果您使用外部 MongoDB，请将 `MONGODB_URI` 环境变量修改为实际的数据库连接字符串，并确保容器能够访问该地址。
+
 ## 配置
 
 - 后端配置：修改 `server/.env` 文件
@@ -261,11 +338,11 @@ npm start
   - [ ] 图片懒加载
 
 ### 🚀 部署与运维改进
-- [ ] **容器化部署**
-  - [ ] Docker配置
-  - [ ] Docker Compose
+- [x] **容器化部署**
+  - [x] Docker配置
+  - [x] Docker Compose
   - [ ] 环境配置管理
-  - [ ] 自动化部署脚本
+  - [x] 自动化部署脚本
 
 - [ ] **监控告警**
   - [ ] 系统健康检查

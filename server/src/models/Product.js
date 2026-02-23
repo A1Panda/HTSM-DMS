@@ -36,6 +36,16 @@ const productSchema = new mongoose.Schema({
   }
 });
 
+// 确保在转换为 JSON 时包含 id 字段（将 _id 映射为 id）
+productSchema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: function (doc, ret) {
+    delete ret._id;
+    return ret;
+  }
+});
+
 // 如果MongoDB可用，使用Mongoose模型
 let Product;
 if (process.env.MONGODB_URI) {
@@ -43,6 +53,11 @@ if (process.env.MONGODB_URI) {
 } else {
   // 否则使用文件系统存储
   const DATA_DIR = path.join(__dirname, '../../../data');
+  
+  // 确保数据目录存在
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
   
   // 文件系统版本的产品模型
   Product = {

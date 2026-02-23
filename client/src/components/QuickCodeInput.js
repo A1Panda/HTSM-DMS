@@ -57,8 +57,10 @@ const QuickCodeInput = ({
 
   // 处理输入变化
   const handleChange = (e) => {
-    const cleanedValue = cleanCode(e.target.value);
-    setCode(cleanedValue);
+    // 扫码枪输入是一个字符一个字符输入的，如果在这里实时清理，会导致输入过程中被截断
+    // 比如输入 "HTSM1..."，当输入到 "1" 时会被清理成 "1"，导致后续输入丢失前缀
+    // 所以这里只保存原始输入，在提交时再进行清理
+    setCode(e.target.value);
     // 清除重复警告
     if (duplicateWarning) {
       setDuplicateWarning(false);

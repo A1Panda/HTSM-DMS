@@ -35,6 +35,16 @@ const codeSchema = new mongoose.Schema({
   }
 });
 
+// 确保在转换为 JSON 时包含 id 字段（将 _id 映射为 id）
+codeSchema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: function (doc, ret) {
+    delete ret._id;
+    return ret;
+  }
+});
+
 // 添加复合索引确保每个产品的编码唯一（仅针对未删除的）
 // 注意：如果软删除后允许再次添加相同编码，索引需要调整。
 // 这里暂时保持 unique: true，意味着即使软删除了，也不能添加重复的。

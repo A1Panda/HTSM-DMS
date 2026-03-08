@@ -128,6 +128,14 @@ if (process.env.MONGODB_URI) {
       if (productIndex === -1) {
         return null;
       }
+
+      // 检查产品名称是否已存在
+      if (updateData.name && updateData.name !== products[productIndex].name) {
+        const existingProduct = products.find(p => p.name === updateData.name);
+        if (existingProduct) {
+          throw new Error('产品已存在');
+        }
+      }
       
       // 更新产品数据
       const updatedProduct = {

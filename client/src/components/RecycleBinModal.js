@@ -29,7 +29,7 @@ const RecycleBinModal = ({
         loading={loading}
         locale={{ emptyText: '回收站为空' }}
         pagination={{
-          pageSize: 10,
+          defaultPageSize: 10,
           showSizeChanger: true,
           pageSizeOptions: ['10', '20', '50', '100'],
           showTotal: (total) => `共 ${total} 条已删除编码`

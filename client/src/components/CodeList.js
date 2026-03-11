@@ -28,7 +28,7 @@ const CodeList = ({
       loading={loading}
       locale={{ emptyText: '暂无编码数据' }}
       pagination={{
-        pageSize: 10,
+        defaultPageSize: 10,
         showSizeChanger: true,
         pageSizeOptions: ['10', '20', '50', '100'],
         showTotal: (total) => `共 ${total} 条编码`

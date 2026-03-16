@@ -180,6 +180,37 @@ const ProductDetail = () => {
     }
   };
 
+  // 批量恢复编码
+  const handleBatchRestoreCodes = async (codeIds) => {
+    try {
+      setRecycleLoading(true);
+      await Promise.all(codeIds.map(codeId => codeAPI.restoreCode(id, codeId)));
+      message.success(`已恢复 ${codeIds.length} 个编码`);
+      loadDeletedCodes(); // Reload recycle bin
+      loadCodes(); // Reload main list
+    } catch (error) {
+      console.error('批量恢复编码失败:', error);
+      message.error('批量恢复编码失败');
+    } finally {
+      setRecycleLoading(false);
+    }
+  };
+
+  // 批量永久删除编码
+  const handleBatchPermanentDeleteCodes = async (codeIds) => {
+    try {
+      setRecycleLoading(true);
+      await Promise.all(codeIds.map(codeId => codeAPI.permanentDeleteCode(id, codeId)));
+      message.success(`已永久删除 ${codeIds.length} 个编码`);
+      loadDeletedCodes();
+    } catch (error) {
+      console.error('批量永久删除编码失败:', error);
+      message.error('批量永久删除编码失败');
+    } finally {
+      setRecycleLoading(false);
+    }
+  };
+
   // 初始加载
   useEffect(() => {
     loadProduct();
@@ -681,6 +712,8 @@ const ProductDetail = () => {
         codes={deletedCodes}
         onRestore={handleRestoreCode}
         onPermanentDelete={handlePermanentDeleteCode}
+        onBatchRestore={handleBatchRestoreCodes}
+        onBatchPermanentDelete={handleBatchPermanentDeleteCodes}
         loading={recycleLoading}
       />
     </div>

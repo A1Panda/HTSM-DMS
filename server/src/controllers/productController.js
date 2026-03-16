@@ -4,8 +4,110 @@ const { validationResult } = require('express-validator');
 // 获取所有产品
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find();
-    res.json(products);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const search = req.query.search || '';
+    const category = req.query.category || '';
+    const sortField = req.query.sortField || 'createdAt';
+    const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+
+    // 构建查询条件
+    const query = {};
+    
+    // 搜索条件
+    if (search) {
+      const searchRegex = new RegExp(search, 'i');
+      query.$or = [
+        { name: searchRegex },
+        { description: searchRegex },
+        { category: searchRegex }
+      ];
+    }
+    
+    // 分类筛选
+    if (category && category !== 'all') {
+      query.category = category;
+    }
+
+    // 检查是否使用MongoDB (通过检查 Product 是否有 countDocuments 方法来判断是否为 Mongoose 模型)
+    if (Product.countDocuments) {
+      // MongoDB 分页实现
+      const skip = (page - 1) * limit;
+      
+      const sort = {};
+      sort[sortField] = sortOrder;
+      
+      const total = await Product.countDocuments(query);
+      const products = await Product.find(query)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit);
+      
+      // 获取所有分类
+      const categories = await Product.distinct('category');
+      
+      res.json({
+        products,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+        categories: categories.filter(c => c && c.trim() !== '')
+      });
+    } else {
+      // 文件系统模式 - 获取所有数据后在内存中处理
+      // Product.find() 在文件模式下返回所有数据，不支持查询参数
+      let allProducts = await Product.find();
+      
+      // 获取所有分类
+      const categories = [...new Set(allProducts.map(p => p.category).filter(c => c && c.trim() !== ''))];
+
+      let products = allProducts;
+      
+      // 1. 过滤
+      if (search) {
+        const searchLower = search.toLowerCase();
+        products = products.filter(p => 
+          (p.name && p.name.toLowerCase().includes(searchLower)) ||
+          (p.description && p.description.toLowerCase().includes(searchLower)) ||
+          (p.category && p.category.toLowerCase().includes(searchLower))
+        );
+      }
+      
+      if (category && category !== 'all') {
+        products = products.filter(p => p.category === category);
+      }
+      
+      // 2. 排序
+      products.sort((a, b) => {
+        let aValue = a[sortField];
+        let bValue = b[sortField];
+        
+        if (sortField === 'createdAt') {
+            aValue = new Date(aValue || 0).getTime();
+            bValue = new Date(bValue || 0).getTime();
+        } else {
+            aValue = (aValue || '').toString().toLowerCase();
+            bValue = (bValue || '').toString().toLowerCase();
+        }
+        
+        if (aValue < bValue) return sortOrder === 1 ? -1 : 1;
+        if (aValue > bValue) return sortOrder === 1 ? 1 : -1;
+        return 0;
+      });
+      
+      // 3. 分页
+      const total = products.length;
+      const startIndex = (page - 1) * limit;
+      const paginatedProducts = products.slice(startIndex, startIndex + limit);
+      
+      res.json({
+        products: paginatedProducts,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+        categories
+      });
+    }
   } catch (error) {
     console.error('获取产品列表失败:', error);
     res.status(500).json({ error: '获取产品列表失败' });

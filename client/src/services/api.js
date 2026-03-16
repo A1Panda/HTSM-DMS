@@ -45,7 +45,7 @@ api.interceptors.response.use(
 // 产品相关API
 export const productAPI = {
   // 获取所有产品
-  getAllProducts: () => api.get('/products'),
+  getAllProducts: (params) => api.get('/products', { params }),
   
   // 获取单个产品
   getProductById: (id) => {

@@ -70,6 +70,7 @@ exports.addCode = async (req, res) => {
           existingCode.deletedAt = null;
           existingCode.description = description || existingCode.description;
           existingCode.date = date || existingCode.date;
+          existingCode.createdAt = new Date();
           await existingCode.save();
           return res.status(200).json(existingCode);
         } else {
@@ -93,7 +94,8 @@ exports.addCode = async (req, res) => {
             deleted: false, 
             deletedAt: null,
             description: description || existingDeleted.description,
-            date: date || existingDeleted.date
+            date: date || existingDeleted.date,
+            createdAt: new Date()
           },
           productId
         );

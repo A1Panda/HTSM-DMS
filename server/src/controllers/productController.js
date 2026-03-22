@@ -139,8 +139,46 @@ exports.createProduct = async (req, res) => {
   }
   
   try {
-    const { name, description, category, requiredQuantity, codeStart, codeEnd } = req.body;
+    const { name, description, category, requiredQuantity, codeStart, codeEnd, codeRanges } = req.body;
     
+    // 验证 codeRanges
+    if (codeRanges && codeRanges.length > 0) {
+      let validRanges = codeRanges.filter(r => r && r.start && r.end);
+      
+      // 验证起始值不能大于结束值
+      for (let range of validRanges) {
+        if (parseInt(range.start) > parseInt(range.end)) {
+          return res.status(400).json({ error: '起始值不能大于结束值' });
+        }
+      }
+
+      // 验证是否重叠
+      let hasOverlap = false;
+      for (let i = 0; i < validRanges.length; i++) {
+        for (let j = i + 1; j < validRanges.length; j++) {
+          const start1 = parseInt(validRanges[i].start);
+          const end1 = parseInt(validRanges[i].end);
+          const start2 = parseInt(validRanges[j].start);
+          const end2 = parseInt(validRanges[j].end);
+          
+          if (!isNaN(start1) && !isNaN(end1) && !isNaN(start2) && !isNaN(end2)) {
+            if (
+              (start1 >= start2 && start1 <= end2) || 
+              (start2 >= start1 && start2 <= end1)
+            ) {
+              hasOverlap = true;
+              break;
+            }
+          }
+        }
+        if (hasOverlap) break;
+      }
+      
+      if (hasOverlap) {
+        return res.status(400).json({ error: '号码段之间不能有包含或重叠关系' });
+      }
+    }
+
     // 创建新产品
     const newProduct = await Product.create({
       name,
@@ -148,7 +186,8 @@ exports.createProduct = async (req, res) => {
       category: category || '',
       requiredQuantity: requiredQuantity || 0,
       codeStart: codeStart || '',
-      codeEnd: codeEnd || ''
+      codeEnd: codeEnd || '',
+      codeRanges: codeRanges || []
     });
     
     res.status(201).json(newProduct);
@@ -186,8 +225,46 @@ exports.updateProduct = async (req, res) => {
   }
   
   try {
-    const { name, description, category, requiredQuantity, codeStart, codeEnd } = req.body;
+    const { name, description, category, requiredQuantity, codeStart, codeEnd, codeRanges } = req.body;
     
+    // 验证 codeRanges
+    if (codeRanges && codeRanges.length > 0) {
+      let validRanges = codeRanges.filter(r => r && r.start && r.end);
+      
+      // 验证起始值不能大于结束值
+      for (let range of validRanges) {
+        if (parseInt(range.start) > parseInt(range.end)) {
+          return res.status(400).json({ error: '起始值不能大于结束值' });
+        }
+      }
+
+      // 验证是否重叠
+      let hasOverlap = false;
+      for (let i = 0; i < validRanges.length; i++) {
+        for (let j = i + 1; j < validRanges.length; j++) {
+          const start1 = parseInt(validRanges[i].start);
+          const end1 = parseInt(validRanges[i].end);
+          const start2 = parseInt(validRanges[j].start);
+          const end2 = parseInt(validRanges[j].end);
+          
+          if (!isNaN(start1) && !isNaN(end1) && !isNaN(start2) && !isNaN(end2)) {
+            if (
+              (start1 >= start2 && start1 <= end2) || 
+              (start2 >= start1 && start2 <= end1)
+            ) {
+              hasOverlap = true;
+              break;
+            }
+          }
+        }
+        if (hasOverlap) break;
+      }
+      
+      if (hasOverlap) {
+        return res.status(400).json({ error: '号码段之间不能有包含或重叠关系' });
+      }
+    }
+
     // 查找并更新产品
     const product = await Product.findByIdAndUpdate(
       req.params.id,
@@ -197,7 +274,8 @@ exports.updateProduct = async (req, res) => {
         category: category || '',
         requiredQuantity: requiredQuantity || 0,
         codeStart: codeStart || '',
-        codeEnd: codeEnd || ''
+        codeEnd: codeEnd || '',
+        codeRanges: codeRanges || []
       },
       { new: true, runValidators: true }
     );

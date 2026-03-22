@@ -98,39 +98,105 @@ exports.getQualityStats = async (req, res) => {
     for (const product of products) {
       const productCodes = allCodes.filter(code => code.productId === product.id);
       
-      // 检查是否有有效的编码范围
-      const start = parseInt(product.codeStart);
-      const end = parseInt(product.codeEnd);
-      const width = Math.max(
-        String(product.codeStart).trim().length,
-        String(product.codeEnd).trim().length
-      );
+      // 使用 codeRanges，如果没有则退退到 codeStart/codeEnd
+      const ranges = [];
+      if (product.codeRanges && product.codeRanges.length > 0) {
+        ranges.push(...product.codeRanges);
+      } else if (product.codeStart && product.codeEnd) {
+        ranges.push({ start: product.codeStart, end: product.codeEnd });
+      }
       
-      if (!isNaN(start) && !isNaN(end) && start <= end) {
+      if (ranges.length > 0) {
         validProducts++;
         
         const existingCodes = productCodes.map(code => code.code);
         const existingCodesSet = new Set(existingCodes);
         
-        // 计算缺失编码
-        const expectedCount = end - start + 1;
+        let expectedCount = 0;
         let missingCount = 0;
-        for (let i = start; i <= end; i++) {
-          const expected = i.toString().padStart(width, '0');
-          if (!existingCodesSet.has(expected)) {
-            missingCount++;
+        
+        // 计算每个区间的缺失编码和期望总数
+        for (const range of ranges) {
+          const start = parseInt(range.start);
+          const end = parseInt(range.end);
+          
+          const startStr = String(range.start).trim();
+          const endStr = String(range.end).trim();
+          const hasLeadingZero = startStr.startsWith('0') || endStr.startsWith('0');
+          
+          const width = Math.max(
+            startStr.length,
+            endStr.length
+          );
+          
+          if (!isNaN(start) && !isNaN(end) && start <= end) {
+            expectedCount += (end - start + 1);
+            for (let i = start; i <= end; i++) {
+              let expected = i.toString();
+              if (startStr.length === endStr.length) {
+                expected = expected.padStart(startStr.length, '0');
+              } else if (hasLeadingZero) {
+                expected = expected.padStart(width, '0');
+              }
+              
+              if (!existingCodesSet.has(expected)) {
+                missingCount++;
+              }
+            }
           }
         }
         
         // 计算超出范围编码
         let excessCount = 0;
+        let validCodesInRange = 0;
+        
         existingCodes.forEach(code => {
           const str = String(code).trim();
           const codeNum = parseInt(str);
-          const inRange = !isNaN(codeNum) && codeNum >= start && codeNum <= end;
-          const formatOk = str.length === width;
-          if (!inRange || !formatOk) {
+          
+          let inAnyRange = false;
+          let formatOk = false;
+          
+          for (const range of ranges) {
+            const start = parseInt(range.start);
+            const end = parseInt(range.end);
+            
+            const startStr = String(range.start).trim();
+            const endStr = String(range.end).trim();
+            const hasLeadingZero = startStr.startsWith('0') || endStr.startsWith('0');
+            
+            const width = Math.max(
+              startStr.length,
+              endStr.length
+            );
+            
+            if (!isNaN(start) && !isNaN(end) && start <= end) {
+              const inRange = !isNaN(codeNum) && codeNum >= start && codeNum <= end;
+              
+              let currentFormatOk = true;
+              if (startStr.length === endStr.length) {
+                currentFormatOk = str.length === startStr.length;
+              } else if (hasLeadingZero) {
+                currentFormatOk = str.length === width;
+              } else {
+                // 如果没有前导零（例如 1-100），那么输入的码也不应该有前导零
+                if (str.length > 1 && str.startsWith('0')) {
+                  currentFormatOk = false;
+                }
+              }
+              
+              if (inRange && currentFormatOk) {
+                inAnyRange = true;
+                formatOk = true;
+                break; // 只要落入任意一个区间就算有效
+              }
+            }
+          }
+          
+          if (!inAnyRange || !formatOk) {
             excessCount++;
+          } else {
+            validCodesInRange++;
           }
         });
         
@@ -142,12 +208,7 @@ exports.getQualityStats = async (req, res) => {
         if (excessCount > 0) productsWithExcess++;
         
         // 计算完整度 (实际有效编码数 / 期望编码数)
-        const validCodesInRange = existingCodes.filter(code => {
-          const codeNum = parseInt(code);
-          return !isNaN(codeNum) && codeNum >= start && codeNum <= end;
-        }).length;
-        
-        const completeness = Math.min(100, (validCodesInRange / expectedCount) * 100);
+        const completeness = expectedCount > 0 ? Math.min(100, (validCodesInRange / expectedCount) * 100) : 0;
         totalCompleteness += completeness;
       }
     }

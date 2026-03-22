@@ -135,10 +135,12 @@ const ProductCard = memo(({
       
       {/* 编码范围和状态区域 */}
       <div style={{ marginBottom: 12, minHeight: '40px' }}>
-        {product.codeStart && product.codeEnd ? (
+        {((product.codeRanges && product.codeRanges.length > 0) || (product.codeStart && product.codeEnd)) ? (
           <>
             <div style={{ fontSize: '12px', marginBottom: 4 }}>
-              编码范围: {product.codeStart} - {product.codeEnd}
+              编码范围: {product.codeRanges && product.codeRanges.length > 0 
+                ? product.codeRanges.map(r => `${r.start} - ${r.end}`).join(', ') 
+                : `${product.codeStart} - ${product.codeEnd}`}
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
               {hasMissing && (

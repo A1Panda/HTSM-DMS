@@ -30,6 +30,13 @@ const productSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  codeRanges: {
+    type: [{
+      start: String,
+      end: String
+    }],
+    default: []
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -100,6 +107,7 @@ if (process.env.MONGODB_URI) {
       
       const newProduct = {
         id: Date.now().toString(),
+        codeRanges: productData.codeRanges || [],
         ...productData,
         createdAt: new Date().toISOString()
       };

@@ -348,7 +348,7 @@ const ProductList = () => {
 
   // 检查范围内缺失编码和超出范围的编码（使用useCallback优化）
   const checkCodeRangeStatus = useCallback((product) => {
-    if (!product.codeStart || !product.codeEnd) {
+    if (!product) {
       return { 
         hasMissing: false, 
         missingCodes: [], 
@@ -357,9 +357,15 @@ const ProductList = () => {
       };
     }
     
-    const start = parseInt(product.codeStart);
-    const end = parseInt(product.codeEnd);
-    if (isNaN(start) || isNaN(end)) {
+    // 获取所有的编码区间
+    const ranges = [];
+    if (product.codeRanges && product.codeRanges.length > 0) {
+      ranges.push(...product.codeRanges);
+    } else if (product.codeStart && product.codeEnd) {
+      ranges.push({ start: product.codeStart, end: product.codeEnd });
+    }
+    
+    if (ranges.length === 0) {
       return { 
         hasMissing: false, 
         missingCodes: [], 
@@ -371,17 +377,38 @@ const ProductList = () => {
     const codes = productCodes[product.id] || [];
     const existingCodes = codes.map(code => code.code);
     const existingCodesSet = new Set(existingCodes);
-    const width = Math.max(
-      String(product.codeStart).trim().length, 
-      String(product.codeEnd).trim().length
-    );
+    
+    const missingCodes = [];
     
     // 检查缺失的编码
-    const missingCodes = [];
-    for (let i = start; i <= end; i++) {
-      const expected = i.toString().padStart(width, '0');
-      if (!existingCodesSet.has(expected)) {
-        missingCodes.push(expected);
+    for (const range of ranges) {
+      const start = parseInt(range.start);
+      const end = parseInt(range.end);
+      
+      // 检查原字符串是否包含前导零
+      const startStr = String(range.start).trim();
+      const endStr = String(range.end).trim();
+      const hasLeadingZero = startStr.startsWith('0') || endStr.startsWith('0');
+      
+      const width = Math.max(
+        startStr.length, 
+        endStr.length
+      );
+      
+      if (!isNaN(start) && !isNaN(end) && start <= end) {
+        for (let i = start; i <= end; i++) {
+          let expected = i.toString();
+          
+          if (startStr.length === endStr.length) {
+            expected = expected.padStart(startStr.length, '0');
+          } else if (hasLeadingZero) {
+            expected = expected.padStart(width, '0');
+          }
+          
+          if (!existingCodesSet.has(expected)) {
+            missingCodes.push(expected);
+          }
+        }
       }
     }
     
@@ -390,9 +417,47 @@ const ProductList = () => {
     existingCodes.forEach(code => {
       const str = String(code).trim();
       const codeNum = parseInt(str);
-      const inRange = !isNaN(codeNum) && codeNum >= start && codeNum <= end;
-      const formatOk = str.length === width;
-      if (!inRange || !formatOk) {
+      
+      let inAnyRange = false;
+      let formatOk = false;
+      
+      for (const range of ranges) {
+        const start = parseInt(range.start);
+        const end = parseInt(range.end);
+        
+        const startStr = String(range.start).trim();
+        const endStr = String(range.end).trim();
+        const hasLeadingZero = startStr.startsWith('0') || endStr.startsWith('0');
+        
+        const width = Math.max(
+          startStr.length, 
+          endStr.length
+        );
+        
+        if (!isNaN(start) && !isNaN(end) && start <= end) {
+          const inRange = !isNaN(codeNum) && codeNum >= start && codeNum <= end;
+          
+          let currentFormatOk = true;
+          if (startStr.length === endStr.length) {
+            currentFormatOk = str.length === startStr.length;
+          } else if (hasLeadingZero) {
+            currentFormatOk = str.length === width;
+          } else {
+            // 如果没有前导零（例如 1-100），那么输入的码也不应该有前导零
+            if (str.length > 1 && str.startsWith('0')) {
+              currentFormatOk = false;
+            }
+          }
+          
+          if (inRange && currentFormatOk) {
+            inAnyRange = true;
+            formatOk = true;
+            break;
+          }
+        }
+      }
+      
+      if (!inAnyRange || !formatOk) {
         excessCodes.push(code);
       } 
     });

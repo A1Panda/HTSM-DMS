@@ -45,7 +45,7 @@ api.interceptors.response.use(
 // 产品相关API
 export const productAPI = {
   // 获取所有产品
-  getAllProducts: () => api.get('/products'),
+  getAllProducts: (params) => api.get('/products', { params }),
   
   // 获取单个产品
   getProductById: (id) => {
@@ -116,8 +116,30 @@ export const statsAPI = {
   getRecentActivity: () => api.get('/stats/recent-activity')
 };
 
-export default {
+// 备份与恢复 API
+export const backupAPI = {
+  // 手动备份
+  exportBackup: () => api.get('/backup/export', { responseType: 'blob' }),
+  importBackup: (formData) => api.post('/backup/import', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  
+  // 自动备份配置
+  getConfig: () => api.get('/backup/config'),
+  updateConfig: (config) => api.post('/backup/config', config),
+  
+  // 服务器备份管理
+  listLocalBackups: () => api.get('/backup/list'),
+  downloadLocalBackup: (filename) => api.get(`/backup/download/${filename}`, { responseType: 'blob' }),
+  restoreLocalBackup: (filename) => api.post(`/backup/restore/${filename}`),
+  deleteLocalBackup: (filename) => api.delete(`/backup/${filename}`)
+};
+
+const defaultAPI = {
   product: productAPI,
   code: codeAPI,
-  stats: statsAPI
+  stats: statsAPI,
+  backup: backupAPI
 };
+
+export default defaultAPI;

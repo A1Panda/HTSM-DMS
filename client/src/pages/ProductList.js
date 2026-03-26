@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   Row, 
   Col, 
@@ -10,11 +10,10 @@ import {
   message, 
   Typography,
   Empty,
-  // Spin,
   Checkbox,
   Space,
-  // Statistic,
-  Skeleton
+  Skeleton,
+  Pagination
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -49,7 +48,6 @@ const debounce = (func, wait) => {
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -62,12 +60,21 @@ const ProductList = () => {
   const [codesModalVisible, setCodesModalVisible] = useState(false);
   const [codesModalTitle, setCodesModalTitle] = useState('');
   const [codesModalList, setCodesModalList] = useState([]);
+  const [modalCurrentPage, setModalCurrentPage] = useState(1);
+  const modalPageSize = 100;
   
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [sortOrder, setSortOrder] = useState('desc'); // 'asc' | 'desc'
-  const [sortField, setSortField] = useState('createdAt'); // 'createdAt' | 'name' | 'codeCount'
+  const [sortField, setSortField] = useState('createdAt'); // 'createdAt' | 'name'
   const searchInputRef = useRef(null);
+
+  // 分页状态
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 12, // 默认每页12个，适合 2, 3, 4, 6 列布局
+    total: 0
+  });
 
   // 加载产品编码
   const loadProductCodes = useCallback(async (productsData) => {
@@ -107,22 +114,59 @@ const ProductList = () => {
   }, []);
 
   // 加载产品列表
-  const loadProducts = useCallback(async () => {
+  const loadProducts = useCallback(async (page = pagination.current, pageSize = pagination.pageSize, search = searchText, filter = currentFilter, sort = sortField, order = sortOrder) => {
     try {
       setLoading(true);
-      const response = await productAPI.getAllProducts();
-      const productsData = response.data;
+      
+      const params = {
+        page,
+        limit: pageSize,
+        search,
+        category: filter,
+        sortField: sort,
+        sortOrder: order
+      };
+
+      const response = await productAPI.getAllProducts(params);
+      
+      // 处理新旧API响应格式兼容
+      const data = response.data;
+      let productsData = [];
+      let totalCount = 0;
+      let availableCategories = [];
+
+      if (Array.isArray(data)) {
+        // 旧API格式兼容 (虽然我们已经更新了后端，但为了安全起见)
+        productsData = data;
+        totalCount = data.length;
+      } else {
+        // 新API格式
+        productsData = data.products || [];
+        totalCount = data.total || 0;
+        availableCategories = data.categories || [];
+      }
       
       setProducts(productsData);
+      setPagination(prev => ({
+        ...prev,
+        current: page,
+        pageSize: pageSize,
+        total: totalCount
+      }));
       
-      // 提取所有唯一的分类
-      const uniqueCategories = [...new Set(productsData
-        .map(product => product.category)
-        .filter(category => category && category.trim() !== '')
-      )];
-      setCategories(uniqueCategories);
+      // 更新分类列表
+      if (availableCategories.length > 0) {
+        setCategories(availableCategories);
+      } else if (productsData.length > 0 && categories.length === 0) {
+         // 如果后端没返回categories且我们还没有分类，尝试从当前数据提取（降级方案）
+         const uniqueCategories = [...new Set(productsData
+          .map(product => product.category)
+          .filter(category => category && category.trim() !== '')
+        )];
+        setCategories(uniqueCategories);
+      }
       
-      // 加载每个产品的编码数量
+      // 加载每个产品的编码数量 (仅加载当前页)
       loadProductCodes(productsData);
     } catch (error) {
       console.error('加载产品列表失败:', error);
@@ -130,12 +174,19 @@ const ProductList = () => {
     } finally {
       setLoading(false);
     }
-  }, [loadProductCodes]);
+  }, [loadProductCodes, pagination.current, pagination.pageSize, searchText, currentFilter, sortField, sortOrder, categories.length]);
 
   // 初始加载
   useEffect(() => {
-    loadProducts();
-  }, [loadProducts]);
+    // 使用默认参数加载
+    loadProducts(1, 12, '', 'all', 'createdAt', 'desc');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 仅挂载时执行一次
+
+  // 处理页码改变
+  const handlePageChange = (page, pageSize) => {
+    loadProducts(page, pageSize);
+  };
 
   // 添加产品
   const handleAddProduct = async (values) => {
@@ -144,7 +195,8 @@ const ProductList = () => {
       await productAPI.createProduct(values);
       message.success(`产品 "${values.name}" 添加成功`);
       setModalVisible(false);
-      loadProducts();
+      // 重新加载第一页
+      loadProducts(1);
     } catch (error) {
       console.error('添加产品失败:', error);
       message.error('添加产品失败: ' + (error.response?.data?.error || '未知错误'));
@@ -167,6 +219,7 @@ const ProductList = () => {
       message.success(`产品 "${values.name}" 更新成功`);
       setEditModalVisible(false);
       setEditingProduct(null);
+      // 重新加载当前页
       loadProducts();
     } catch (error) {
       console.error('更新产品失败:', error);
@@ -177,25 +230,16 @@ const ProductList = () => {
   };
 
   // 删除产品
-  const confirmDeleteProduct = (id, name) => {
-    confirm({
-      title: '确定要删除这个产品吗？',
-      icon: <ExclamationCircleOutlined />,
-      content: '这将同时删除该产品的所有编码，此操作不可恢复。',
-      okText: '确定',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk: async () => {
-        try {
-          await productAPI.deleteProduct(id);
-          message.success('产品删除成功');
-          loadProducts();
-        } catch (error) {
-          console.error('删除产品失败:', error);
-          message.error('删除产品失败');
-        }
-      }
-    });
+  const handleDeleteProduct = async (id, name) => {
+    try {
+      await productAPI.deleteProduct(id);
+      message.success('产品删除成功');
+      // 重新加载当前页
+      loadProducts();
+    } catch (error) {
+      console.error('删除产品失败:', error);
+      message.error('删除产品失败');
+    }
   };
 
   // 批量删除产品
@@ -228,59 +272,6 @@ const ProductList = () => {
     });
   };
 
-  // 筛选和排序产品（使用useMemo优化）- 需要在使用它的函数之前定义
-  const filteredAndSortedProducts = useMemo(() => {
-    let filtered = [...products];
-    
-    // 应用分类筛选
-    if (currentFilter !== 'all') {
-      filtered = filtered.filter(product => product.category === currentFilter);
-    }
-    
-    // 应用搜索筛选
-    if (searchText) {
-      const searchLower = searchText.toLowerCase();
-      filtered = filtered.filter(product => 
-        product.name.toLowerCase().includes(searchLower) ||
-        product.description?.toLowerCase().includes(searchLower) ||
-        product.category?.toLowerCase().includes(searchLower)
-      );
-    }
-    
-    // 应用排序
-    filtered.sort((a, b) => {
-      let aValue, bValue;
-      
-      switch (sortField) {
-        case 'name':
-          aValue = a.name || '';
-          bValue = b.name || '';
-          break;
-        case 'codeCount':
-          aValue = (productCodes[a.id] || []).length;
-          bValue = (productCodes[b.id] || []).length;
-          break;
-        case 'createdAt':
-        default:
-          aValue = new Date(a.createdAt || 0);
-          bValue = new Date(b.createdAt || 0);
-          break;
-      }
-      
-      if (sortField === 'name') {
-        return sortOrder === 'asc' 
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
-      } else {
-        return sortOrder === 'asc' 
-          ? (aValue > bValue ? 1 : -1)
-          : (aValue < bValue ? 1 : -1);
-      }
-    });
-    
-    return filtered;
-  }, [products, currentFilter, searchText, sortOrder, sortField, productCodes]);
-
   // 处理产品选择
   const handleProductSelect = useCallback((productId, checked) => {
     if (checked) {
@@ -290,14 +281,14 @@ const ProductList = () => {
     }
   }, []);
 
-  // 全选/取消全选
+  // 全选/取消全选 (仅针对当前页)
   const handleSelectAll = useCallback((checked) => {
     if (checked) {
-      setSelectedProducts(filteredAndSortedProducts.map(product => product.id));
+      setSelectedProducts(products.map(product => product.id));
     } else {
       setSelectedProducts([]);
     }
-  }, [filteredAndSortedProducts]);
+  }, [products]);
 
   // 切换批量模式
   const toggleBatchMode = useCallback(() => {
@@ -305,35 +296,51 @@ const ProductList = () => {
     setSelectedProducts([]);
   }, [batchMode]);
 
+  // 引用最新的 loadProducts 函数，解决闭包问题
+  const loadProductsRef = useRef(loadProducts);
+  useEffect(() => {
+    loadProductsRef.current = loadProducts;
+  }, [loadProducts]);
+
   // 搜索产品（防抖）
   const debouncedSearch = useRef(
     debounce((value) => {
       setSearchText(value);
-    }, 300)
+      // 使用最新的 loadProducts 函数
+      // 传递 value 作为 search 参数，其他参数使用默认值（即当前的 state）
+      // 注意：我们需要显式传递 undefined 以触发默认参数
+      loadProductsRef.current(1, undefined, value);
+    }, 500)
   ).current;
 
   const handleSearch = useCallback((value) => {
     debouncedSearch(value);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, pagination.pageSize, currentFilter, sortField, sortOrder, loadProducts]);
 
   // 按分类筛选
   const handleCategoryFilter = useCallback((category) => {
     setCurrentFilter(category);
-  }, []);
+    // 筛选时重置到第一页
+    loadProducts(1, pagination.pageSize, searchText, category, sortField, sortOrder);
+  }, [pagination.pageSize, searchText, sortField, sortOrder, loadProducts]);
 
   // 切换排序
   const handleSort = useCallback((field) => {
+    let newOrder = 'desc';
     if (sortField === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+      newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+      setSortOrder(newOrder);
     } else {
       setSortField(field);
       setSortOrder('desc');
     }
-  }, [sortField, sortOrder]);
+    // 排序时重置到第一页
+    loadProducts(1, pagination.pageSize, searchText, currentFilter, field, newOrder);
+  }, [sortField, sortOrder, pagination.pageSize, searchText, currentFilter, loadProducts]);
 
   // 检查范围内缺失编码和超出范围的编码（使用useCallback优化）
   const checkCodeRangeStatus = useCallback((product) => {
-    if (!product.codeStart || !product.codeEnd) {
+    if (!product) {
       return { 
         hasMissing: false, 
         missingCodes: [], 
@@ -342,9 +349,15 @@ const ProductList = () => {
       };
     }
     
-    const start = parseInt(product.codeStart);
-    const end = parseInt(product.codeEnd);
-    if (isNaN(start) || isNaN(end)) {
+    // 获取所有的编码区间
+    const ranges = [];
+    if (product.codeRanges && product.codeRanges.length > 0) {
+      ranges.push(...product.codeRanges);
+    } else if (product.codeStart && product.codeEnd) {
+      ranges.push({ start: product.codeStart, end: product.codeEnd });
+    }
+    
+    if (ranges.length === 0) {
       return { 
         hasMissing: false, 
         missingCodes: [], 
@@ -356,17 +369,38 @@ const ProductList = () => {
     const codes = productCodes[product.id] || [];
     const existingCodes = codes.map(code => code.code);
     const existingCodesSet = new Set(existingCodes);
-    const width = Math.max(
-      String(product.codeStart).trim().length, 
-      String(product.codeEnd).trim().length
-    );
+    
+    const missingCodes = [];
     
     // 检查缺失的编码
-    const missingCodes = [];
-    for (let i = start; i <= end; i++) {
-      const expected = i.toString().padStart(width, '0');
-      if (!existingCodesSet.has(expected)) {
-        missingCodes.push(expected);
+    for (const range of ranges) {
+      const start = parseInt(range.start);
+      const end = parseInt(range.end);
+      
+      // 检查原字符串是否包含前导零
+      const startStr = String(range.start).trim();
+      const endStr = String(range.end).trim();
+      const hasLeadingZero = startStr.startsWith('0') || endStr.startsWith('0');
+      
+      const width = Math.max(
+        startStr.length, 
+        endStr.length
+      );
+      
+      if (!isNaN(start) && !isNaN(end) && start <= end) {
+        for (let i = start; i <= end; i++) {
+          let expected = i.toString();
+          
+          if (startStr.length === endStr.length) {
+            expected = expected.padStart(startStr.length, '0');
+          } else if (hasLeadingZero) {
+            expected = expected.padStart(width, '0');
+          }
+          
+          if (!existingCodesSet.has(expected)) {
+            missingCodes.push(expected);
+          }
+        }
       }
     }
     
@@ -375,9 +409,47 @@ const ProductList = () => {
     existingCodes.forEach(code => {
       const str = String(code).trim();
       const codeNum = parseInt(str);
-      const inRange = !isNaN(codeNum) && codeNum >= start && codeNum <= end;
-      const formatOk = str.length === width;
-      if (!inRange || !formatOk) {
+      
+      let inAnyRange = false;
+      let formatOk = false;
+      
+      for (const range of ranges) {
+        const start = parseInt(range.start);
+        const end = parseInt(range.end);
+        
+        const startStr = String(range.start).trim();
+        const endStr = String(range.end).trim();
+        const hasLeadingZero = startStr.startsWith('0') || endStr.startsWith('0');
+        
+        const width = Math.max(
+          startStr.length, 
+          endStr.length
+        );
+        
+        if (!isNaN(start) && !isNaN(end) && start <= end) {
+          const inRange = !isNaN(codeNum) && codeNum >= start && codeNum <= end;
+          
+          let currentFormatOk = true;
+          if (startStr.length === endStr.length) {
+            currentFormatOk = str.length === startStr.length;
+          } else if (hasLeadingZero) {
+            currentFormatOk = str.length === width;
+          } else {
+            // 如果没有前导零（例如 1-100），那么输入的码也不应该有前导零
+            if (str.length > 1 && str.startsWith('0')) {
+              currentFormatOk = false;
+            }
+          }
+          
+          if (inRange && currentFormatOk) {
+            inAnyRange = true;
+            formatOk = true;
+            break;
+          }
+        }
+      }
+      
+      if (!inAnyRange || !formatOk) {
         excessCodes.push(code);
       } 
     });
@@ -393,10 +465,9 @@ const ProductList = () => {
   const openCodesModal = (product, type, list) => {
     setCodesModalTitle(`${product.name} - ${type === 'missing' ? '缺失编码' : '超出范围编码'}`);
     setCodesModalList(list || []);
+    setModalCurrentPage(1);
     setCodesModalVisible(true);
   };
-
-  // 已移除顶部统计信息卡片
 
   return (
     <div className="product-list-container">
@@ -426,7 +497,7 @@ const ProductList = () => {
               <Button 
                 icon={<CheckOutlined />} 
                 onClick={toggleBatchMode}
-                disabled={filteredAndSortedProducts.length === 0}
+                disabled={products.length === 0}
               >
                 批量选择
               </Button>
@@ -441,19 +512,17 @@ const ProductList = () => {
           )}
         </Space>
       </div>
-
-      {/* 顶部统计信息已移除 */}
       
       {/* 筛选和排序工具栏 */}
       <Card style={{ marginBottom: 16 }}>
         <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '16px' }}>
           {batchMode && (
             <Checkbox
-              indeterminate={selectedProducts.length > 0 && selectedProducts.length < filteredAndSortedProducts.length}
+              indeterminate={selectedProducts.length > 0 && selectedProducts.length < products.length}
               onChange={(e) => handleSelectAll(e.target.checked)}
-              checked={selectedProducts.length === filteredAndSortedProducts.length && filteredAndSortedProducts.length > 0}
+              checked={selectedProducts.length === products.length && products.length > 0}
             >
-              全选 ({selectedProducts.length}/{filteredAndSortedProducts.length})
+              全选 ({selectedProducts.length}/{products.length})
             </Checkbox>
           )}
           
@@ -462,7 +531,7 @@ const ProductList = () => {
             placeholder="搜索产品名称、描述或分类..."
             allowClear
             enterButton={<SearchOutlined />}
-            onSearch={handleSearch}
+            onSearch={(value) => handleSearch(value)}
             onChange={(e) => handleSearch(e.target.value)}
             style={{ flex: 1, minWidth: 200, maxWidth: 400 }}
           />
@@ -497,14 +566,7 @@ const ProductList = () => {
             >
               名称
             </Button>
-            <Button
-              size="small"
-              icon={sortField === 'codeCount' ? (sortOrder === 'asc' ? <SortAscendingOutlined /> : <SortDescendingOutlined />) : null}
-              onClick={() => handleSort('codeCount')}
-              type={sortField === 'codeCount' ? 'primary' : 'default'}
-            >
-              编码数
-            </Button>
+            {/* 已移除按编码数排序的功能，因为不支持服务端排序 */}
           </Space>
         </div>
       </Card>
@@ -519,7 +581,7 @@ const ProductList = () => {
             </Col>
           ))}
         </Row>
-      ) : filteredAndSortedProducts.length === 0 ? (
+      ) : products.length === 0 ? (
         <Card>
           <Empty 
             description={
@@ -536,6 +598,7 @@ const ProductList = () => {
                 if (searchInputRef.current) {
                   searchInputRef.current.input.value = '';
                 }
+                loadProducts(1, pagination.pageSize, '', 'all', sortField, sortOrder);
               }}>
                 清除筛选
               </Button>
@@ -547,30 +610,45 @@ const ProductList = () => {
           </Empty>
         </Card>
       ) : (
-        <Row gutter={[16, 16]}>
-          {filteredAndSortedProducts.map(product => {
-            const codes = productCodes[product.id] || [];
-            const codeCount = codes.length;
-            const codeRangeStatus = checkCodeRangeStatus(product);
-            
-            return (
-              <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
-                <ProductCard 
-                  product={product}
-                  codeCount={codeCount}
-                  onDelete={confirmDeleteProduct}
-                  codeRangeStatus={codeRangeStatus}
-                  batchMode={batchMode}
-                  selected={selectedProducts.includes(product.id)}
-                  onSelect={(checked) => handleProductSelect(product.id, checked)}
-                  onViewMissing={(list) => openCodesModal(product, 'missing', list)}
-                  onViewExcess={(list) => openCodesModal(product, 'excess', list)}
-                  onEdit={handleEditProduct}
-                />
-              </Col>
-            );
-          })}
-        </Row>
+        <>
+          <Row gutter={[16, 16]}>
+            {products.map(product => {
+              const codes = productCodes[product.id] || [];
+              const codeCount = codes.length;
+              const codeRangeStatus = checkCodeRangeStatus(product);
+              
+              return (
+                <Col xs={24} sm={12} md={8} lg={6} key={product.id}>
+                  <ProductCard 
+                    product={product}
+                    codeCount={codeCount}
+                    onDelete={handleDeleteProduct}
+                    codeRangeStatus={codeRangeStatus}
+                    batchMode={batchMode}
+                    selected={selectedProducts.includes(product.id)}
+                    onSelect={(checked) => handleProductSelect(product.id, checked)}
+                    onViewMissing={(list) => openCodesModal(product, 'missing', list)}
+                    onViewExcess={(list) => openCodesModal(product, 'excess', list)}
+                    onEdit={handleEditProduct}
+                  />
+                </Col>
+              );
+            })}
+          </Row>
+          
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24, paddingBottom: 24 }}>
+            <Pagination
+              current={pagination.current}
+              pageSize={pagination.pageSize}
+              total={pagination.total}
+              onChange={handlePageChange}
+              showSizeChanger
+              showQuickJumper
+              showTotal={(total) => `共 ${total} 个产品`}
+              pageSizeOptions={['12', '24', '36', '48']}
+            />
+          </div>
+        </>
       )}
       
       {/* 添加产品表单 */}
@@ -614,15 +692,27 @@ const ProductList = () => {
         footer={null}
         width={700}
       >
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, maxHeight: '400px', overflowY: 'auto', padding: '4px' }}>
           {codesModalList && codesModalList.length > 0 ? (
-            codesModalList.map((c) => (
+            codesModalList.slice((modalCurrentPage - 1) * modalPageSize, modalCurrentPage * modalPageSize).map((c) => (
               <div key={c} style={{ padding: '6px 8px', background: '#fafafa', borderRadius: 4 }}>{c}</div>
             ))
           ) : (
-            <div style={{ gridColumn: 'span 4', color: '#999' }}>暂无数据</div>
+            <div style={{ gridColumn: 'span 4', color: '#999', textAlign: 'center', padding: '20px' }}>暂无数据</div>
           )}
         </div>
+        {codesModalList && codesModalList.length > 0 && (
+          <div style={{ marginTop: 16, textAlign: 'right' }}>
+            <Pagination
+              current={modalCurrentPage}
+              pageSize={modalPageSize}
+              total={codesModalList.length}
+              onChange={(page) => setModalCurrentPage(page)}
+              showSizeChanger={false}
+              size="small"
+            />
+          </div>
+        )}
       </Modal>
     </div>
   );

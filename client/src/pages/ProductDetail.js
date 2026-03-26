@@ -16,7 +16,8 @@ import {
   Tag,
   Divider,
   Checkbox,
-  Select
+  Select,
+  Pagination
 } from 'antd';
 import { 
   ArrowLeftOutlined, 
@@ -60,6 +61,12 @@ const ProductDetail = () => {
   const [codesModalVisible, setCodesModalVisible] = useState(false);
   const [codesModalTitle, setCodesModalTitle] = useState('');
   const [codesModalList, setCodesModalList] = useState([]);
+  const [modalType, setModalType] = useState(''); // 'missing' or 'excess'
+  const [modalSortOrder, setModalSortOrder] = useState('asc');
+  const [modalSelectedCodes, setModalSelectedCodes] = useState([]);
+  const [modalActionLoading, setModalActionLoading] = useState(false);
+  const [modalCurrentPage, setModalCurrentPage] = useState(1);
+  const modalPageSize = 100;
   
   // 回收站状态
   const [recycleBinVisible, setRecycleBinVisible] = useState(false);
@@ -184,7 +191,11 @@ const ProductDetail = () => {
   const handleBatchRestoreCodes = async (codeIds) => {
     try {
       setRecycleLoading(true);
-      await Promise.all(codeIds.map(codeId => codeAPI.restoreCode(id, codeId)));
+      const BATCH_SIZE = 50;
+      for (let i = 0; i < codeIds.length; i += BATCH_SIZE) {
+        const batch = codeIds.slice(i, i + BATCH_SIZE);
+        await Promise.all(batch.map(codeId => codeAPI.restoreCode(id, codeId)));
+      }
       message.success(`已恢复 ${codeIds.length} 个编码`);
       loadDeletedCodes(); // Reload recycle bin
       loadCodes(); // Reload main list
@@ -200,7 +211,11 @@ const ProductDetail = () => {
   const handleBatchPermanentDeleteCodes = async (codeIds) => {
     try {
       setRecycleLoading(true);
-      await Promise.all(codeIds.map(codeId => codeAPI.permanentDeleteCode(id, codeId)));
+      const BATCH_SIZE = 50;
+      for (let i = 0; i < codeIds.length; i += BATCH_SIZE) {
+        const batch = codeIds.slice(i, i + BATCH_SIZE);
+        await Promise.all(batch.map(codeId => codeAPI.permanentDeleteCode(id, codeId)));
+      }
       message.success(`已永久删除 ${codeIds.length} 个编码`);
       loadDeletedCodes();
     } catch (error) {
@@ -255,25 +270,15 @@ const ProductDetail = () => {
   };
 
   // 删除编码
-  const confirmDeleteCode = (codeId) => {
-    confirm({
-      title: '确定要删除这个编码吗？',
-      icon: <ExclamationCircleOutlined />,
-      content: '删除后可从回收站恢复。',
-      okText: '删除',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk: async () => {
-        try {
-          await codeAPI.deleteCode(id, codeId);
-          message.success('编码已移入回收站');
-          loadCodes();
-        } catch (error) {
-          console.error('删除编码失败:', error);
-          message.error('删除编码失败');
-        }
-      }
-    });
+  const handleDeleteCode = async (codeId) => {
+    try {
+      await codeAPI.deleteCode(id, codeId);
+      message.success('编码已移入回收站');
+      loadCodes();
+    } catch (error) {
+      console.error('删除编码失败:', error);
+      message.error('删除编码失败');
+    }
   };
 
   // 批量删除编码
@@ -292,8 +297,12 @@ const ProductDetail = () => {
       cancelText: '取消',
       onOk: async () => {
         try {
-          // 批量删除
-          await Promise.all(selectedCodes.map(codeId => codeAPI.deleteCode(id, codeId)));
+          // 批量删除，分块处理
+          const BATCH_SIZE = 50;
+          for (let i = 0; i < selectedCodes.length; i += BATCH_SIZE) {
+            const batch = selectedCodes.slice(i, i + BATCH_SIZE);
+            await Promise.all(batch.map(codeId => codeAPI.deleteCode(id, codeId)));
+          }
           message.success(`已将 ${selectedCodes.length} 个编码移入回收站`);
           setSelectedCodes([]);
           setCodeBatchMode(false);
@@ -399,7 +408,7 @@ const ProductDetail = () => {
 
   // 检查范围内缺失编码和超出范围的编码
   const checkCodeRangeStatus = () => {
-    if (!product || !product.codeStart || !product.codeEnd) {
+    if (!product) {
       return { 
         hasMissing: false, 
         missingCodes: [], 
@@ -408,9 +417,15 @@ const ProductDetail = () => {
       };
     }
     
-    const start = parseInt(product.codeStart);
-    const end = parseInt(product.codeEnd);
-    if (isNaN(start) || isNaN(end)) {
+    // 获取所有的编码区间
+    const ranges = [];
+    if (product.codeRanges && product.codeRanges.length > 0) {
+      ranges.push(...product.codeRanges);
+    } else if (product.codeStart && product.codeEnd) {
+      ranges.push({ start: product.codeStart, end: product.codeEnd });
+    }
+    
+    if (ranges.length === 0) {
       return { 
         hasMissing: false, 
         missingCodes: [], 
@@ -421,17 +436,40 @@ const ProductDetail = () => {
     
     const existingCodes = codes.map(code => code.code);
     const existingCodesSet = new Set(existingCodes);
-    const width = Math.max(
-      String(product.codeStart).trim().length, 
-      String(product.codeEnd).trim().length
-    );
+    
+    const missingCodes = [];
     
     // 检查缺失的编码
-    const missingCodes = [];
-    for (let i = start; i <= end; i++) {
-      const expected = i.toString().padStart(width, '0');
-      if (!existingCodesSet.has(expected)) {
-        missingCodes.push(expected);
+    for (const range of ranges) {
+      const start = parseInt(range.start);
+      const end = parseInt(range.end);
+      
+      // 检查原字符串是否包含前导零
+      const startStr = String(range.start).trim();
+      const endStr = String(range.end).trim();
+      const hasLeadingZero = startStr.startsWith('0') || endStr.startsWith('0');
+      
+      const width = Math.max(
+        startStr.length, 
+        endStr.length
+      );
+      
+      if (!isNaN(start) && !isNaN(end) && start <= end) {
+        for (let i = start; i <= end; i++) {
+          let expected = i.toString();
+          
+          // 如果起始值和结束值长度相同，则严格按照该长度补零（例如 1-100 不补，001-100 补零到3位）
+          if (startStr.length === endStr.length) {
+            expected = expected.padStart(startStr.length, '0');
+          } else if (hasLeadingZero) {
+            // 如果长度不同，但存在明确的前导零，按照最大宽度补零
+            expected = expected.padStart(width, '0');
+          }
+          
+          if (!existingCodesSet.has(expected)) {
+            missingCodes.push(expected);
+          }
+        }
       }
     }
     
@@ -440,9 +478,50 @@ const ProductDetail = () => {
     existingCodes.forEach(code => {
       const str = String(code).trim();
       const codeNum = parseInt(str);
-      const inRange = !isNaN(codeNum) && codeNum >= start && codeNum <= end;
-      const formatOk = str.length === width;
-      if (!inRange || !formatOk) {
+      
+      let inAnyRange = false;
+      let formatOk = false;
+      
+      for (const range of ranges) {
+        const start = parseInt(range.start);
+        const end = parseInt(range.end);
+        
+        const startStr = String(range.start).trim();
+        const endStr = String(range.end).trim();
+        const hasLeadingZero = startStr.startsWith('0') || endStr.startsWith('0');
+        
+        const width = Math.max(
+          startStr.length, 
+          endStr.length
+        );
+        
+        if (!isNaN(start) && !isNaN(end) && start <= end) {
+          const inRange = !isNaN(codeNum) && codeNum >= start && codeNum <= end;
+          
+          let currentFormatOk = true;
+          // 只有在明确需要固定长度时，才检查格式
+          if (startStr.length === endStr.length) {
+            // 如果起止长度相同，说明是固定宽度，比如 100-200，那么输入的码必须也是3位
+            currentFormatOk = str.length === startStr.length;
+          } else if (hasLeadingZero) {
+            // 如果有前导零，比如 01-100，则要求输入码的长度必须等于最大宽度
+            currentFormatOk = str.length === width;
+          } else {
+            // 如果没有前导零（例如 1-100），那么输入的码也不应该有前导零（除非它本身就是数字0）
+            if (str.length > 1 && str.startsWith('0')) {
+              currentFormatOk = false;
+            }
+          }
+          
+          if (inRange && currentFormatOk) {
+            inAnyRange = true;
+            formatOk = true;
+            break;
+          }
+        }
+      }
+      
+      if (!inAnyRange || !formatOk) {
         excessCodes.push(code);
       } 
     });
@@ -482,6 +561,128 @@ const ProductDetail = () => {
     ? Math.min(100, Math.round((codeCount / requiredQuantity) * 100)) 
     : 100;
 
+  // 模态框逻辑
+  const sortedModalList = [...codesModalList].sort((a, b) => {
+    return modalSortOrder === 'asc' 
+      ? String(a).localeCompare(String(b), undefined, { numeric: true })
+      : String(b).localeCompare(String(a), undefined, { numeric: true });
+  });
+
+  const paginatedModalList = sortedModalList.slice(
+    (modalCurrentPage - 1) * modalPageSize,
+    modalCurrentPage * modalPageSize
+  );
+
+  const handleModalSelectAll = (e) => {
+    if (e.target.checked) {
+      setModalSelectedCodes(sortedModalList);
+    } else {
+      setModalSelectedCodes([]);
+    }
+  };
+
+  const handleModalCodeSelect = (codeStr, checked) => {
+    if (checked) {
+      setModalSelectedCodes(prev => [...prev, codeStr]);
+    } else {
+      setModalSelectedCodes(prev => prev.filter(c => c !== codeStr));
+    }
+  };
+
+  const handleModalSingleAction = async (codeStr) => {
+    try {
+      setModalActionLoading(true);
+      if (modalType === 'missing') {
+        await codeAPI.addCode(id, { code: codeStr });
+        message.success(`已添加缺失编码: ${codeStr}`);
+      } else {
+        const targetCode = codes.find(c => c.code === codeStr);
+        if (!targetCode) {
+          message.error('找不到该编码的记录');
+          return;
+        }
+        await codeAPI.deleteCode(id, targetCode.id);
+        message.success(`已删除超出编码: ${codeStr}`);
+      }
+      
+      // Remove from modal list and selected
+      setCodesModalList(prev => prev.filter(c => c !== codeStr));
+      setModalSelectedCodes(prev => prev.filter(c => c !== codeStr));
+      
+      // Update main list silently
+      loadCodes();
+    } catch (error) {
+      message.error(`${modalType === 'missing' ? '添加' : '删除'}失败: ${error.message || '未知错误'}`);
+    } finally {
+      setModalActionLoading(false);
+    }
+  };
+
+  const handleModalBatchAction = async () => {
+    if (modalSelectedCodes.length === 0) return;
+    let hasError = false;
+    try {
+      setModalActionLoading(true);
+      
+      const BATCH_SIZE = 50;
+      
+      if (modalType === 'missing') {
+        let successCount = 0;
+        for (let i = 0; i < modalSelectedCodes.length; i += BATCH_SIZE) {
+          const batch = modalSelectedCodes.slice(i, i + BATCH_SIZE);
+          try {
+            await Promise.all(batch.map(codeStr => codeAPI.addCode(id, { code: codeStr })));
+            successCount += batch.length;
+          } catch (err) {
+            console.error('Batch add error:', err);
+            hasError = true;
+            break; // Stop further batches on error
+          }
+        }
+        if (successCount > 0) message.success(`成功批量添加 ${successCount} 个缺失编码`);
+        if (hasError) message.error('部分编码添加失败，已中断操作');
+      } else {
+        const idsToDelete = modalSelectedCodes.map(codeStr => {
+          const target = codes.find(c => c.code === codeStr);
+          return target ? target.id : null;
+        }).filter(codeId => codeId !== null);
+        
+        if (idsToDelete.length > 0) {
+          let successCount = 0;
+          for (let i = 0; i < idsToDelete.length; i += BATCH_SIZE) {
+            const batch = idsToDelete.slice(i, i + BATCH_SIZE);
+            try {
+              await Promise.all(batch.map(codeId => codeAPI.deleteCode(id, codeId)));
+              successCount += batch.length;
+            } catch (err) {
+              console.error('Batch delete error:', err);
+              hasError = true;
+              break;
+            }
+          }
+          if (successCount > 0) message.success(`成功批量删除 ${successCount} 个超出编码`);
+          if (hasError) message.error('部分编码删除失败，已中断操作');
+        } else {
+          message.error('未找到对应编码记录');
+          return;
+        }
+      }
+      
+    } catch (error) {
+      message.error(`批量操作出现异常: ${error.message || '未知错误'}`);
+    } finally {
+      // 无论成功还是部分失败，都清理状态并刷新列表
+      setCodesModalList(prev => prev.filter(c => !modalSelectedCodes.includes(c)));
+      setModalSelectedCodes([]);
+      setModalCurrentPage(1);
+      
+      // Update main list silently
+      loadCodes();
+      
+      setModalActionLoading(false);
+    }
+  };
+
   return (
     <div>
       <div style={{ marginBottom: 16 }}>
@@ -509,9 +710,11 @@ const ProductDetail = () => {
               status={completionRate < 100 ? "active" : "success"}
             />
           </Descriptions.Item>
-          {product.codeStart && product.codeEnd && (
+          {((product.codeRanges && product.codeRanges.length > 0) || (product.codeStart && product.codeEnd)) && (
             <Descriptions.Item label="编码范围" span={3}>
-              {product.codeStart} - {product.codeEnd}
+              {product.codeRanges && product.codeRanges.length > 0 
+                ? product.codeRanges.map(r => `${r.start} - ${r.end}`).join(', ') 
+                : `${product.codeStart} - ${product.codeEnd}`}
               {hasMissing && (
                 <Tooltip 
                   title={
@@ -524,7 +727,15 @@ const ProductDetail = () => {
                     </div>
                   }
                 >
-                  <Tag color="red" style={{ marginLeft: 8, cursor: 'pointer' }} onClick={() => { setCodesModalTitle(`${product.name} - 缺失编码`); setCodesModalList(missingCodes); setCodesModalVisible(true); }}>
+                  <Tag color="red" style={{ marginLeft: 8, cursor: 'pointer' }} onClick={() => { 
+                    setCodesModalTitle(`${product.name} - 缺失编码`); 
+                    setCodesModalList(missingCodes); 
+                    setModalType('missing');
+                    setModalSortOrder('asc');
+                    setModalSelectedCodes([]);
+                    setModalCurrentPage(1);
+                    setCodesModalVisible(true); 
+                  }}>
                     缺失 {missingCodes.length} 个编码
                   </Tag>
                 </Tooltip>
@@ -541,7 +752,15 @@ const ProductDetail = () => {
                     </div>
                   }
                 >
-                  <Tag color="orange" style={{ marginLeft: 8, cursor: 'pointer' }} onClick={() => { setCodesModalTitle(`${product.name} - 超出范围编码`); setCodesModalList(excessCodes); setCodesModalVisible(true); }}>
+                  <Tag color="orange" style={{ marginLeft: 8, cursor: 'pointer' }} onClick={() => { 
+                    setCodesModalTitle(`${product.name} - 超出范围编码`); 
+                    setCodesModalList(excessCodes); 
+                    setModalType('excess');
+                    setModalSortOrder('asc');
+                    setModalSelectedCodes([]);
+                    setModalCurrentPage(1);
+                    setCodesModalVisible(true); 
+                  }}>
                     超出 {excessCodes.length} 个编码
                   </Tag>
                 </Tooltip>
@@ -658,7 +877,7 @@ const ProductDetail = () => {
         
         <CodeList 
           codes={filteredCodes}
-          onDelete={confirmDeleteCode}
+          onDelete={handleDeleteCode}
           batchMode={codeBatchMode}
           selectedCodes={selectedCodes}
           onSelect={handleCodeSelect}
@@ -686,15 +905,86 @@ const ProductDetail = () => {
         footer={null}
         width={700}
       >
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-          {codesModalList && codesModalList.length > 0 ? (
-            codesModalList.map((c) => (
-              <div key={c} style={{ padding: '6px 8px', background: '#fafafa', borderRadius: 4 }}>{c}</div>
-            ))
-          ) : (
-            <div style={{ gridColumn: 'span 4', color: '#999' }}>暂无数据</div>
-          )}
+        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Space>
+            <Checkbox 
+              onChange={handleModalSelectAll} 
+              checked={modalSelectedCodes.length === sortedModalList.length && sortedModalList.length > 0}
+              indeterminate={modalSelectedCodes.length > 0 && modalSelectedCodes.length < sortedModalList.length}
+            >
+              全选
+            </Checkbox>
+            <Select 
+              value={modalSortOrder} 
+              onChange={setModalSortOrder} 
+              style={{ width: 120 }}
+              options={[
+                { value: 'asc', label: '升序排列' },
+                { value: 'desc', label: '降序排列' }
+              ]}
+            />
+          </Space>
+          <Button 
+            type="primary" 
+            danger={modalType === 'excess'}
+            disabled={modalSelectedCodes.length === 0}
+            loading={modalActionLoading}
+            onClick={handleModalBatchAction}
+          >
+            {modalType === 'missing' ? `批量添加 (${modalSelectedCodes.length})` : `批量删除 (${modalSelectedCodes.length})`}
+          </Button>
         </div>
+
+        <Spin spinning={modalActionLoading}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, maxHeight: '400px', overflowY: 'auto', padding: '4px' }}>
+            {paginatedModalList && paginatedModalList.length > 0 ? (
+              paginatedModalList.map((c) => (
+                <div key={c} style={{ 
+                  padding: '6px 8px', 
+                  background: '#fafafa', 
+                  borderRadius: 4, 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  border: '1px solid #f0f0f0'
+                }}>
+                  <Checkbox 
+                    checked={modalSelectedCodes.includes(c)}
+                    onChange={(e) => handleModalCodeSelect(c, e.target.checked)}
+                  >
+                    <span style={{ marginLeft: 4 }}>{c}</span>
+                  </Checkbox>
+                  <Tooltip title={modalType === 'missing' ? '添加此编码' : '删除此编码'}>
+                    <Button 
+                      type="text" 
+                      size="small" 
+                      icon={modalType === 'missing' ? <PlusOutlined /> : <DeleteOutlined />} 
+                      onClick={() => handleModalSingleAction(c)}
+                      danger={modalType === 'excess'}
+                      style={{ padding: '0 4px', height: '20px' }}
+                    />
+                  </Tooltip>
+                </div>
+              ))
+            ) : (
+              <div style={{ gridColumn: 'span 4', color: '#999', textAlign: 'center', padding: '20px' }}>
+                <Empty description="暂无数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              </div>
+            )}
+          </div>
+          {sortedModalList.length > 0 && (
+            <div style={{ marginTop: 16, textAlign: 'right' }}>
+              <Pagination
+                current={modalCurrentPage}
+                pageSize={modalPageSize}
+                total={sortedModalList.length}
+                onChange={(page) => setModalCurrentPage(page)}
+                showSizeChanger={false}
+                size="small"
+              />
+            </div>
+          )}
+        </Spin>
       </Modal>
       
       {/* 扫码对话框 */}

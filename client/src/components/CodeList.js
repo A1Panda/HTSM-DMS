@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, Button, Tag, Space, Checkbox } from 'antd';
+import { List, Button, Tag, Space, Checkbox, Popconfirm } from 'antd';
 import { DeleteOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 
@@ -45,13 +45,22 @@ const CodeList = ({
               onChange={(e) => onSelect && onSelect(code.id, e.target.checked)}
             />
           ] : [
-            <Button 
-              key="delete"
-              type="text" 
-              danger 
-              icon={<DeleteOutlined />} 
-              onClick={() => onDelete(code.id)}
-            />
+            <Popconfirm
+              key="delete-popconfirm"
+              title="确定要删除这个编码吗？"
+              description="删除后可从回收站恢复。"
+              onConfirm={() => onDelete(code.id)}
+              okText="删除"
+              cancelText="取消"
+              okButtonProps={{ danger: true }}
+            >
+              <Button 
+                key="delete"
+                type="text" 
+                danger 
+                icon={<DeleteOutlined />} 
+              />
+            </Popconfirm>
           ]}
         >
           <List.Item.Meta

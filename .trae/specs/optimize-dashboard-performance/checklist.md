@@ -1,0 +1,6 @@
+- [x] 仪表盘页面正常加载且无报错。
+- [x] 仪表盘页面的网络请求中不再包含对 `/api/products`（全量获取产品）的调用。
+- [x] 仪表盘的“产品分类分布”饼图能够正确渲染，并且数据直接来源于 `/api/stats` 接口的 `categoryDistribution` 字段。
+- [x] 代码审查确认：`server/src/controllers/statsController.js` 中的 `getStats`、`getActivityData`、`getRecentActivity` 已针对 MongoDB 模式使用了优化的查询方法（如 `countDocuments`、`limit`、`aggregate` 或带索引的时间区间查询）。
+- [x] 代码审查确认：`getQualityStats` 已将全量 `Code.find()` 修改为按需获取每个产品的编码（`Code.find({ productId: product.id })`）。
+- [x] 兼容性验证：在未使用 MongoDB（即 FileSystem 模式）的情况下，仪表盘的各项统计依然能够正确显示。

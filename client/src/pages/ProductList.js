@@ -60,6 +60,8 @@ const ProductList = () => {
   const [codesModalVisible, setCodesModalVisible] = useState(false);
   const [codesModalTitle, setCodesModalTitle] = useState('');
   const [codesModalList, setCodesModalList] = useState([]);
+  const [modalCurrentPage, setModalCurrentPage] = useState(1);
+  const modalPageSize = 100;
   
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -463,6 +465,7 @@ const ProductList = () => {
   const openCodesModal = (product, type, list) => {
     setCodesModalTitle(`${product.name} - ${type === 'missing' ? '缺失编码' : '超出范围编码'}`);
     setCodesModalList(list || []);
+    setModalCurrentPage(1);
     setCodesModalVisible(true);
   };
 
@@ -689,15 +692,27 @@ const ProductList = () => {
         footer={null}
         width={700}
       >
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, maxHeight: '400px', overflowY: 'auto', padding: '4px' }}>
           {codesModalList && codesModalList.length > 0 ? (
-            codesModalList.map((c) => (
+            codesModalList.slice((modalCurrentPage - 1) * modalPageSize, modalCurrentPage * modalPageSize).map((c) => (
               <div key={c} style={{ padding: '6px 8px', background: '#fafafa', borderRadius: 4 }}>{c}</div>
             ))
           ) : (
-            <div style={{ gridColumn: 'span 4', color: '#999' }}>暂无数据</div>
+            <div style={{ gridColumn: 'span 4', color: '#999', textAlign: 'center', padding: '20px' }}>暂无数据</div>
           )}
         </div>
+        {codesModalList && codesModalList.length > 0 && (
+          <div style={{ marginTop: 16, textAlign: 'right' }}>
+            <Pagination
+              current={modalCurrentPage}
+              pageSize={modalPageSize}
+              total={codesModalList.length}
+              onChange={(page) => setModalCurrentPage(page)}
+              showSizeChanger={false}
+              size="small"
+            />
+          </div>
+        )}
       </Modal>
     </div>
   );

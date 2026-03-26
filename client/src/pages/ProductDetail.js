@@ -16,7 +16,8 @@ import {
   Tag,
   Divider,
   Checkbox,
-  Select
+  Select,
+  Pagination
 } from 'antd';
 import { 
   ArrowLeftOutlined, 
@@ -64,6 +65,8 @@ const ProductDetail = () => {
   const [modalSortOrder, setModalSortOrder] = useState('asc');
   const [modalSelectedCodes, setModalSelectedCodes] = useState([]);
   const [modalActionLoading, setModalActionLoading] = useState(false);
+  const [modalCurrentPage, setModalCurrentPage] = useState(1);
+  const modalPageSize = 100;
   
   // 回收站状态
   const [recycleBinVisible, setRecycleBinVisible] = useState(false);
@@ -188,7 +191,11 @@ const ProductDetail = () => {
   const handleBatchRestoreCodes = async (codeIds) => {
     try {
       setRecycleLoading(true);
-      await Promise.all(codeIds.map(codeId => codeAPI.restoreCode(id, codeId)));
+      const BATCH_SIZE = 50;
+      for (let i = 0; i < codeIds.length; i += BATCH_SIZE) {
+        const batch = codeIds.slice(i, i + BATCH_SIZE);
+        await Promise.all(batch.map(codeId => codeAPI.restoreCode(id, codeId)));
+      }
       message.success(`已恢复 ${codeIds.length} 个编码`);
       loadDeletedCodes(); // Reload recycle bin
       loadCodes(); // Reload main list
@@ -204,7 +211,11 @@ const ProductDetail = () => {
   const handleBatchPermanentDeleteCodes = async (codeIds) => {
     try {
       setRecycleLoading(true);
-      await Promise.all(codeIds.map(codeId => codeAPI.permanentDeleteCode(id, codeId)));
+      const BATCH_SIZE = 50;
+      for (let i = 0; i < codeIds.length; i += BATCH_SIZE) {
+        const batch = codeIds.slice(i, i + BATCH_SIZE);
+        await Promise.all(batch.map(codeId => codeAPI.permanentDeleteCode(id, codeId)));
+      }
       message.success(`已永久删除 ${codeIds.length} 个编码`);
       loadDeletedCodes();
     } catch (error) {
@@ -286,8 +297,12 @@ const ProductDetail = () => {
       cancelText: '取消',
       onOk: async () => {
         try {
-          // 批量删除
-          await Promise.all(selectedCodes.map(codeId => codeAPI.deleteCode(id, codeId)));
+          // 批量删除，分块处理
+          const BATCH_SIZE = 50;
+          for (let i = 0; i < selectedCodes.length; i += BATCH_SIZE) {
+            const batch = selectedCodes.slice(i, i + BATCH_SIZE);
+            await Promise.all(batch.map(codeId => codeAPI.deleteCode(id, codeId)));
+          }
           message.success(`已将 ${selectedCodes.length} 个编码移入回收站`);
           setSelectedCodes([]);
           setCodeBatchMode(false);
@@ -553,6 +568,11 @@ const ProductDetail = () => {
       : String(b).localeCompare(String(a), undefined, { numeric: true });
   });
 
+  const paginatedModalList = sortedModalList.slice(
+    (modalCurrentPage - 1) * modalPageSize,
+    modalCurrentPage * modalPageSize
+  );
+
   const handleModalSelectAll = (e) => {
     if (e.target.checked) {
       setModalSelectedCodes(sortedModalList);
@@ -600,11 +620,27 @@ const ProductDetail = () => {
 
   const handleModalBatchAction = async () => {
     if (modalSelectedCodes.length === 0) return;
+    let hasError = false;
     try {
       setModalActionLoading(true);
+      
+      const BATCH_SIZE = 50;
+      
       if (modalType === 'missing') {
-        await Promise.all(modalSelectedCodes.map(codeStr => codeAPI.addCode(id, { code: codeStr })));
-        message.success(`成功批量添加 ${modalSelectedCodes.length} 个缺失编码`);
+        let successCount = 0;
+        for (let i = 0; i < modalSelectedCodes.length; i += BATCH_SIZE) {
+          const batch = modalSelectedCodes.slice(i, i + BATCH_SIZE);
+          try {
+            await Promise.all(batch.map(codeStr => codeAPI.addCode(id, { code: codeStr })));
+            successCount += batch.length;
+          } catch (err) {
+            console.error('Batch add error:', err);
+            hasError = true;
+            break; // Stop further batches on error
+          }
+        }
+        if (successCount > 0) message.success(`成功批量添加 ${successCount} 个缺失编码`);
+        if (hasError) message.error('部分编码添加失败，已中断操作');
       } else {
         const idsToDelete = modalSelectedCodes.map(codeStr => {
           const target = codes.find(c => c.code === codeStr);
@@ -612,23 +648,37 @@ const ProductDetail = () => {
         }).filter(codeId => codeId !== null);
         
         if (idsToDelete.length > 0) {
-          await Promise.all(idsToDelete.map(codeId => codeAPI.deleteCode(id, codeId)));
-          message.success(`成功批量删除 ${idsToDelete.length} 个超出编码`);
+          let successCount = 0;
+          for (let i = 0; i < idsToDelete.length; i += BATCH_SIZE) {
+            const batch = idsToDelete.slice(i, i + BATCH_SIZE);
+            try {
+              await Promise.all(batch.map(codeId => codeAPI.deleteCode(id, codeId)));
+              successCount += batch.length;
+            } catch (err) {
+              console.error('Batch delete error:', err);
+              hasError = true;
+              break;
+            }
+          }
+          if (successCount > 0) message.success(`成功批量删除 ${successCount} 个超出编码`);
+          if (hasError) message.error('部分编码删除失败，已中断操作');
         } else {
           message.error('未找到对应编码记录');
           return;
         }
       }
       
-      // Update modal list and selected
+    } catch (error) {
+      message.error(`批量操作出现异常: ${error.message || '未知错误'}`);
+    } finally {
+      // 无论成功还是部分失败，都清理状态并刷新列表
       setCodesModalList(prev => prev.filter(c => !modalSelectedCodes.includes(c)));
       setModalSelectedCodes([]);
+      setModalCurrentPage(1);
       
       // Update main list silently
       loadCodes();
-    } catch (error) {
-      message.error(`批量操作失败: ${error.message || '未知错误'}`);
-    } finally {
+      
       setModalActionLoading(false);
     }
   };
@@ -683,6 +733,7 @@ const ProductDetail = () => {
                     setModalType('missing');
                     setModalSortOrder('asc');
                     setModalSelectedCodes([]);
+                    setModalCurrentPage(1);
                     setCodesModalVisible(true); 
                   }}>
                     缺失 {missingCodes.length} 个编码
@@ -707,6 +758,7 @@ const ProductDetail = () => {
                     setModalType('excess');
                     setModalSortOrder('asc');
                     setModalSelectedCodes([]);
+                    setModalCurrentPage(1);
                     setCodesModalVisible(true); 
                   }}>
                     超出 {excessCodes.length} 个编码
@@ -885,8 +937,8 @@ const ProductDetail = () => {
 
         <Spin spinning={modalActionLoading}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, maxHeight: '400px', overflowY: 'auto', padding: '4px' }}>
-            {sortedModalList && sortedModalList.length > 0 ? (
-              sortedModalList.map((c) => (
+            {paginatedModalList && paginatedModalList.length > 0 ? (
+              paginatedModalList.map((c) => (
                 <div key={c} style={{ 
                   padding: '6px 8px', 
                   background: '#fafafa', 
@@ -920,6 +972,18 @@ const ProductDetail = () => {
               </div>
             )}
           </div>
+          {sortedModalList.length > 0 && (
+            <div style={{ marginTop: 16, textAlign: 'right' }}>
+              <Pagination
+                current={modalCurrentPage}
+                pageSize={modalPageSize}
+                total={sortedModalList.length}
+                onChange={(page) => setModalCurrentPage(page)}
+                showSizeChanger={false}
+                size="small"
+              />
+            </div>
+          )}
         </Spin>
       </Modal>
       

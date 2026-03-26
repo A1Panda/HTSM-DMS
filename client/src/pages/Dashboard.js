@@ -20,7 +20,7 @@ import {
   Legend,
   Filler,
 } from 'chart.js';
-import { statsAPI, productAPI, codeAPI } from '../services/api';
+import { statsAPI } from '../services/api';
 import StatCard from '../components/StatCard';
 import QualityPanel from '../components/QualityPanel';
 import ActivityStream from '../components/ActivityStream';
@@ -65,7 +65,6 @@ const Dashboard = () => {
     totalCodes: 0,
     recentActivity: 0
   });
-  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
@@ -82,37 +81,27 @@ const Dashboard = () => {
   const [qualityLoading, setQualityLoading] = useState(true);
   const [activityLoading, setActivityLoading] = useState(true);
 
-  // 处理产品分类数据（使用useCallback优化）
-  const processProductCategories = useCallback((productsData) => {
-    // 按分类统计产品数量
-    const categories = {};
-    productsData.forEach(product => {
-      const category = product.category || '未分类';
-      categories[category] = (categories[category] || 0) + 1;
-    });
-    
-    // 准备图表数据
-    const labels = Object.keys(categories);
-    const data = Object.values(categories);
-    
-    setCategoryData({
-      labels,
-      datasets: [
-        {
-          label: '产品数量',
-          data,
-          backgroundColor: CHART_COLORS.pie,
-          borderWidth: 1,
-        },
-      ],
-    });
-  }, []);
-
   // 加载统计数据
   const fetchStats = useCallback(async () => {
     try {
       const response = await statsAPI.getStats();
-      setStats(response.data);
+      const { categoryDistribution, ...otherStats } = response.data;
+      setStats(otherStats);
+      
+      if (categoryDistribution) {
+        setCategoryData({
+          labels: categoryDistribution.map(item => item.category),
+          datasets: [
+            {
+              label: '产品数量',
+              data: categoryDistribution.map(item => item.count),
+              backgroundColor: CHART_COLORS.pie,
+              borderWidth: 1,
+            },
+          ],
+        });
+      }
+      
       setError(null);
       return response.data;
     } catch (err) {
@@ -121,19 +110,6 @@ const Dashboard = () => {
       throw err;
     }
   }, []);
-
-  // 加载产品数据
-  const fetchProducts = useCallback(async () => {
-    try {
-      const response = await productAPI.getAllProducts();
-      setProducts(response.data);
-      processProductCategories(response.data);
-      return response.data;
-    } catch (err) {
-      console.error('获取产品数据失败:', err);
-      throw err;
-    }
-  }, [processProductCategories]);
 
   // 加载活动数据
   const fetchActivityData = useCallback(async () => {
@@ -232,21 +208,21 @@ const Dashboard = () => {
       // 并行获取所有数据
       await Promise.allSettled([
         fetchStats(),
-        fetchProducts(),
         fetchActivityData(),
         fetchQualityStats(),
         fetchRecentActivity(),
       ]);
     } catch (err) {
       console.error('加载数据失败:', err);
-      if (!error) {
-        setError('部分数据加载失败，请稍后刷新');
-      }
+      setError(prev => {
+        if (!prev) return '部分数据加载失败，请稍后刷新';
+        return prev;
+      });
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [fetchStats, fetchProducts, fetchActivityData, fetchQualityStats, fetchRecentActivity, error]);
+  }, [fetchStats, fetchActivityData, fetchQualityStats, fetchRecentActivity]);
 
   // 手动刷新
   const handleRefresh = useCallback(() => {

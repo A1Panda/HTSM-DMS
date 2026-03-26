@@ -228,26 +228,16 @@ const ProductList = () => {
   };
 
   // 删除产品
-  const confirmDeleteProduct = (id, name) => {
-    confirm({
-      title: '确定要删除这个产品吗？',
-      icon: <ExclamationCircleOutlined />,
-      content: '这将同时删除该产品的所有编码，此操作不可恢复。',
-      okText: '确定',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk: async () => {
-        try {
-          await productAPI.deleteProduct(id);
-          message.success('产品删除成功');
-          // 重新加载当前页
-          loadProducts();
-        } catch (error) {
-          console.error('删除产品失败:', error);
-          message.error('删除产品失败');
-        }
-      }
-    });
+  const handleDeleteProduct = async (id, name) => {
+    try {
+      await productAPI.deleteProduct(id);
+      message.success('产品删除成功');
+      // 重新加载当前页
+      loadProducts();
+    } catch (error) {
+      console.error('删除产品失败:', error);
+      message.error('删除产品失败');
+    }
   };
 
   // 批量删除产品
@@ -629,7 +619,7 @@ const ProductList = () => {
                   <ProductCard 
                     product={product}
                     codeCount={codeCount}
-                    onDelete={confirmDeleteProduct}
+                    onDelete={handleDeleteProduct}
                     codeRangeStatus={codeRangeStatus}
                     batchMode={batchMode}
                     selected={selectedProducts.includes(product.id)}

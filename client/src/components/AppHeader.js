@@ -3,7 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { Layout, Menu } from 'antd';
 import { 
   DashboardOutlined, 
-  AppstoreOutlined
+  AppstoreOutlined,
+  DatabaseOutlined
 } from '@ant-design/icons';
 import config from '../config';
 
@@ -18,6 +19,7 @@ const AppHeader = () => {
     const path = location.pathname;
     if (path === '/') return '1';
     if (path.startsWith('/products')) return '2';
+    if (path.startsWith('/backup')) return '3';
     return '1';
   };
 
@@ -51,6 +53,11 @@ const AppHeader = () => {
             key: '2',
             icon: <AppstoreOutlined />,
             label: <Link to="/products">产品管理</Link>,
+          },
+          {
+            key: '3',
+            icon: <DatabaseOutlined />,
+            label: <Link to="/backup">数据备份</Link>,
           }
         ]}
       />

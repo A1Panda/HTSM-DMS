@@ -60,6 +60,10 @@ const ProductDetail = () => {
   const [codesModalVisible, setCodesModalVisible] = useState(false);
   const [codesModalTitle, setCodesModalTitle] = useState('');
   const [codesModalList, setCodesModalList] = useState([]);
+  const [modalType, setModalType] = useState(''); // 'missing' or 'excess'
+  const [modalSortOrder, setModalSortOrder] = useState('asc');
+  const [modalSelectedCodes, setModalSelectedCodes] = useState([]);
+  const [modalActionLoading, setModalActionLoading] = useState(false);
   
   // 回收站状态
   const [recycleBinVisible, setRecycleBinVisible] = useState(false);
@@ -255,25 +259,15 @@ const ProductDetail = () => {
   };
 
   // 删除编码
-  const confirmDeleteCode = (codeId) => {
-    confirm({
-      title: '确定要删除这个编码吗？',
-      icon: <ExclamationCircleOutlined />,
-      content: '删除后可从回收站恢复。',
-      okText: '删除',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk: async () => {
-        try {
-          await codeAPI.deleteCode(id, codeId);
-          message.success('编码已移入回收站');
-          loadCodes();
-        } catch (error) {
-          console.error('删除编码失败:', error);
-          message.error('删除编码失败');
-        }
-      }
-    });
+  const handleDeleteCode = async (codeId) => {
+    try {
+      await codeAPI.deleteCode(id, codeId);
+      message.success('编码已移入回收站');
+      loadCodes();
+    } catch (error) {
+      console.error('删除编码失败:', error);
+      message.error('删除编码失败');
+    }
   };
 
   // 批量删除编码
@@ -552,6 +546,93 @@ const ProductDetail = () => {
     ? Math.min(100, Math.round((codeCount / requiredQuantity) * 100)) 
     : 100;
 
+  // 模态框逻辑
+  const sortedModalList = [...codesModalList].sort((a, b) => {
+    return modalSortOrder === 'asc' 
+      ? String(a).localeCompare(String(b), undefined, { numeric: true })
+      : String(b).localeCompare(String(a), undefined, { numeric: true });
+  });
+
+  const handleModalSelectAll = (e) => {
+    if (e.target.checked) {
+      setModalSelectedCodes(sortedModalList);
+    } else {
+      setModalSelectedCodes([]);
+    }
+  };
+
+  const handleModalCodeSelect = (codeStr, checked) => {
+    if (checked) {
+      setModalSelectedCodes(prev => [...prev, codeStr]);
+    } else {
+      setModalSelectedCodes(prev => prev.filter(c => c !== codeStr));
+    }
+  };
+
+  const handleModalSingleAction = async (codeStr) => {
+    try {
+      setModalActionLoading(true);
+      if (modalType === 'missing') {
+        await codeAPI.addCode(id, { code: codeStr });
+        message.success(`已添加缺失编码: ${codeStr}`);
+      } else {
+        const targetCode = codes.find(c => c.code === codeStr);
+        if (!targetCode) {
+          message.error('找不到该编码的记录');
+          return;
+        }
+        await codeAPI.deleteCode(id, targetCode.id);
+        message.success(`已删除超出编码: ${codeStr}`);
+      }
+      
+      // Remove from modal list and selected
+      setCodesModalList(prev => prev.filter(c => c !== codeStr));
+      setModalSelectedCodes(prev => prev.filter(c => c !== codeStr));
+      
+      // Update main list silently
+      loadCodes();
+    } catch (error) {
+      message.error(`${modalType === 'missing' ? '添加' : '删除'}失败: ${error.message || '未知错误'}`);
+    } finally {
+      setModalActionLoading(false);
+    }
+  };
+
+  const handleModalBatchAction = async () => {
+    if (modalSelectedCodes.length === 0) return;
+    try {
+      setModalActionLoading(true);
+      if (modalType === 'missing') {
+        await Promise.all(modalSelectedCodes.map(codeStr => codeAPI.addCode(id, { code: codeStr })));
+        message.success(`成功批量添加 ${modalSelectedCodes.length} 个缺失编码`);
+      } else {
+        const idsToDelete = modalSelectedCodes.map(codeStr => {
+          const target = codes.find(c => c.code === codeStr);
+          return target ? target.id : null;
+        }).filter(codeId => codeId !== null);
+        
+        if (idsToDelete.length > 0) {
+          await Promise.all(idsToDelete.map(codeId => codeAPI.deleteCode(id, codeId)));
+          message.success(`成功批量删除 ${idsToDelete.length} 个超出编码`);
+        } else {
+          message.error('未找到对应编码记录');
+          return;
+        }
+      }
+      
+      // Update modal list and selected
+      setCodesModalList(prev => prev.filter(c => !modalSelectedCodes.includes(c)));
+      setModalSelectedCodes([]);
+      
+      // Update main list silently
+      loadCodes();
+    } catch (error) {
+      message.error(`批量操作失败: ${error.message || '未知错误'}`);
+    } finally {
+      setModalActionLoading(false);
+    }
+  };
+
   return (
     <div>
       <div style={{ marginBottom: 16 }}>
@@ -596,7 +677,14 @@ const ProductDetail = () => {
                     </div>
                   }
                 >
-                  <Tag color="red" style={{ marginLeft: 8, cursor: 'pointer' }} onClick={() => { setCodesModalTitle(`${product.name} - 缺失编码`); setCodesModalList(missingCodes); setCodesModalVisible(true); }}>
+                  <Tag color="red" style={{ marginLeft: 8, cursor: 'pointer' }} onClick={() => { 
+                    setCodesModalTitle(`${product.name} - 缺失编码`); 
+                    setCodesModalList(missingCodes); 
+                    setModalType('missing');
+                    setModalSortOrder('asc');
+                    setModalSelectedCodes([]);
+                    setCodesModalVisible(true); 
+                  }}>
                     缺失 {missingCodes.length} 个编码
                   </Tag>
                 </Tooltip>
@@ -613,7 +701,14 @@ const ProductDetail = () => {
                     </div>
                   }
                 >
-                  <Tag color="orange" style={{ marginLeft: 8, cursor: 'pointer' }} onClick={() => { setCodesModalTitle(`${product.name} - 超出范围编码`); setCodesModalList(excessCodes); setCodesModalVisible(true); }}>
+                  <Tag color="orange" style={{ marginLeft: 8, cursor: 'pointer' }} onClick={() => { 
+                    setCodesModalTitle(`${product.name} - 超出范围编码`); 
+                    setCodesModalList(excessCodes); 
+                    setModalType('excess');
+                    setModalSortOrder('asc');
+                    setModalSelectedCodes([]);
+                    setCodesModalVisible(true); 
+                  }}>
                     超出 {excessCodes.length} 个编码
                   </Tag>
                 </Tooltip>
@@ -730,7 +825,7 @@ const ProductDetail = () => {
         
         <CodeList 
           codes={filteredCodes}
-          onDelete={confirmDeleteCode}
+          onDelete={handleDeleteCode}
           batchMode={codeBatchMode}
           selectedCodes={selectedCodes}
           onSelect={handleCodeSelect}
@@ -758,15 +853,74 @@ const ProductDetail = () => {
         footer={null}
         width={700}
       >
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
-          {codesModalList && codesModalList.length > 0 ? (
-            codesModalList.map((c) => (
-              <div key={c} style={{ padding: '6px 8px', background: '#fafafa', borderRadius: 4 }}>{c}</div>
-            ))
-          ) : (
-            <div style={{ gridColumn: 'span 4', color: '#999' }}>暂无数据</div>
-          )}
+        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Space>
+            <Checkbox 
+              onChange={handleModalSelectAll} 
+              checked={modalSelectedCodes.length === sortedModalList.length && sortedModalList.length > 0}
+              indeterminate={modalSelectedCodes.length > 0 && modalSelectedCodes.length < sortedModalList.length}
+            >
+              全选
+            </Checkbox>
+            <Select 
+              value={modalSortOrder} 
+              onChange={setModalSortOrder} 
+              style={{ width: 120 }}
+              options={[
+                { value: 'asc', label: '升序排列' },
+                { value: 'desc', label: '降序排列' }
+              ]}
+            />
+          </Space>
+          <Button 
+            type="primary" 
+            danger={modalType === 'excess'}
+            disabled={modalSelectedCodes.length === 0}
+            loading={modalActionLoading}
+            onClick={handleModalBatchAction}
+          >
+            {modalType === 'missing' ? `批量添加 (${modalSelectedCodes.length})` : `批量删除 (${modalSelectedCodes.length})`}
+          </Button>
         </div>
+
+        <Spin spinning={modalActionLoading}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, maxHeight: '400px', overflowY: 'auto', padding: '4px' }}>
+            {sortedModalList && sortedModalList.length > 0 ? (
+              sortedModalList.map((c) => (
+                <div key={c} style={{ 
+                  padding: '6px 8px', 
+                  background: '#fafafa', 
+                  borderRadius: 4, 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  border: '1px solid #f0f0f0'
+                }}>
+                  <Checkbox 
+                    checked={modalSelectedCodes.includes(c)}
+                    onChange={(e) => handleModalCodeSelect(c, e.target.checked)}
+                  >
+                    <span style={{ marginLeft: 4 }}>{c}</span>
+                  </Checkbox>
+                  <Tooltip title={modalType === 'missing' ? '添加此编码' : '删除此编码'}>
+                    <Button 
+                      type="text" 
+                      size="small" 
+                      icon={modalType === 'missing' ? <PlusOutlined /> : <DeleteOutlined />} 
+                      onClick={() => handleModalSingleAction(c)}
+                      danger={modalType === 'excess'}
+                      style={{ padding: '0 4px', height: '20px' }}
+                    />
+                  </Tooltip>
+                </div>
+              ))
+            ) : (
+              <div style={{ gridColumn: 'span 4', color: '#999', textAlign: 'center', padding: '20px' }}>
+                <Empty description="暂无数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+              </div>
+            )}
+          </div>
+        </Spin>
       </Modal>
       
       {/* 扫码对话框 */}

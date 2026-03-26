@@ -16,6 +16,8 @@ require('dotenv').config();
 const productRoutes = require('./routes/productRoutes');
 const codeRoutes = require('./routes/codeRoutes');
 const statsRoutes = require('./routes/statsRoutes');
+const backupRoutes = require('./routes/backupRoutes');
+const { scheduleAutoBackup } = require('./services/backupService');
 
 // 初始化Express应用
 const app = express();
@@ -74,6 +76,7 @@ const connectDB = async () => {
 app.use('/api/products', productRoutes);
 app.use('/api/codes', codeRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/backup', backupRoutes);
 
 // OCR 代理路由（科大讯飞通用文字识别）
 // 前端传入 base64 图片（dataURL），后端转发到讯飞 OCR API，规避浏览器跨域和签名暴露问题
@@ -282,6 +285,8 @@ app.use((err, req, res, next) => {
 connectDB().then(() => {
   app.listen(PORT, () => {
     console.log(`服务器运行在 http://localhost:${PORT}`);
+    // 启动自动备份定时任务
+    scheduleAutoBackup();
   });
 });
 

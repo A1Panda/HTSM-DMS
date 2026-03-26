@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Card, Tag, Progress, Tooltip, Checkbox } from 'antd';
+import { Card, Tag, Progress, Tooltip, Checkbox, Popconfirm } from 'antd';
 import { Link } from 'react-router-dom';
 import { EyeOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
@@ -74,12 +74,19 @@ const ProductCard = memo(({
             onClick={() => onEdit && onEdit(product)} 
           />
         </Tooltip>,
-        <Tooltip title="删除产品">
-          <DeleteOutlined 
-            key="delete" 
-            onClick={() => onDelete(product.id, product.name)} 
-          />
-        </Tooltip>
+        <Popconfirm
+          key="delete-popconfirm"
+          title="确定要删除这个产品吗？"
+          description="这将同时删除该产品的所有编码，此操作不可恢复。"
+          onConfirm={() => onDelete(product.id, product.name)}
+          okText="确定"
+          cancelText="取消"
+          okButtonProps={{ danger: true }}
+        >
+          <Tooltip title="删除产品">
+            <DeleteOutlined key="delete" />
+          </Tooltip>
+        </Popconfirm>
       ]}
     >
       {/* 批量选择模式下的选择框 */}

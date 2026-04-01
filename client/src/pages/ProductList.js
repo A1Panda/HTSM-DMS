@@ -636,8 +636,9 @@ const ProductList = () => {
             })}
           </Row>
           
-          <div style={{ display: 'flex', justifyContent: 'center', marginTop: 24, paddingBottom: 24 }}>
+          <div style={{ marginTop: 24, paddingBottom: 24 }}>
             <Pagination
+              className="full-width-pagination"
               current={pagination.current}
               pageSize={pagination.pageSize}
               total={pagination.total}
@@ -702,7 +703,7 @@ const ProductList = () => {
           )}
         </div>
         {codesModalList && codesModalList.length > 0 && (
-          <div style={{ marginTop: 16, textAlign: 'right' }}>
+          <div style={{ marginTop: 16 }}>
             <Pagination
               current={modalCurrentPage}
               pageSize={modalPageSize}
@@ -710,6 +711,7 @@ const ProductList = () => {
               onChange={(page) => setModalCurrentPage(page)}
               showSizeChanger={false}
               size="small"
+              className="full-width-pagination"
             />
           </div>
         )}

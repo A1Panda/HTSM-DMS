@@ -45,6 +45,25 @@ codeSchema.set('toJSON', {
   }
 });
 
+// 添加分页静态方法
+codeSchema.statics.paginate = async function(query = {}, options = {}) {
+  const { page = 1, limit = 1000 } = options;
+  const skip = (page - 1) * limit;
+  const [codes, total] = await Promise.all([
+    this.find(query).skip(skip).limit(limit).exec(),
+    this.countDocuments(query).exec()
+  ]);
+  return {
+    codes,
+    pagination: {
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit)
+    }
+  };
+};
+
 // 添加复合索引确保每个产品的编码唯一（仅针对未删除的）
 // 注意：如果软删除后允许再次添加相同编码，索引需要调整。
 // 这里暂时保持 unique: true，意味着即使软删除了，也不能添加重复的。
@@ -72,6 +91,72 @@ if (process.env.MONGODB_URI) {
       const data = fs.readFileSync(productsFile, 'utf8');
       const products = JSON.parse(data);
       let allCodes = [];
+
+      // 辅助过滤函数
+      const matchQuery = (code) => {
+        // 1. deleted 状态匹配
+        if (query.deleted !== undefined) {
+          if (!!code.deleted !== query.deleted) return false;
+        }
+
+        // 2. code 范围匹配 (字符串比较)
+        if (query.code) {
+          if (query.code.$gte && code.code < query.code.$gte) return false;
+          if (query.code.$lte && code.code > query.code.$lte) return false;
+        }
+
+        // 3. 日期范围匹配 (createdAt 或 date)
+        if (query.$or && query.$or.length > 0 && query.$or[0].createdAt) {
+          const dateFilters = query.$or;
+          let dateMatch = false;
+          
+          for (const filter of dateFilters) {
+            if (filter.createdAt) {
+              const codeDate = new Date(code.createdAt);
+              let match = true;
+              if (filter.createdAt.$gte && codeDate < filter.createdAt.$gte) match = false;
+              if (filter.createdAt.$lte && codeDate > filter.createdAt.$lte) match = false;
+              if (match) {
+                dateMatch = true;
+                break;
+              }
+            } else if (filter.date) {
+              let match = true;
+              if (filter.date.$gte && code.date < filter.date.$gte) match = false;
+              if (filter.date.$lte && code.date > filter.date.$lte) match = false;
+              if (match) {
+                dateMatch = true;
+                break;
+              }
+            }
+          }
+          if (!dateMatch) return false;
+        }
+
+        // 4. $or 关键字匹配 (正则表达式) 或者 $and 组合匹配
+        let keywordFilters = null;
+        if (query.$and) {
+          // 如果使用了 $and，找到包含关键字 $regex 的那个 $or
+          const keywordOrObj = query.$and.find(cond => 
+            cond.$or && cond.$or.length > 0 && cond.$or[0].code && cond.$or[0].code.$regex
+          );
+          if (keywordOrObj) keywordFilters = keywordOrObj.$or;
+        } else if (query.$or && query.$or.length > 0 && query.$or[0].code && query.$or[0].code.$regex) {
+          keywordFilters = query.$or;
+        }
+
+        if (keywordFilters) {
+          const keyword = keywordFilters[0].code.$regex;
+          if (keyword) {
+            const regex = new RegExp(keyword, 'i');
+            if (!regex.test(code.code) && !regex.test(code.description)) {
+              return false;
+            }
+          }
+        }
+
+        return true;
+      };
       
       // 如果指定了产品ID，只加载该产品的编码
       if (query.productId) {
@@ -80,12 +165,9 @@ if (process.env.MONGODB_URI) {
           const codesData = fs.readFileSync(codesFile, 'utf8');
           const productCodes = JSON.parse(codesData);
           
-          // 过滤逻辑
-          const showDeleted = query.deleted === true;
-          
           return productCodes
             .map(code => ({ ...code, productId: query.productId }))
-            .filter(code => !!code.deleted === showDeleted);
+            .filter(matchQuery);
         }
         return [];
       }
@@ -97,13 +179,10 @@ if (process.env.MONGODB_URI) {
           const codesData = fs.readFileSync(codesFile, 'utf8');
           const productCodes = JSON.parse(codesData);
           
-           // 过滤逻辑
-          const showDeleted = query.deleted === true;
-          
           allCodes = allCodes.concat(
             productCodes
               .map(code => ({ ...code, productId: product.id }))
-              .filter(code => !!code.deleted === showDeleted)
+              .filter(matchQuery)
           );
         }
       }

@@ -973,7 +973,7 @@ const ProductDetail = () => {
             )}
           </div>
           {sortedModalList.length > 0 && (
-            <div style={{ marginTop: 16, textAlign: 'right' }}>
+            <div style={{ marginTop: 16 }}>
               <Pagination
                 current={modalCurrentPage}
                 pageSize={modalPageSize}
@@ -981,6 +981,7 @@ const ProductDetail = () => {
                 onChange={(page) => setModalCurrentPage(page)}
                 showSizeChanger={false}
                 size="small"
+                className="full-width-pagination"
               />
             </div>
           )}

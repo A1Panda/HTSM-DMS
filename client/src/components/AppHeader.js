@@ -4,7 +4,8 @@ import { Layout, Menu } from 'antd';
 import { 
   DashboardOutlined, 
   AppstoreOutlined,
-  DatabaseOutlined
+  DatabaseOutlined,
+  SearchOutlined
 } from '@ant-design/icons';
 import config from '../config';
 
@@ -19,6 +20,7 @@ const AppHeader = () => {
     const path = location.pathname;
     if (path === '/') return '1';
     if (path.startsWith('/products')) return '2';
+    if (path.startsWith('/search')) return '4';
     if (path.startsWith('/backup')) return '3';
     return '1';
   };
@@ -53,6 +55,11 @@ const AppHeader = () => {
             key: '2',
             icon: <AppstoreOutlined />,
             label: <Link to="/products">产品管理</Link>,
+          },
+          {
+            key: '4',
+            icon: <SearchOutlined />,
+            label: <Link to="/search">高级搜索</Link>,
           },
           {
             key: '3',

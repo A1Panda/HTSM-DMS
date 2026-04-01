@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const cron = require('node-cron');
 const { generateBackupData, performRestore } = require('../utils/backupUtils');
 const { getSettings, updateSettings } = require('../utils/settingsUtils');
 const { scheduleAutoBackup, BACKUPS_DIR } = require('../services/backupService');
@@ -52,6 +53,14 @@ exports.getConfig = (req, res) => {
 exports.updateConfig = (req, res) => {
   try {
     const newSettings = req.body;
+
+    if (newSettings.autoBackupEnabled && newSettings.cronExpression) {
+      const expression = newSettings.cronExpression.replace(/\?/g, '*').replace(/0\//g, '*/');
+      if (!cron.validate(expression)) {
+        return res.status(400).json({ error: '无效的 Cron 表达式，请检查您的配置。' });
+      }
+    }
+
     const updatedSettings = updateSettings(newSettings);
     // 重新调度定时任务
     scheduleAutoBackup();

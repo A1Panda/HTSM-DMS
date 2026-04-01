@@ -81,7 +81,7 @@ const BackupManagement = () => {
       message.success('自动备份配置已更新');
       fetchConfig();
     } catch (error) {
-      message.error('更新配置失败');
+      message.error(error.response?.data?.error || '更新配置失败');
     } finally {
       setSavingConfig(false);
     }

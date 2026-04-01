@@ -8,10 +8,70 @@ exports.getAllCodes = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 1000;
     const productId = req.query.productId;
+    const { codeStart, codeEnd, startDate, endDate, keyword, includeDeleted } = req.query;
     
     const query = productId ? { productId } : {};
-    // 默认不显示已删除的
-    query.deleted = false;
+    
+    // 编码范围搜索
+    if (codeStart || codeEnd) {
+      query.code = {};
+      if (codeStart) query.code.$gte = codeStart;
+      if (codeEnd) query.code.$lte = codeEnd;
+    }
+    
+    // 日期范围搜索 (同时匹配 createdAt 或 date 字段)
+    if (startDate || endDate) {
+      const dateQuery = {};
+      const createdAtQuery = {};
+      
+      if (startDate) {
+        createdAtQuery.$gte = new Date(startDate);
+        // date 字段是字符串 YYYY-MM-DD，所以我们截取 startDate 的日期部分
+        dateQuery.$gte = startDate.split('T')[0];
+      }
+      if (endDate) {
+        createdAtQuery.$lte = new Date(endDate);
+        dateQuery.$lte = endDate.split('T')[0];
+      }
+      
+      // 使用 $or 来匹配 createdAt 或 date
+      const dateOrQuery = [
+        { createdAt: createdAtQuery },
+        { date: dateQuery }
+      ];
+
+      if (query.$or) {
+        query.$and = [{ $or: query.$or }, { $or: dateOrQuery }];
+        delete query.$or;
+      } else {
+        query.$or = dateOrQuery;
+      }
+    }
+    
+    // 关键字搜索 (在 code 和 description 中搜索)
+    if (keyword) {
+      const keywordQuery = [
+        { code: { $regex: keyword, $options: 'i' } },
+        { description: { $regex: keyword, $options: 'i' } }
+      ];
+      
+      if (query.$and) {
+        query.$and.push({ $or: keywordQuery });
+      } else if (query.$or) {
+        query.$and = [
+          { $or: query.$or },
+          { $or: keywordQuery }
+        ];
+        delete query.$or;
+      } else {
+        query.$or = keywordQuery;
+      }
+    }
+
+    // 如果 includeDeleted 为 true，则不过滤已删除的
+    if (includeDeleted !== 'true' && includeDeleted !== true) {
+      query.deleted = false;
+    }
     
     const result = await Code.paginate(query, { page, limit });
     

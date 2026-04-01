@@ -47,3 +47,18 @@ code {
 .ant-layout-footer {
   text-align: center;
 }
+
+/* 分页器左右铺满并居中页码 */
+.full-width-pagination.ant-pagination {
+  display: flex !important;
+  width: 100% !important;
+  justify-content: center;
+}
+
+.full-width-pagination .ant-pagination-total-text {
+  margin-right: auto;
+}
+
+.full-width-pagination .ant-pagination-options {
+  margin-left: auto;
+}

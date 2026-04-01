@@ -15,7 +15,8 @@ import PropTypes from 'prop-types';
  */
 const CodeList = ({ 
   codes, 
-  onDelete, 
+  onDelete,
+  onRestore, 
   loading = false, 
   batchMode = false,
   selectedCodes = [],
@@ -31,7 +32,8 @@ const CodeList = ({
         defaultPageSize: 10,
         showSizeChanger: true,
         pageSizeOptions: ['10', '20', '50', '100'],
-        showTotal: (total) => `共 ${total} 条编码`
+        showTotal: (total) => `共 ${total} 条编码`,
+        className: 'full-width-pagination'
       }}
       renderItem={code => (
         <List.Item
@@ -45,6 +47,15 @@ const CodeList = ({
               onChange={(e) => onSelect && onSelect(code.id, e.target.checked)}
             />
           ] : [
+            code.deleted ? (
+              <Button 
+                key="restore"
+                type="link" 
+                onClick={() => onRestore && onRestore(code.id)}
+              >
+                恢复
+              </Button>
+            ) : null,
             <Popconfirm
               key="delete-popconfirm"
               title="确定要删除这个编码吗？"
@@ -68,6 +79,7 @@ const CodeList = ({
               <Space>
                 <span>{code.code}</span>
                 {code.date && <Tag color="blue">{code.date}</Tag>}
+                {code.deleted && <Tag color="red">已删除</Tag>}
               </Space>
             }
             description={code.description || '无描述'}
@@ -84,6 +96,7 @@ const CodeList = ({
 CodeList.propTypes = {
   codes: PropTypes.array.isRequired,
   onDelete: PropTypes.func.isRequired,
+  onRestore: PropTypes.func,
   loading: PropTypes.bool,
   batchMode: PropTypes.bool,
   selectedCodes: PropTypes.array,

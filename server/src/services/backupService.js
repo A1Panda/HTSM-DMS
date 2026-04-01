@@ -91,7 +91,8 @@ const scheduleAutoBackup = () => {
 
   if (settings.autoBackupEnabled) {
     // 将 Quartz 风格的 ? 替换为标准的 *，以兼容 node-cron
-    const expression = settings.cronExpression.replace(/\?/g, '*');
+    // 并且将 0/ 替换为 */ 以兼容 node-cron
+    const expression = settings.cronExpression.replace(/\?/g, '*').replace(/0\//g, '*/');
 
     const isValidCron = cron.validate(expression);
     if (!isValidCron) {

@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import ProductList from './pages/ProductList';
 import ProductDetail from './pages/ProductDetail';
 import BackupManagement from './pages/BackupManagement';
+import AdvancedSearch from './pages/AdvancedSearch';
 import NotFound from './pages/NotFound';
 import './App.css';
 
@@ -23,6 +24,7 @@ function App() {
             <Route path="/products" element={<ProductList />} />
             <Route path="/products/:id" element={<ProductDetail />} />
             <Route path="/backup" element={<BackupManagement />} />
+            <Route path="/search" element={<AdvancedSearch />} />
             <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<Navigate to="/404" replace />} />
           </Routes>

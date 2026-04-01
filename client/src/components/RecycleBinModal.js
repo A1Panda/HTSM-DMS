@@ -141,7 +141,8 @@ const RecycleBinModal = ({
           defaultPageSize: 10,
           showSizeChanger: true,
           pageSizeOptions: ['10', '20', '50', '100'],
-          showTotal: (total) => `共 ${total} 条已删除编码`
+          showTotal: (total) => `共 ${total} 条已删除编码`,
+          className: 'full-width-pagination'
         }}
         renderItem={code => (
           <List.Item

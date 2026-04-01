@@ -72,11 +72,17 @@ export const productAPI = {
 
 // 编码相关API
 export const codeAPI = {
-  // 获取所有编码（带分页）
-  getAllCodes: (page = 1, limit = 1000, productId = null) => {
-    let url = `/codes?page=${page}&limit=${limit}`;
-    if (productId) url += `&productId=${productId}`;
-    return api.get(url);
+  // 获取所有编码（带分页及高级搜索参数）
+  getAllCodes: (page = 1, limit = 1000, productId = null, filters = {}) => {
+    const params = {
+      page,
+      limit,
+      ...filters
+    };
+    if (productId) {
+      params.productId = productId;
+    }
+    return api.get('/codes', { params });
   },
   
   // 获取产品的所有编码

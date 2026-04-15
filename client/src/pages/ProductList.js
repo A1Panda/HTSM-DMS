@@ -23,7 +23,8 @@ import {
   CheckOutlined,
   CloseOutlined,
   SortAscendingOutlined,
-  SortDescendingOutlined
+  SortDescendingOutlined,
+  FileSearchOutlined
 } from '@ant-design/icons';
 import { productAPI, codeAPI } from '../services/api';
 import ProductCard from '../components/ProductCard';
@@ -68,6 +69,11 @@ const ProductList = () => {
   const [sortOrder, setSortOrder] = useState('desc'); // 'asc' | 'desc'
   const [sortField, setSortField] = useState('createdAt'); // 'createdAt' | 'name'
   const searchInputRef = useRef(null);
+  
+  // 批量查重相关状态
+  const [duplicateCheckModalVisible, setDuplicateCheckModalVisible] = useState(false);
+  const [duplicateCheckLoading, setDuplicateCheckLoading] = useState(false);
+  const [duplicateCheckResult, setDuplicateCheckResult] = useState(null);
 
   // 分页状态
   const [pagination, setPagination] = useState({
@@ -296,6 +302,26 @@ const ProductList = () => {
     setSelectedProducts([]);
   }, [batchMode]);
 
+  // 批量查重
+  const handleBatchCheckDuplicate = useCallback(async () => {
+    if (selectedProducts.length < 2) {
+      message.warning('请至少选择 2 个产品进行查重');
+      return;
+    }
+    
+    try {
+      setDuplicateCheckLoading(true);
+      const response = await codeAPI.batchCheckDuplicate(selectedProducts);
+      setDuplicateCheckResult(response.data);
+      setDuplicateCheckModalVisible(true);
+    } catch (error) {
+      console.error('批量查重失败:', error);
+      message.error(error.response?.data?.error || '批量查重失败');
+    } finally {
+      setDuplicateCheckLoading(false);
+    }
+  }, [selectedProducts]);
+
   // 引用最新的 loadProducts 函数，解决闭包问题
   const loadProductsRef = useRef(loadProducts);
   useEffect(() => {
@@ -481,6 +507,14 @@ const ProductList = () => {
                 onClick={toggleBatchMode}
               >
                 取消批量
+              </Button>
+              <Button 
+                icon={<FileSearchOutlined />} 
+                onClick={handleBatchCheckDuplicate}
+                disabled={selectedProducts.length < 2}
+                loading={duplicateCheckLoading}
+              >
+                批量查重
               </Button>
               <Button 
                 type="primary" 
@@ -713,6 +747,73 @@ const ProductList = () => {
               size="small"
               className="full-width-pagination"
             />
+          </div>
+        )}
+      </Modal>
+
+      {/* 批量查重结果模态框 */}
+      <Modal
+        title="批量查重结果"
+        open={duplicateCheckModalVisible}
+        onCancel={() => setDuplicateCheckModalVisible(false)}
+        footer={null}
+        width={800}
+      >
+        {duplicateCheckResult && (
+          <div>
+            <div style={{ marginBottom: 16, padding: '12px 16px', background: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: 4 }}>
+              <span style={{ color: '#52c41a' }}>
+                共检查了 <strong>{duplicateCheckResult.totalChecked}</strong> 个编码，
+                发现 <strong>{duplicateCheckResult.duplicateCount}</strong> 个重复编码
+              </span>
+            </div>
+            
+            {duplicateCheckResult.duplicates.length > 0 ? (
+              <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ background: '#fafafa' }}>
+                      <th style={{ padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid #f0f0f0', fontWeight: 600 }}>重复编码</th>
+                      <th style={{ padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid #f0f0f0', fontWeight: 600 }}>所在产品</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {duplicateCheckResult.duplicates.map((item, index) => (
+                      <tr key={item.code} style={{ borderBottom: '1px solid #f0f0f0' }}>
+                        <td style={{ padding: '12px 16px', fontFamily: 'monospace', fontSize: 14, color: '#cf1322', fontWeight: 500 }}>
+                          {item.code}
+                        </td>
+                        <td style={{ padding: '12px 16px' }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                            {item.products.map((product) => (
+                              <span
+                                key={product.id}
+                                style={{
+                                  padding: '4px 8px',
+                                  background: '#fff2f0',
+                                  border: '1px solid #ffccc7',
+                                  borderRadius: 4,
+                                  fontSize: 12,
+                                  color: '#cf1322'
+                                }}
+                              >
+                                {product.name}
+                              </span>
+                            ))}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
+                <div style={{ fontSize: 16, color: '#52c41a', fontWeight: 500 }}>未发现重复编码</div>
+                <div style={{ fontSize: 14, color: '#999', marginTop: 8 }}>选中的产品之间没有重复的编码</div>
+              </div>
+            )}
           </div>
         )}
       </Modal>

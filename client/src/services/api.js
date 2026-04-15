@@ -104,7 +104,10 @@ export const codeAPI = {
   restoreCode: (productId, codeId) => api.post(`/codes/product/${productId}/${codeId}/restore`),
 
   // 永久删除编码
-  permanentDeleteCode: (productId, codeId) => api.delete(`/codes/product/${productId}/${codeId}/permanent`)
+  permanentDeleteCode: (productId, codeId) => api.delete(`/codes/product/${productId}/${codeId}/permanent`),
+
+  // 批量检查重复编码
+  batchCheckDuplicate: (productIds) => api.post('/codes/batch-check-duplicate', { productIds })
 };
 
 // 统计相关API

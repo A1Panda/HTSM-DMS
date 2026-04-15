@@ -281,3 +281,86 @@ exports.permanentDeleteCode = async (req, res) => {
     res.status(500).json({ error: '永久删除编码失败' });
   }
 };
+
+// 批量检查重复编码
+exports.batchCheckDuplicate = async (req, res) => {
+  try {
+    const { productIds } = req.body;
+    
+    if (!productIds || !Array.isArray(productIds) || productIds.length < 2) {
+      return res.status(400).json({ error: '请至少选择 2 个产品进行查重' });
+    }
+    
+    // 获取所有选中产品的编码
+    const allCodes = [];
+    const productMap = new Map();
+    
+    for (const productId of productIds) {
+      const codes = await Code.find({ productId, deleted: false });
+      const product = await Product.findById(productId);
+      
+      if (product) {
+        productMap.set(productId, product.name);
+      }
+      
+      codes.forEach(code => {
+        allCodes.push({
+          code: code.code,
+          productId: productId,
+          productName: product ? product.name : '未知产品'
+        });
+      });
+    }
+    
+    // 使用 Map 找出重复项
+    const codeMap = new Map();
+    allCodes.forEach(item => {
+      if (codeMap.has(item.code)) {
+        codeMap.get(item.code).push({
+          id: item.productId,
+          name: item.productName
+        });
+      } else {
+        codeMap.set(item.code, [{
+          id: item.productId,
+          name: item.productName
+        }]);
+      }
+    });
+    
+    // 筛选出重复的编码（出现在多个产品中的）
+    const duplicates = [];
+    codeMap.forEach((products, code) => {
+      if (products.length > 1) {
+        // 去重：同一产品内可能有重复编码（理论上不应该，但以防万一）
+        const uniqueProducts = [];
+        const seenIds = new Set();
+        products.forEach(p => {
+          if (!seenIds.has(p.id)) {
+            seenIds.add(p.id);
+            uniqueProducts.push(p);
+          }
+        });
+        
+        if (uniqueProducts.length > 1) {
+          duplicates.push({
+            code: code,
+            products: uniqueProducts
+          });
+        }
+      }
+    });
+    
+    // 按编码排序
+    duplicates.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
+    
+    res.json({
+      duplicates: duplicates,
+      totalChecked: allCodes.length,
+      duplicateCount: duplicates.length
+    });
+  } catch (error) {
+    console.error('批量查重失败:', error);
+    res.status(500).json({ error: '批量查重失败' });
+  }
+};

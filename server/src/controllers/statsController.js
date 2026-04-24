@@ -181,7 +181,29 @@ exports.getQualityStats = async (req, res) => {
           
           if (!isNaN(start) && !isNaN(end) && start <= end) {
             expectedCount += (end - start + 1);
+            
+            // 防止超大范围导致 Node.js 服务器卡死：放宽限制，以时间为主
+            const MAX_ITERATIONS = 5000000; // 调高到 500万次
+            const MAX_TIME_MS = 1500; // 后端允许 1.5 秒的计算时间
+            const startTime = Date.now();
+            let iterations = 0;
+
             for (let i = start; i <= end; i++) {
+              iterations++;
+              
+              // 每 10000 次检查一次时间
+              if (iterations % 10000 === 0) {
+                if (Date.now() - startTime > MAX_TIME_MS) {
+                  console.warn(`[Stats] Range checking stopped due to timeout (${MAX_TIME_MS}ms). iterations: ${iterations}`);
+                  break;
+                }
+              }
+              
+              if (iterations > MAX_ITERATIONS) {
+                console.warn(`[Stats] Range checking stopped due to max iterations (${MAX_ITERATIONS}).`);
+                break;
+              }
+
               let expected = i.toString();
               if (startStr.length === endStr.length) {
                 expected = expected.padStart(startStr.length, '0');

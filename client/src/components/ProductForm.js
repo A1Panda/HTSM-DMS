@@ -176,8 +176,13 @@ const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialVal
                           validator: async (_, value) => {
                             const end = form.getFieldValue(['codeRanges', name, 'end']);
                             if (value && end) {
-                              if (parseInt(value) > parseInt(end)) {
+                              const s = parseInt(value);
+                              const e = parseInt(end);
+                              if (s > e) {
                                 return Promise.reject(new Error('起始值不能大于结束值'));
+                              }
+                              if (e - s > 1000000) {
+                                return Promise.reject(new Error('号码段范围过大(超过100万)，请分段添加'));
                               }
                             }
                             return Promise.resolve();
@@ -205,8 +210,13 @@ const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialVal
                           validator: async (_, value) => {
                             const start = form.getFieldValue(['codeRanges', name, 'start']);
                             if (start && value) {
-                              if (parseInt(start) > parseInt(value)) {
+                              const s = parseInt(start);
+                              const e = parseInt(value);
+                              if (s > e) {
                                 return Promise.reject(new Error('结束值不能小于起始值'));
+                              }
+                              if (e - s > 1000000) {
+                                return Promise.reject(new Error('号码段范围过大(超过100万)，请分段添加'));
                               }
                             }
                             return Promise.resolve();

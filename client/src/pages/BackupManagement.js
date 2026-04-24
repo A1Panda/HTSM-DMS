@@ -280,7 +280,7 @@ const BackupManagement = () => {
         {/* 左侧：手动操作与配置 */}
         <div style={{ flex: '1 1 400px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
           
-          <Card title="手动备份与恢复" bordered={false} className="dashboard-card">
+          <Card title="手动备份与恢复" variant="borderless" className="dashboard-card">
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <Text strong style={{ display: 'block', marginBottom: 8 }}>导出当前数据</Text>
@@ -311,7 +311,7 @@ const BackupManagement = () => {
             </div>
           </Card>
 
-          <Card title={<><SettingOutlined /> 自动备份设置</>} bordered={false} className="dashboard-card" loading={loadingConfig}>
+          <Card title={<><SettingOutlined /> 自动备份设置</>} variant="borderless" className="dashboard-card" loading={loadingConfig}>
             <Form
               form={configForm}
               layout="vertical"
@@ -357,7 +357,7 @@ const BackupManagement = () => {
         <div style={{ flex: '2 1 600px' }}>
           <Card 
             title="服务器自动备份记录" 
-            bordered={false} 
+            variant="borderless" 
             className="dashboard-card"
             extra={
               <Button type="link" icon={<SyncOutlined />} onClick={fetchBackupList} loading={loadingList}>

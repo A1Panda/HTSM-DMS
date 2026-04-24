@@ -455,7 +455,28 @@ const ProductDetail = () => {
       );
       
       if (!isNaN(start) && !isNaN(end) && start <= end) {
+        // 防止超大范围导致页面卡死：放宽限制，以时间为主
+        const MAX_ITERATIONS = 5000000; // 调高到 500万 次
+        const MAX_TIME_MS = 800; // 调高到 800ms
+        const startTime = Date.now();
+        let iterations = 0;
+
         for (let i = start; i <= end; i++) {
+          iterations++;
+          
+          // 每 10000 次检查一次时间，减少 Date.now() 调用开销
+          if (iterations % 10000 === 0) {
+            if (Date.now() - startTime > MAX_TIME_MS) {
+              console.warn(`[ProductDetail] Range checking stopped due to timeout (${MAX_TIME_MS}ms). iterations: ${iterations}`);
+              break;
+            }
+          }
+          
+          if (iterations > MAX_ITERATIONS) {
+            console.warn(`[ProductDetail] Range checking stopped due to max iterations (${MAX_ITERATIONS}).`);
+            break;
+          }
+
           let expected = i.toString();
           
           // 如果起始值和结束值长度相同，则严格按照该长度补零（例如 1-100 不补，001-100 补零到3位）

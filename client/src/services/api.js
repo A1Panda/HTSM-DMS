@@ -97,6 +97,9 @@ export const codeAPI = {
   // 为产品添加编码
   addCode: (productId, codeData) => api.post(`/codes/product/${productId}`, codeData),
   
+  // 更新编码
+  updateCode: (productId, codeId, codeData) => api.put(`/codes/product/${productId}/${codeId}`, codeData),
+
   // 删除编码 (软删除)
   deleteCode: (productId, codeId) => api.delete(`/codes/product/${productId}/${codeId}`),
 

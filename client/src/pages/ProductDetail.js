@@ -17,7 +17,10 @@ import {
   Divider,
   Checkbox,
   Select,
-  Pagination
+  Pagination,
+  Dropdown,
+  Menu,
+  InputNumber
 } from 'antd';
 import { 
   ArrowLeftOutlined, 
@@ -29,7 +32,8 @@ import {
   DeleteOutlined,
   CheckOutlined,
   CloseOutlined,
-  RestOutlined
+  RestOutlined,
+  DownOutlined
 } from '@ant-design/icons';
 import { productAPI, codeAPI } from '../services/api';
 import CodeList from '../components/CodeList';
@@ -51,6 +55,8 @@ const ProductDetail = () => {
   const [filteredCodes, setFilteredCodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [currentEditCode, setCurrentEditCode] = useState(null);
   const [scanModalVisible, setScanModalVisible] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [quickInputLoading, setQuickInputLoading] = useState(false);
@@ -67,6 +73,10 @@ const ProductDetail = () => {
   const [modalActionLoading, setModalActionLoading] = useState(false);
   const [modalCurrentPage, setModalCurrentPage] = useState(1);
   const modalPageSize = 100;
+  
+  // 导出相关状态
+  const [isExportModalVisible, setIsExportModalVisible] = useState(false);
+  const [exportQuantity, setExportQuantity] = useState(50);
   
   // 回收站状态
   const [recycleBinVisible, setRecycleBinVisible] = useState(false);
@@ -272,6 +282,29 @@ const ProductDetail = () => {
     }
   };
 
+  // 打开编辑模态框
+  const showEditModal = (code) => {
+    setCurrentEditCode(code);
+    setEditModalVisible(true);
+  };
+
+  // 修改编码
+  const handleEditCode = async (values) => {
+    try {
+      setFormLoading(true);
+      await codeAPI.updateCode(id, currentEditCode.id, values);
+      message.success('编码修改成功');
+      setEditModalVisible(false);
+      setCurrentEditCode(null);
+      loadCodes();
+    } catch (error) {
+      console.error('修改编码失败:', error);
+      message.error('修改编码失败: ' + (error.response?.data?.error || '未知错误'));
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
   // 快速添加编码
   const handleQuickAddCode = async (values) => {
     try {
@@ -368,19 +401,63 @@ const ProductDetail = () => {
     setSearchText(value);
   };
 
-  // 导出编码
-  const handleExportCodes = () => {
+  // 智能导出编码 (分Sheet页)
+  const handleSmartExport = () => {
     if (codes.length === 0) {
       message.warning('没有可导出的编码');
       return;
     }
     
-    const success = ExportUtils.exportCodes(codes, product.name);
+    const success = ExportUtils.exportCodesSmart(codes, product.name);
     if (success) {
-      message.success('编码导出成功');
+      message.success('智能导出成功');
     } else {
-      message.error('编码导出失败');
+      message.error('智能导出失败');
     }
+  };
+
+  // 显示按数量导出弹窗
+  const showQuantityExportModal = () => {
+    if (codes.length === 0) {
+      message.warning('没有可导出的编码');
+      return;
+    }
+    setExportQuantity(Math.min(50, codes.length));
+    setIsExportModalVisible(true);
+  };
+
+  // 确认按数量导出
+  const handleQuantityExportConfirm = () => {
+    if (!exportQuantity || exportQuantity <= 0) {
+      message.warning('请输入有效的导出数量');
+      return;
+    }
+    
+    const actualQuantity = Math.min(exportQuantity, codes.length);
+    const success = ExportUtils.exportCodesByQuantity(codes, product.name, actualQuantity);
+    
+    if (success) {
+      message.success(`成功导出 ${actualQuantity} 个最新编码`);
+      setIsExportModalVisible(false);
+    } else {
+      message.error('导出失败');
+    }
+  };
+
+  // 导出下拉菜单
+  const exportMenu = {
+    items: [
+      {
+        key: 'smart',
+        label: '按日期时间智能导出 (分Sheet页)',
+        onClick: handleSmartExport,
+      },
+      {
+        key: 'quantity',
+        label: '按日期排序导出指定数量',
+        onClick: showQuantityExportModal,
+      }
+    ]
   };
 
   // 智能提取编码（优先提取末尾数字）
@@ -885,13 +962,11 @@ const ProductDetail = () => {
                 >
                   回收站
                 </Button>
-                <Button 
-                  icon={<DownloadOutlined />} 
-                  onClick={handleExportCodes}
-                  disabled={codes.length === 0}
-                >
-                  导出编码
-                </Button>
+                <Dropdown menu={exportMenu} disabled={codes.length === 0} trigger={['click']}>
+                  <Button icon={<DownloadOutlined />}>
+                    导出编码 <DownOutlined />
+                  </Button>
+                </Dropdown>
                 <Button 
                   icon={<CheckOutlined />} 
                   onClick={toggleCodeBatchMode}
@@ -970,6 +1045,7 @@ const ProductDetail = () => {
         <CodeList 
           codes={filteredCodes}
           onDelete={handleDeleteCode}
+          onEdit={showEditModal}
           batchMode={codeBatchMode}
           selectedCodes={selectedCodes}
           onSelect={handleCodeSelect}
@@ -982,12 +1058,41 @@ const ProductDetail = () => {
         open={addModalVisible}
         onCancel={() => setAddModalVisible(false)}
         footer={null}
+        destroyOnClose
       >
         <CodeForm 
           onFinish={handleAddCode}
           onCancel={() => setAddModalVisible(false)}
           loading={formLoading}
         />
+      </Modal>
+
+      {/* 修改编码表单 */}
+      <Modal
+        title="修改编码"
+        open={editModalVisible}
+        onCancel={() => {
+          setEditModalVisible(false);
+          setCurrentEditCode(null);
+        }}
+        footer={null}
+        destroyOnClose
+      >
+        {currentEditCode && (
+          <CodeForm 
+            initialValues={{
+              code: currentEditCode.code,
+              description: currentEditCode.description,
+              date: currentEditCode.date
+            }}
+            onFinish={handleEditCode}
+            onCancel={() => {
+              setEditModalVisible(false);
+              setCurrentEditCode(null);
+            }}
+            loading={formLoading}
+          />
+        )}
       </Modal>
       
       <Modal
@@ -1148,6 +1253,34 @@ const ProductDetail = () => {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      </Modal>
+
+      {/* 按数量导出对话框 */}
+      <Modal
+        title="导出指定数量的编码"
+        open={isExportModalVisible}
+        onOk={handleQuantityExportConfirm}
+        onCancel={() => setIsExportModalVisible(false)}
+        okText="导出"
+        cancelText="取消"
+        destroyOnClose
+      >
+        <div style={{ padding: '16px 0' }}>
+          <p>将按录入时间（最新录入优先）导出指定数量的编码。</p>
+          <div style={{ display: 'flex', alignItems: 'center', marginTop: 16 }}>
+            <span style={{ marginRight: 8 }}>导出数量：</span>
+            <InputNumber
+              min={1}
+              max={codes.length}
+              value={exportQuantity}
+              onChange={setExportQuantity}
+              style={{ width: 120 }}
+            />
+            <span style={{ marginLeft: 8, color: '#999' }}>
+              (最多可导出 {codes.length} 个)
+            </span>
           </div>
         </div>
       </Modal>

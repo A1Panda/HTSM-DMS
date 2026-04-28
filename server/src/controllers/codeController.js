@@ -218,6 +218,79 @@ exports.deleteCode = async (req, res) => {
   }
 };
 
+// 更新编码
+exports.updateCode = async (req, res) => {
+  // 验证请求
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  
+  try {
+    const { productId, codeId } = req.params;
+    let { code, description, date } = req.body;
+    
+    // 清理编码，只保留数字
+    if (code) {
+      code = code.replace(/\D/g, '');
+    }
+    
+    // 检查产品是否存在
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: '产品不存在' });
+    }
+
+    if (!code) {
+      return res.status(400).json({ error: '编码不能为空或格式错误' });
+    }
+
+    // 检查是否修改了编码内容且与其他编码冲突
+    const isMongoDB = !!process.env.MONGODB_URI;
+    
+    if (isMongoDB) {
+      const existingCode = await Code.findOne({ productId, code, _id: { $ne: codeId } });
+      if (existingCode) {
+        return res.status(400).json({ error: '编码已存在，请使用不同的编码' });
+      }
+      
+      const updatedCode = await Code.findByIdAndUpdate(
+        codeId,
+        { code, description: description || '', date: date || '' },
+        { new: true }
+      );
+      
+      if (!updatedCode) {
+        return res.status(404).json({ error: '编码不存在' });
+      }
+      return res.json(updatedCode);
+    } else {
+      // 文件系统环境
+      // 需要手动查找是否存在冲突的编码
+      const allCodes = await Code.find({ productId });
+      const existingConflict = allCodes.find(c => c.code === code && String(c._id || c.id) !== String(codeId));
+      
+      if (existingConflict) {
+        return res.status(400).json({ error: '编码已存在，请使用不同的编码' });
+      }
+      
+      const updatedCode = await Code.findByIdAndUpdate(
+        codeId,
+        { code, description: description || '', date: date || '' },
+        productId
+      );
+      
+      if (!updatedCode) {
+        return res.status(404).json({ error: '编码不存在' });
+      }
+      return res.json(updatedCode);
+    }
+  } catch (error) {
+    console.error('更新编码失败:', error);
+    res.status(500).json({ error: '更新编码失败' });
+  }
+};
+
 // 恢复编码
 exports.restoreCode = async (req, res) => {
   try {

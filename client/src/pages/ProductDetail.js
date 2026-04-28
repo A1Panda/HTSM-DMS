@@ -81,14 +81,19 @@ const ProductDetail = () => {
   const [scanDeleteFailedCodes, setScanDeleteFailedCodes] = useState([]);
   const scanDeleteInputRef = useRef(null);
 
+  // 保持扫码枪输入框聚焦
+  const focusScanDeleteInput = () => {
+    setTimeout(() => {
+      if (scanDeleteInputRef.current) {
+        scanDeleteInputRef.current.focus();
+      }
+    }, 100);
+  };
+
   // 当弹窗打开时，自动聚焦输入框
   useEffect(() => {
     if (scanDeleteModalVisible) {
-      setTimeout(() => {
-        if (scanDeleteInputRef.current) {
-          scanDeleteInputRef.current.focus();
-        }
-      }, 100);
+      focusScanDeleteInput();
     }
   }, [scanDeleteModalVisible]);
 
@@ -445,12 +450,7 @@ const ProductDetail = () => {
         return prev;
       });
       setScanDeleteCode('');
-      // 保持聚焦
-      setTimeout(() => {
-        if (scanDeleteInputRef.current) {
-          scanDeleteInputRef.current.focus();
-        }
-      }, 100);
+      focusScanDeleteInput();
       return;
     }
 
@@ -466,12 +466,7 @@ const ProductDetail = () => {
     } finally {
       setScanDeleteLoading(false);
       setScanDeleteCode('');
-      // 保持聚焦
-      setTimeout(() => {
-        if (scanDeleteInputRef.current) {
-          scanDeleteInputRef.current.focus();
-        }
-      }, 100);
+      focusScanDeleteInput();
     }
   };
 

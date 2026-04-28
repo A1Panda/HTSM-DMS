@@ -97,6 +97,9 @@ export const codeAPI = {
   // 为产品添加编码
   addCode: (productId, codeData) => api.post(`/codes/product/${productId}`, codeData),
   
+  // 更新编码
+  updateCode: (productId, codeId, codeData) => api.put(`/codes/product/${productId}/${codeId}`, codeData),
+
   // 删除编码 (软删除)
   deleteCode: (productId, codeId) => api.delete(`/codes/product/${productId}/${codeId}`),
 
@@ -104,7 +107,10 @@ export const codeAPI = {
   restoreCode: (productId, codeId) => api.post(`/codes/product/${productId}/${codeId}/restore`),
 
   // 永久删除编码
-  permanentDeleteCode: (productId, codeId) => api.delete(`/codes/product/${productId}/${codeId}/permanent`)
+  permanentDeleteCode: (productId, codeId) => api.delete(`/codes/product/${productId}/${codeId}/permanent`),
+
+  // 批量检查重复编码
+  batchCheckDuplicate: (productIds) => api.post('/codes/batch-check-duplicate', { productIds })
 };
 
 // 统计相关API

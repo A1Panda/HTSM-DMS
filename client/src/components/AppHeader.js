@@ -26,7 +26,7 @@ const AppHeader = () => {
   };
 
   return (
-    <Header style={{ position: 'fixed', zIndex: 1, width: '100%', display: 'flex', alignItems: 'center' }}>
+    <Header style={{ position: 'fixed', zIndex: 100, width: '100%', display: 'flex', alignItems: 'center' }}>
       <div className="logo">
         <img 
           src="/Icon.png" 

@@ -21,10 +21,21 @@ router.post('/product/:productId',
 // 删除编码 (软删除)
 router.delete('/product/:productId/:codeId', codeController.deleteCode);
 
+// 更新编码
+router.put('/product/:productId/:codeId',
+  [
+    body('code').notEmpty().withMessage('编码不能为空')
+  ],
+  codeController.updateCode
+);
+
 // 恢复编码
 router.post('/product/:productId/:codeId/restore', codeController.restoreCode);
 
 // 永久删除编码
 router.delete('/product/:productId/:codeId/permanent', codeController.permanentDeleteCode);
+
+// 批量检查重复编码
+router.post('/batch-check-duplicate', codeController.batchCheckDuplicate);
 
 module.exports = router;

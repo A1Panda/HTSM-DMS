@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Card, 
@@ -17,7 +17,10 @@ import {
   Divider,
   Checkbox,
   Select,
-  Pagination
+  Pagination,
+  Dropdown,
+  Menu,
+  InputNumber
 } from 'antd';
 import { 
   ArrowLeftOutlined, 
@@ -29,7 +32,8 @@ import {
   DeleteOutlined,
   CheckOutlined,
   CloseOutlined,
-  RestOutlined
+  RestOutlined,
+  DownOutlined
 } from '@ant-design/icons';
 import { productAPI, codeAPI } from '../services/api';
 import CodeList from '../components/CodeList';
@@ -51,6 +55,8 @@ const ProductDetail = () => {
   const [filteredCodes, setFilteredCodes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [addModalVisible, setAddModalVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [currentEditCode, setCurrentEditCode] = useState(null);
   const [scanModalVisible, setScanModalVisible] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [quickInputLoading, setQuickInputLoading] = useState(false);
@@ -68,10 +74,38 @@ const ProductDetail = () => {
   const [modalCurrentPage, setModalCurrentPage] = useState(1);
   const modalPageSize = 100;
   
+  // 导出相关状态
+  const [isExportModalVisible, setIsExportModalVisible] = useState(false);
+  const [exportQuantity, setExportQuantity] = useState(50);
+  
   // 回收站状态
   const [recycleBinVisible, setRecycleBinVisible] = useState(false);
   const [deletedCodes, setDeletedCodes] = useState([]);
   const [recycleLoading, setRecycleLoading] = useState(false);
+
+  // 扫码枪删除状态
+  const [scanDeleteModalVisible, setScanDeleteModalVisible] = useState(false);
+  const [scanDeleteCode, setScanDeleteCode] = useState('');
+  const [scanDeleteLoading, setScanDeleteLoading] = useState(false);
+  const [scanDeleteSuccessCount, setScanDeleteSuccessCount] = useState(0);
+  const [scanDeleteFailedCodes, setScanDeleteFailedCodes] = useState([]);
+  const scanDeleteInputRef = useRef(null);
+
+  // 保持扫码枪输入框聚焦
+  const focusScanDeleteInput = () => {
+    setTimeout(() => {
+      if (scanDeleteInputRef.current) {
+        scanDeleteInputRef.current.focus();
+      }
+    }, 100);
+  };
+
+  // 当弹窗打开时，自动聚焦输入框
+  useEffect(() => {
+    if (scanDeleteModalVisible) {
+      focusScanDeleteInput();
+    }
+  }, [scanDeleteModalVisible]);
 
   // 统一处理排序和过滤
   useEffect(() => {
@@ -248,6 +282,29 @@ const ProductDetail = () => {
     }
   };
 
+  // 打开编辑模态框
+  const showEditModal = (code) => {
+    setCurrentEditCode(code);
+    setEditModalVisible(true);
+  };
+
+  // 修改编码
+  const handleEditCode = async (values) => {
+    try {
+      setFormLoading(true);
+      await codeAPI.updateCode(id, currentEditCode.id, values);
+      message.success('编码修改成功');
+      setEditModalVisible(false);
+      setCurrentEditCode(null);
+      loadCodes();
+    } catch (error) {
+      console.error('修改编码失败:', error);
+      message.error('修改编码失败: ' + (error.response?.data?.error || '未知错误'));
+    } finally {
+      setFormLoading(false);
+    }
+  };
+
   // 快速添加编码
   const handleQuickAddCode = async (values) => {
     try {
@@ -344,19 +401,64 @@ const ProductDetail = () => {
     setSearchText(value);
   };
 
-  // 导出编码
-  const handleExportCodes = () => {
+  // 智能导出编码 (分Sheet页)
+  const handleSmartExport = () => {
     if (codes.length === 0) {
       message.warning('没有可导出的编码');
       return;
     }
     
-    const success = ExportUtils.exportCodes(codes, product.name);
+    const success = ExportUtils.exportCodesSmart(codes, product.name);
     if (success) {
-      message.success('编码导出成功');
+      message.success('智能导出成功');
     } else {
-      message.error('编码导出失败');
+      message.error('智能导出失败');
     }
+  };
+
+  // 显示按数量导出弹窗
+  const showQuantityExportModal = () => {
+    if (codes.length === 0) {
+      message.warning('没有可导出的编码');
+      return;
+    }
+    // 默认使用当前已录入的全部编码数量
+    setExportQuantity(codes.length);
+    setIsExportModalVisible(true);
+  };
+
+  // 确认按数量导出
+  const handleQuantityExportConfirm = () => {
+    if (!exportQuantity || exportQuantity <= 0) {
+      message.warning('请输入有效的导出数量');
+      return;
+    }
+    
+    const actualQuantity = Math.min(exportQuantity, codes.length);
+    const success = ExportUtils.exportCodesByQuantity(codes, product.name, actualQuantity);
+    
+    if (success) {
+      message.success(`成功导出 ${actualQuantity} 个最新编码`);
+      setIsExportModalVisible(false);
+    } else {
+      message.error('导出失败');
+    }
+  };
+
+  // 导出下拉菜单
+  const exportMenu = {
+    items: [
+      {
+        key: 'smart',
+        label: '按日期时间智能导出 (分Sheet页)',
+        onClick: handleSmartExport,
+      },
+      {
+        key: 'quantity',
+        label: '按日期排序导出指定数量',
+        onClick: showQuantityExportModal,
+      }
+    ]
   };
 
   // 智能提取编码（优先提取末尾数字）
@@ -404,6 +506,46 @@ const ProductDetail = () => {
 
     const initialValues = { code: extractedResult };
     handleAddCode(initialValues);
+  };
+
+  // 处理扫码枪删除提交
+  const handleScanDeleteSubmit = async () => {
+    const extractedResult = extractCode(scanDeleteCode);
+    
+    if (!extractedResult) {
+      message.warning('请输入或扫入有效编码');
+      return;
+    }
+
+    const targetCode = codes.find(c => c.code === extractedResult);
+
+    if (!targetCode) {
+      message.error(`编码 "${extractedResult}" 之前没有录入，无法删除！`);
+      setScanDeleteFailedCodes(prev => {
+        if (!prev.includes(extractedResult)) {
+          return [...prev, extractedResult];
+        }
+        return prev;
+      });
+      setScanDeleteCode('');
+      focusScanDeleteInput();
+      return;
+    }
+
+    try {
+      setScanDeleteLoading(true);
+      await codeAPI.deleteCode(id, targetCode.id);
+      message.success(`编码 "${extractedResult}" 已成功删除并移入回收站`);
+      setScanDeleteSuccessCount(prev => prev + 1);
+      loadCodes();
+    } catch (error) {
+      console.error('扫码枪删除失败:', error);
+      message.error(`删除编码 "${extractedResult}" 失败`);
+    } finally {
+      setScanDeleteLoading(false);
+      setScanDeleteCode('');
+      focusScanDeleteInput();
+    }
   };
 
   // 检查范围内缺失编码和超出范围的编码
@@ -455,7 +597,28 @@ const ProductDetail = () => {
       );
       
       if (!isNaN(start) && !isNaN(end) && start <= end) {
+        // 防止超大范围导致页面卡死：放宽限制，以时间为主
+        const MAX_ITERATIONS = 5000000; // 调高到 500万 次
+        const MAX_TIME_MS = 800; // 调高到 800ms
+        const startTime = Date.now();
+        let iterations = 0;
+
         for (let i = start; i <= end; i++) {
+          iterations++;
+          
+          // 每 10000 次检查一次时间，减少 Date.now() 调用开销
+          if (iterations % 10000 === 0) {
+            if (Date.now() - startTime > MAX_TIME_MS) {
+              console.warn(`[ProductDetail] Range checking stopped due to timeout (${MAX_TIME_MS}ms). iterations: ${iterations}`);
+              break;
+            }
+          }
+          
+          if (iterations > MAX_ITERATIONS) {
+            console.warn(`[ProductDetail] Range checking stopped due to max iterations (${MAX_ITERATIONS}).`);
+            break;
+          }
+
           let expected = i.toString();
           
           // 如果起始值和结束值长度相同，则严格按照该长度补零（例如 1-100 不补，001-100 补零到3位）
@@ -800,19 +963,24 @@ const ProductDetail = () => {
                 >
                   回收站
                 </Button>
-                <Button 
-                  icon={<DownloadOutlined />} 
-                  onClick={handleExportCodes}
-                  disabled={codes.length === 0}
-                >
-                  导出编码
-                </Button>
+                <Dropdown menu={exportMenu} disabled={codes.length === 0} trigger={['click']}>
+                  <Button icon={<DownloadOutlined />}>
+                    导出编码 <DownOutlined />
+                  </Button>
+                </Dropdown>
                 <Button 
                   icon={<CheckOutlined />} 
                   onClick={toggleCodeBatchMode}
                   disabled={filteredCodes.length === 0}
                 >
                   批量选择
+                </Button>
+                <Button 
+                  icon={<QrcodeOutlined />} 
+                  onClick={() => setScanDeleteModalVisible(true)}
+                  danger
+                >
+                  扫码删除
                 </Button>
                 <Button 
                   icon={<QrcodeOutlined />} 
@@ -878,6 +1046,7 @@ const ProductDetail = () => {
         <CodeList 
           codes={filteredCodes}
           onDelete={handleDeleteCode}
+          onEdit={showEditModal}
           batchMode={codeBatchMode}
           selectedCodes={selectedCodes}
           onSelect={handleCodeSelect}
@@ -890,12 +1059,41 @@ const ProductDetail = () => {
         open={addModalVisible}
         onCancel={() => setAddModalVisible(false)}
         footer={null}
+        destroyOnClose
       >
         <CodeForm 
           onFinish={handleAddCode}
           onCancel={() => setAddModalVisible(false)}
           loading={formLoading}
         />
+      </Modal>
+
+      {/* 修改编码表单 */}
+      <Modal
+        title="修改编码"
+        open={editModalVisible}
+        onCancel={() => {
+          setEditModalVisible(false);
+          setCurrentEditCode(null);
+        }}
+        footer={null}
+        destroyOnClose
+      >
+        {currentEditCode && (
+          <CodeForm 
+            initialValues={{
+              code: currentEditCode.code,
+              description: currentEditCode.description,
+              date: currentEditCode.date
+            }}
+            onFinish={handleEditCode}
+            onCancel={() => {
+              setEditModalVisible(false);
+              setCurrentEditCode(null);
+            }}
+            loading={formLoading}
+          />
+        )}
       </Modal>
       
       <Modal
@@ -995,6 +1193,98 @@ const ProductDetail = () => {
         onScan={handleScanResult}
         continuous
       />
+
+      {/* 扫码枪删除对话框 */}
+      <Modal
+        title="扫码枪删除编码"
+        open={scanDeleteModalVisible}
+        onCancel={() => {
+          setScanDeleteModalVisible(false);
+          setScanDeleteCode('');
+          setScanDeleteSuccessCount(0);
+          setScanDeleteFailedCodes([]);
+        }}
+        footer={null}
+        width={500}
+      >
+        <div style={{ padding: '20px 0', textAlign: 'center' }}>
+          <Input
+            ref={scanDeleteInputRef}
+            placeholder="请使用扫码枪扫描..."
+            value={scanDeleteCode}
+            onChange={(e) => setScanDeleteCode(e.target.value)}
+            onPressEnter={handleScanDeleteSubmit}
+            disabled={scanDeleteLoading}
+            autoFocus
+            size="large"
+            prefix={<QrcodeOutlined style={{ color: '#1890ff' }} />}
+            autoComplete="off"
+          />
+          {scanDeleteLoading && (
+            <div style={{ marginTop: 16 }}>
+              <Spin /> <span style={{ marginLeft: 8 }}>正在删除...</span>
+            </div>
+          )}
+          
+          <div style={{ marginTop: 24, textAlign: 'left' }}>
+            <div style={{ marginBottom: 8 }}>
+              <strong>已成功删除：</strong> <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{scanDeleteSuccessCount}</span> 个编码
+            </div>
+            {scanDeleteFailedCodes.length > 0 && (
+              <div>
+                <div style={{ marginBottom: 8, color: '#f5222d' }}>
+                  <strong>以下编码因为没有录入，无法删除 ({scanDeleteFailedCodes.length} 个)：</strong>
+                </div>
+                <div style={{ 
+                  maxHeight: '150px', 
+                  overflowY: 'auto', 
+                  padding: '8px', 
+                  background: '#fafafa', 
+                  border: '1px solid #f0f0f0',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '8px'
+                }}>
+                  {scanDeleteFailedCodes.map(code => (
+                    <Tag key={code} color="error" style={{ margin: 0 }}>
+                      {code}
+                    </Tag>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
+
+      {/* 按数量导出对话框 */}
+      <Modal
+        title="导出指定数量的编码"
+        open={isExportModalVisible}
+        onOk={handleQuantityExportConfirm}
+        onCancel={() => setIsExportModalVisible(false)}
+        okText="导出"
+        cancelText="取消"
+        destroyOnClose
+      >
+        <div style={{ padding: '16px 0' }}>
+          <p>将按录入时间（最新录入优先）导出指定数量的编码。</p>
+          <div style={{ display: 'flex', alignItems: 'center', marginTop: 16 }}>
+            <span style={{ marginRight: 8 }}>导出数量：</span>
+            <InputNumber
+              min={1}
+              max={codes.length}
+              value={exportQuantity}
+              onChange={setExportQuantity}
+              style={{ width: 120 }}
+            />
+            <span style={{ marginLeft: 8, color: '#999' }}>
+              (最多可导出 {codes.length} 个)
+            </span>
+          </div>
+        </div>
+      </Modal>
 
       {/* 回收站对话框 */}
       <RecycleBinModal

@@ -218,6 +218,79 @@ exports.deleteCode = async (req, res) => {
   }
 };
 
+// 更新编码
+exports.updateCode = async (req, res) => {
+  // 验证请求
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+  
+  try {
+    const { productId, codeId } = req.params;
+    let { code, description, date } = req.body;
+    
+    // 清理编码，只保留数字
+    if (code) {
+      code = code.replace(/\D/g, '');
+    }
+    
+    // 检查产品是否存在
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: '产品不存在' });
+    }
+
+    if (!code) {
+      return res.status(400).json({ error: '编码不能为空或格式错误' });
+    }
+
+    // 检查是否修改了编码内容且与其他编码冲突
+    const isMongoDB = !!process.env.MONGODB_URI;
+    
+    if (isMongoDB) {
+      const existingCode = await Code.findOne({ productId, code, _id: { $ne: codeId } });
+      if (existingCode) {
+        return res.status(400).json({ error: '编码已存在，请使用不同的编码' });
+      }
+      
+      const updatedCode = await Code.findByIdAndUpdate(
+        codeId,
+        { code, description: description || '', date: date || '' },
+        { new: true }
+      );
+      
+      if (!updatedCode) {
+        return res.status(404).json({ error: '编码不存在' });
+      }
+      return res.json(updatedCode);
+    } else {
+      // 文件系统环境
+      // 需要手动查找是否存在冲突的编码
+      const allCodes = await Code.find({ productId });
+      const existingConflict = allCodes.find(c => c.code === code && String(c._id || c.id) !== String(codeId));
+      
+      if (existingConflict) {
+        return res.status(400).json({ error: '编码已存在，请使用不同的编码' });
+      }
+      
+      const updatedCode = await Code.findByIdAndUpdate(
+        codeId,
+        { code, description: description || '', date: date || '' },
+        productId
+      );
+      
+      if (!updatedCode) {
+        return res.status(404).json({ error: '编码不存在' });
+      }
+      return res.json(updatedCode);
+    }
+  } catch (error) {
+    console.error('更新编码失败:', error);
+    res.status(500).json({ error: '更新编码失败' });
+  }
+};
+
 // 恢复编码
 exports.restoreCode = async (req, res) => {
   try {
@@ -279,5 +352,88 @@ exports.permanentDeleteCode = async (req, res) => {
   } catch (error) {
     console.error('永久删除编码失败:', error);
     res.status(500).json({ error: '永久删除编码失败' });
+  }
+};
+
+// 批量检查重复编码
+exports.batchCheckDuplicate = async (req, res) => {
+  try {
+    const { productIds } = req.body;
+    
+    if (!productIds || !Array.isArray(productIds) || productIds.length < 2) {
+      return res.status(400).json({ error: '请至少选择 2 个产品进行查重' });
+    }
+    
+    // 获取所有选中产品的编码
+    const allCodes = [];
+    const productMap = new Map();
+    
+    for (const productId of productIds) {
+      const codes = await Code.find({ productId, deleted: false });
+      const product = await Product.findById(productId);
+      
+      if (product) {
+        productMap.set(productId, product.name);
+      }
+      
+      codes.forEach(code => {
+        allCodes.push({
+          code: code.code,
+          productId: productId,
+          productName: product ? product.name : '未知产品'
+        });
+      });
+    }
+    
+    // 使用 Map 找出重复项
+    const codeMap = new Map();
+    allCodes.forEach(item => {
+      if (codeMap.has(item.code)) {
+        codeMap.get(item.code).push({
+          id: item.productId,
+          name: item.productName
+        });
+      } else {
+        codeMap.set(item.code, [{
+          id: item.productId,
+          name: item.productName
+        }]);
+      }
+    });
+    
+    // 筛选出重复的编码（出现在多个产品中的）
+    const duplicates = [];
+    codeMap.forEach((products, code) => {
+      if (products.length > 1) {
+        // 去重：同一产品内可能有重复编码（理论上不应该，但以防万一）
+        const uniqueProducts = [];
+        const seenIds = new Set();
+        products.forEach(p => {
+          if (!seenIds.has(p.id)) {
+            seenIds.add(p.id);
+            uniqueProducts.push(p);
+          }
+        });
+        
+        if (uniqueProducts.length > 1) {
+          duplicates.push({
+            code: code,
+            products: uniqueProducts
+          });
+        }
+      }
+    });
+    
+    // 按编码排序
+    duplicates.sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
+    
+    res.json({
+      duplicates: duplicates,
+      totalChecked: allCodes.length,
+      duplicateCount: duplicates.length
+    });
+  } catch (error) {
+    console.error('批量查重失败:', error);
+    res.status(500).json({ error: '批量查重失败' });
   }
 };

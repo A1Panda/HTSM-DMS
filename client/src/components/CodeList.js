@@ -1,6 +1,6 @@
 import React from 'react';
 import { List, Button, Tag, Space, Checkbox, Popconfirm } from 'antd';
-import { DeleteOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 
 /**
@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
  * @param {Object} props 组件属性
  * @param {Array} props.codes 编码数据
  * @param {Function} props.onDelete 删除回调
+ * @param {Function} props.onEdit 编辑回调
  * @param {boolean} props.loading 是否加载中
  * @param {boolean} props.batchMode 是否为批量模式
  * @param {Array} props.selectedCodes 选中的编码ID列表
@@ -17,6 +18,7 @@ const CodeList = ({
   codes, 
   onDelete,
   onRestore, 
+  onEdit,
   loading = false, 
   batchMode = false,
   selectedCodes = [],
@@ -55,7 +57,14 @@ const CodeList = ({
               >
                 恢复
               </Button>
-            ) : null,
+            ) : (
+              <Button
+                key="edit"
+                type="text"
+                icon={<EditOutlined />}
+                onClick={() => onEdit && onEdit(code)}
+              />
+            ),
             <Popconfirm
               key="delete-popconfirm"
               title="确定要删除这个编码吗？"
@@ -97,6 +106,7 @@ CodeList.propTypes = {
   codes: PropTypes.array.isRequired,
   onDelete: PropTypes.func.isRequired,
   onRestore: PropTypes.func,
+  onEdit: PropTypes.func,
   loading: PropTypes.bool,
   batchMode: PropTypes.bool,
   selectedCodes: PropTypes.array,

@@ -303,7 +303,7 @@ const AdvancedSearch = () => {
       <Title level={2}>高级搜索</Title>
       <Row gutter={[24, 24]}>
         <Col xs={24} lg={17} xl={18}>
-          <Card bordered={false} style={{ marginBottom: 24 }}>
+          <Card variant="borderless" style={{ marginBottom: 16 }}>
             <Form 
               form={form} 
               layout="vertical" 
@@ -364,7 +364,7 @@ const AdvancedSearch = () => {
 
           <Card 
             title="搜索结果" 
-            bordered={false}
+            variant="borderless"
             extra={
               codes.length > 0 && (
                 <Space>
@@ -428,7 +428,7 @@ const AdvancedSearch = () => {
         <Col xs={24} lg={7} xl={6}>
           <Card 
             title={<Space><StarOutlined /> 已保存的搜索</Space>} 
-            bordered={false} 
+            variant="borderless" 
             style={{ marginBottom: 24 }}
           >
             {savedSearches.length === 0 ? (
@@ -455,7 +455,7 @@ const AdvancedSearch = () => {
 
           <Card 
             title={<Space><HistoryOutlined /> 搜索历史</Space>} 
-            bordered={false}
+            variant="borderless"
             extra={<Button type="link" size="small" onClick={clearHistory} icon={<ClearOutlined />}>清空</Button>}
           >
             {searchHistory.length === 0 ? (
@@ -480,7 +480,7 @@ const AdvancedSearch = () => {
         open={isSaveModalVisible}
         onOk={handleSaveSearch}
         onCancel={() => setIsSaveModalVisible(false)}
-        destroyOnClose
+        destroyOnHidden={false}
       >
         <Input 
           placeholder="请输入一个容易记住的名称" 

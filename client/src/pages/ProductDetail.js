@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Card, 
@@ -72,6 +72,25 @@ const ProductDetail = () => {
   const [recycleBinVisible, setRecycleBinVisible] = useState(false);
   const [deletedCodes, setDeletedCodes] = useState([]);
   const [recycleLoading, setRecycleLoading] = useState(false);
+
+  // 扫码枪删除状态
+  const [scanDeleteModalVisible, setScanDeleteModalVisible] = useState(false);
+  const [scanDeleteCode, setScanDeleteCode] = useState('');
+  const [scanDeleteLoading, setScanDeleteLoading] = useState(false);
+  const [scanDeleteSuccessCount, setScanDeleteSuccessCount] = useState(0);
+  const [scanDeleteFailedCodes, setScanDeleteFailedCodes] = useState([]);
+  const scanDeleteInputRef = useRef(null);
+
+  // 当弹窗打开时，自动聚焦输入框
+  useEffect(() => {
+    if (scanDeleteModalVisible) {
+      setTimeout(() => {
+        if (scanDeleteInputRef.current) {
+          scanDeleteInputRef.current.focus();
+        }
+      }, 100);
+    }
+  }, [scanDeleteModalVisible]);
 
   // 统一处理排序和过滤
   useEffect(() => {
@@ -404,6 +423,56 @@ const ProductDetail = () => {
 
     const initialValues = { code: extractedResult };
     handleAddCode(initialValues);
+  };
+
+  // 处理扫码枪删除提交
+  const handleScanDeleteSubmit = async () => {
+    const extractedResult = extractCode(scanDeleteCode);
+    
+    if (!extractedResult) {
+      message.warning('请输入或扫入有效编码');
+      return;
+    }
+
+    const targetCode = codes.find(c => c.code === extractedResult);
+
+    if (!targetCode) {
+      message.error(`编码 "${extractedResult}" 之前没有录入，无法删除！`);
+      setScanDeleteFailedCodes(prev => {
+        if (!prev.includes(extractedResult)) {
+          return [...prev, extractedResult];
+        }
+        return prev;
+      });
+      setScanDeleteCode('');
+      // 保持聚焦
+      setTimeout(() => {
+        if (scanDeleteInputRef.current) {
+          scanDeleteInputRef.current.focus();
+        }
+      }, 100);
+      return;
+    }
+
+    try {
+      setScanDeleteLoading(true);
+      await codeAPI.deleteCode(id, targetCode.id);
+      message.success(`编码 "${extractedResult}" 已成功删除并移入回收站`);
+      setScanDeleteSuccessCount(prev => prev + 1);
+      loadCodes();
+    } catch (error) {
+      console.error('扫码枪删除失败:', error);
+      message.error(`删除编码 "${extractedResult}" 失败`);
+    } finally {
+      setScanDeleteLoading(false);
+      setScanDeleteCode('');
+      // 保持聚焦
+      setTimeout(() => {
+        if (scanDeleteInputRef.current) {
+          scanDeleteInputRef.current.focus();
+        }
+      }, 100);
+    }
   };
 
   // 检查范围内缺失编码和超出范围的编码
@@ -837,6 +906,13 @@ const ProductDetail = () => {
                 </Button>
                 <Button 
                   icon={<QrcodeOutlined />} 
+                  onClick={() => setScanDeleteModalVisible(true)}
+                  danger
+                >
+                  扫码删除
+                </Button>
+                <Button 
+                  icon={<QrcodeOutlined />} 
                   onClick={() => setScanModalVisible(true)}
                 >
                   扫码添加
@@ -1016,6 +1092,70 @@ const ProductDetail = () => {
         onScan={handleScanResult}
         continuous
       />
+
+      {/* 扫码枪删除对话框 */}
+      <Modal
+        title="扫码枪删除编码"
+        open={scanDeleteModalVisible}
+        onCancel={() => {
+          setScanDeleteModalVisible(false);
+          setScanDeleteCode('');
+          setScanDeleteSuccessCount(0);
+          setScanDeleteFailedCodes([]);
+        }}
+        footer={null}
+        width={500}
+      >
+        <div style={{ padding: '20px 0', textAlign: 'center' }}>
+          <Input
+            ref={scanDeleteInputRef}
+            placeholder="请使用扫码枪扫描..."
+            value={scanDeleteCode}
+            onChange={(e) => setScanDeleteCode(e.target.value)}
+            onPressEnter={handleScanDeleteSubmit}
+            disabled={scanDeleteLoading}
+            autoFocus
+            size="large"
+            prefix={<QrcodeOutlined style={{ color: '#1890ff' }} />}
+            autoComplete="off"
+          />
+          {scanDeleteLoading && (
+            <div style={{ marginTop: 16 }}>
+              <Spin /> <span style={{ marginLeft: 8 }}>正在删除...</span>
+            </div>
+          )}
+          
+          <div style={{ marginTop: 24, textAlign: 'left' }}>
+            <div style={{ marginBottom: 8 }}>
+              <strong>已成功删除：</strong> <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{scanDeleteSuccessCount}</span> 个编码
+            </div>
+            {scanDeleteFailedCodes.length > 0 && (
+              <div>
+                <div style={{ marginBottom: 8, color: '#f5222d' }}>
+                  <strong>以下编码因为没有录入，无法删除 ({scanDeleteFailedCodes.length} 个)：</strong>
+                </div>
+                <div style={{ 
+                  maxHeight: '150px', 
+                  overflowY: 'auto', 
+                  padding: '8px', 
+                  background: '#fafafa', 
+                  border: '1px solid #f0f0f0',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '8px'
+                }}>
+                  {scanDeleteFailedCodes.map(code => (
+                    <Tag key={code} color="error" style={{ margin: 0 }}>
+                      {code}
+                    </Tag>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </Modal>
 
       {/* 回收站对话框 */}
       <RecycleBinModal

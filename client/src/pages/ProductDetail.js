@@ -422,7 +422,8 @@ const ProductDetail = () => {
       message.warning('没有可导出的编码');
       return;
     }
-    setExportQuantity(Math.min(50, codes.length));
+    // 默认使用当前已录入的全部编码数量
+    setExportQuantity(codes.length);
     setIsExportModalVisible(true);
   };
 

@@ -127,3 +127,5 @@ client/node_modules/
 # Project specific
 old/node_modules/
 data/
+
+*.tar

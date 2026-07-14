@@ -35,6 +35,9 @@ router.post('/product/:productId/:codeId/restore', codeController.restoreCode);
 // 永久删除编码
 router.delete('/product/:productId/:codeId/permanent', codeController.permanentDeleteCode);
 
+// 批量移动编码到其他产品
+router.post('/move', codeController.moveCodes);
+
 // 批量检查重复编码
 router.post('/batch-check-duplicate', codeController.batchCheckDuplicate);
 

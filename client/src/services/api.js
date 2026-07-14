@@ -110,7 +110,11 @@ export const codeAPI = {
   permanentDeleteCode: (productId, codeId) => api.delete(`/codes/product/${productId}/${codeId}/permanent`),
 
   // 批量检查重复编码
-  batchCheckDuplicate: (productIds) => api.post('/codes/batch-check-duplicate', { productIds })
+  batchCheckDuplicate: (productIds) => api.post('/codes/batch-check-duplicate', { productIds }),
+
+  // 批量移动编码到其他产品
+  moveCodes: (codeIds, sourceProductId, targetProductId) =>
+    api.post('/codes/move', { codeIds, sourceProductId, targetProductId })
 };
 
 // 统计相关API

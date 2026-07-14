@@ -1,6 +1,7 @@
 name: htsm-dms
 services:
   api:
+    restart: always
     build: .
     container_name: htsm-dms
     ports:
@@ -16,6 +17,7 @@ services:
     depends_on:
       - mongo
   mongo:
+    restart: always
     image: mongo:6
     container_name: htsm-dms-mongo
     ports:

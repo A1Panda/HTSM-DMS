@@ -20,7 +20,8 @@ import {
   Pagination,
   Dropdown,
   Menu,
-  InputNumber
+  InputNumber,
+  DatePicker
 } from 'antd';
 import { 
   ArrowLeftOutlined, 
@@ -33,7 +34,8 @@ import {
   CheckOutlined,
   CloseOutlined,
   RestOutlined,
-  DownOutlined
+  DownOutlined,
+  SwapOutlined
 } from '@ant-design/icons';
 import { productAPI, codeAPI } from '../services/api';
 import CodeList from '../components/CodeList';
@@ -74,6 +76,9 @@ const ProductDetail = () => {
   const [modalCurrentPage, setModalCurrentPage] = useState(1);
   const modalPageSize = 100;
   
+  // 批量选择日期范围
+  const [batchDateRange, setBatchDateRange] = useState(null);
+
   // 导出相关状态
   const [isExportModalVisible, setIsExportModalVisible] = useState(false);
   const [exportQuantity, setExportQuantity] = useState(50);
@@ -90,6 +95,12 @@ const ProductDetail = () => {
   const [scanDeleteSuccessCount, setScanDeleteSuccessCount] = useState(0);
   const [scanDeleteFailedCodes, setScanDeleteFailedCodes] = useState([]);
   const scanDeleteInputRef = useRef(null);
+
+  // 移动编码状态
+  const [moveModalVisible, setMoveModalVisible] = useState(false);
+  const [moveTargetProductId, setMoveTargetProductId] = useState(null);
+  const [moveLoading, setMoveLoading] = useState(false);
+  const [allProducts, setAllProducts] = useState([]);
 
   // 保持扫码枪输入框聚焦
   const focusScanDeleteInput = () => {
@@ -114,10 +125,23 @@ const ProductDetail = () => {
     // 1. 过滤
     if (searchText) {
       const searchLower = searchText.toLowerCase();
-      result = result.filter(code => 
-        code.code.toLowerCase().includes(searchLower) ||
-        (code.description && code.description.toLowerCase().includes(searchLower))
-      );
+      
+      // 检测范围搜索格式，如 "8600-8700" 或 "8600 - 8700"
+      const rangeMatch = searchText.match(/^(\d+)\s*-\s*(\d+)$/);
+      
+      if (rangeMatch) {
+        const start = parseInt(rangeMatch[1], 10);
+        const end = parseInt(rangeMatch[2], 10);
+        result = result.filter(code => {
+          const num = parseInt(code.code, 10);
+          return !isNaN(num) && num >= start && num <= end;
+        });
+      } else {
+        result = result.filter(code => 
+          code.code.toLowerCase().includes(searchLower) ||
+          (code.description && code.description.toLowerCase().includes(searchLower))
+        );
+      }
     }
     
     // 2. 排序
@@ -372,6 +396,73 @@ const ProductDetail = () => {
     });
   };
 
+  // 打开移动编码模态框
+  const handleOpenMoveModal = async () => {
+    if (selectedCodes.length === 0) {
+      message.warning('请先选择要移动的编码');
+      return;
+    }
+    
+    // 加载所有产品列表（排除当前产品）
+    try {
+      const response = await productAPI.getAllProducts({ limit: 1000 });
+      const products = response.data.products || response.data || [];
+      setAllProducts(products.filter(p => p.id !== id));
+      setMoveTargetProductId(null);
+      setMoveModalVisible(true);
+    } catch (error) {
+      console.error('加载产品列表失败:', error);
+      message.error('加载产品列表失败');
+    }
+  };
+
+  // 确认移动编码
+  const handleConfirmMoveCodes = async () => {
+    if (!moveTargetProductId) {
+      message.warning('请选择目标产品');
+      return;
+    }
+
+    try {
+      setMoveLoading(true);
+      const response = await codeAPI.moveCodes(selectedCodes, id, moveTargetProductId);
+      const data = response.data;
+      
+      message.success(data.message);
+      
+      if (data.failedCodes && data.failedCodes.length > 0) {
+        message.warning(
+          `${data.failedCodes.length} 个编码移动失败：${data.failedCodes.map(f => f.reason).join('；')}`
+        );
+      }
+      
+      setMoveModalVisible(false);
+      setSelectedCodes([]);
+      setCodeBatchMode(false);
+      loadCodes();
+    } catch (error) {
+      console.error('移动编码失败:', error);
+      message.error('移动编码失败: ' + (error.response?.data?.error || '未知错误'));
+    } finally {
+      setMoveLoading(false);
+    }
+  };
+
+  // 导出选中的编码
+  const handleExportSelected = () => {
+    if (selectedCodes.length === 0) {
+      message.warning('请先选择要导出的编码');
+      return;
+    }
+    const selectedData = codes.filter(c => selectedCodes.includes(c.id));
+    const success = ExportUtils.exportCodes(selectedData, product.name);
+    if (success) {
+      message.success(`已导出 ${selectedData.length} 个编码`);
+    } else {
+      message.error('导出失败');
+    }
+  };
+
   // 处理编码选择
   const handleCodeSelect = (codeId, checked) => {
     if (checked) {
@@ -388,6 +479,29 @@ const ProductDetail = () => {
     } else {
       setSelectedCodes([]);
     }
+  };
+
+  // 按录入时间范围选择编码
+  const handleBatchSelectByDateRange = (dates) => {
+    setBatchDateRange(dates);
+    
+    if (!dates || dates.length !== 2) {
+      return;
+    }
+    
+    const [start, end] = dates;
+    const startTime = start.startOf('day').valueOf();
+    const endTime = end.endOf('day').valueOf();
+    
+    const selectedIds = filteredCodes
+      .filter(code => {
+        const time = new Date(code.createdAt).getTime();
+        return time >= startTime && time <= endTime;
+      })
+      .map(code => code.id);
+    
+    setSelectedCodes(selectedIds);
+    message.success(`已选择 ${selectedIds.length} 个编码`);
   };
 
   // 切换编码批量模式
@@ -946,6 +1060,20 @@ const ProductDetail = () => {
                   取消批量
                 </Button>
                 <Button 
+                  icon={<SwapOutlined />} 
+                  onClick={handleOpenMoveModal}
+                  disabled={selectedCodes.length === 0}
+                >
+                  移动到 ({selectedCodes.length})
+                </Button>
+                <Button 
+                  icon={<DownloadOutlined />} 
+                  onClick={handleExportSelected}
+                  disabled={selectedCodes.length === 0}
+                >
+                  导出选中 ({selectedCodes.length})
+                </Button>
+                <Button 
                   type="primary" 
                   danger
                   icon={<DeleteOutlined />} 
@@ -1020,9 +1148,19 @@ const ProductDetail = () => {
                 全选 ({selectedCodes.length}/{filteredCodes.length})
               </Checkbox>
             )}
+
+            {codeBatchMode && (
+              <DatePicker.RangePicker
+                value={batchDateRange}
+                onChange={handleBatchSelectByDateRange}
+                placeholder={['开始日期', '结束日期']}
+                style={{ width: 260 }}
+                allowClear
+              />
+            )}
             
             <Search
-              placeholder="搜索编码..."
+              placeholder="搜索编码或范围，如 100-110"
               allowClear
               enterButton={<SearchOutlined />}
               onSearch={handleSearch}
@@ -1297,6 +1435,40 @@ const ProductDetail = () => {
         onBatchPermanentDelete={handleBatchPermanentDeleteCodes}
         loading={recycleLoading}
       />
+
+      {/* 移动编码对话框 */}
+      <Modal
+        title="移动编码到其他产品"
+        open={moveModalVisible}
+        onOk={handleConfirmMoveCodes}
+        onCancel={() => setMoveModalVisible(false)}
+        confirmLoading={moveLoading}
+        okText="确认移动"
+        cancelText="取消"
+        destroyOnClose
+      >
+        <div style={{ padding: '8px 0' }}>
+          <p>已选择 <strong>{selectedCodes.length}</strong> 个编码，请选择要移动到的目标产品：</p>
+          <Select
+            showSearch
+            style={{ width: '100%' }}
+            placeholder="请选择目标产品"
+            value={moveTargetProductId}
+            onChange={setMoveTargetProductId}
+            optionFilterProp="label"
+            options={allProducts.map(p => ({
+              value: p.id,
+              label: `${p.name}${p.category ? ` (${p.category})` : ''}`
+            }))}
+            filterOption={(input, option) =>
+              option.label.toLowerCase().includes(input.toLowerCase())
+            }
+          />
+          {allProducts.length === 0 && (
+            <p style={{ color: '#999', marginTop: 8 }}>暂无可移动的目标产品</p>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 };

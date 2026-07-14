@@ -355,6 +355,125 @@ exports.permanentDeleteCode = async (req, res) => {
   }
 };
 
+// 批量移动编码到其他产品
+exports.moveCodes = async (req, res) => {
+  try {
+    const { codeIds, sourceProductId, targetProductId } = req.body;
+
+    if (!codeIds || !Array.isArray(codeIds) || codeIds.length === 0) {
+      return res.status(400).json({ error: '请选择要移动的编码' });
+    }
+
+    if (!sourceProductId || !targetProductId) {
+      return res.status(400).json({ error: '源产品和目标产品不能为空' });
+    }
+
+    if (sourceProductId === targetProductId) {
+      return res.status(400).json({ error: '源产品和目标产品不能相同' });
+    }
+
+    // 检查目标产品是否存在
+    const targetProduct = await Product.findById(targetProductId);
+    if (!targetProduct) {
+      return res.status(404).json({ error: '目标产品不存在' });
+    }
+
+    const isMongoDB = !!process.env.MONGODB_URI;
+    let movedCount = 0;
+    const failedCodes = [];
+
+    if (isMongoDB) {
+      // MongoDB 模式
+      for (const codeId of codeIds) {
+        try {
+          const code = await Code.findById(codeId);
+          if (!code) {
+            failedCodes.push({ id: codeId, reason: '编码不存在' });
+            continue;
+          }
+
+          if (String(code.productId) !== String(sourceProductId)) {
+            failedCodes.push({ id: codeId, code: code.code, reason: '编码不属于源产品' });
+            continue;
+          }
+
+          // 检查目标产品中是否已存在相同编码
+          const existingInTarget = await Code.findOne({
+            productId: targetProductId,
+            code: code.code
+          });
+
+          if (existingInTarget) {
+            failedCodes.push({ id: codeId, code: code.code, reason: `目标产品中已存在编码 "${code.code}"` });
+            continue;
+          }
+
+          code.productId = targetProductId;
+          await code.save();
+          movedCount++;
+        } catch (err) {
+          failedCodes.push({ id: codeId, reason: err.message });
+        }
+      }
+    } else {
+      // 文件系统模式
+      const fs = require('fs');
+      const path = require('path');
+      const DATA_DIR = path.join(__dirname, '../../../data');
+
+      const sourceFile = path.join(DATA_DIR, `${sourceProductId}_codes.json`);
+      const targetFile = path.join(DATA_DIR, `${targetProductId}_codes.json`);
+
+      if (!fs.existsSync(sourceFile)) {
+        return res.status(404).json({ error: '源产品编码文件不存在' });
+      }
+
+      const sourceCodes = JSON.parse(fs.readFileSync(sourceFile, 'utf8'));
+      let targetCodes = [];
+      if (fs.existsSync(targetFile)) {
+        targetCodes = JSON.parse(fs.readFileSync(targetFile, 'utf8'));
+      }
+
+      const targetCodeSet = new Set(targetCodes.map(c => c.code));
+
+      for (const codeId of codeIds) {
+        const codeIndex = sourceCodes.findIndex(c => c.id === codeId);
+        if (codeIndex === -1) {
+          failedCodes.push({ id: codeId, reason: '编码不存在' });
+          continue;
+        }
+
+        const code = sourceCodes[codeIndex];
+
+        if (targetCodeSet.has(code.code)) {
+          failedCodes.push({ id: codeId, code: code.code, reason: `目标产品中已存在编码 "${code.code}"` });
+          continue;
+        }
+
+        // 从源文件移除，添加到目标文件
+        sourceCodes.splice(codeIndex, 1);
+        targetCodes.push({ ...code, productId: targetProductId });
+        targetCodeSet.add(code.code);
+        movedCount++;
+      }
+
+      fs.writeFileSync(sourceFile, JSON.stringify(sourceCodes, null, 2));
+      fs.writeFileSync(targetFile, JSON.stringify(targetCodes, null, 2));
+    }
+
+    res.json({
+      success: true,
+      movedCount,
+      failedCount: failedCodes.length,
+      failedCodes,
+      message: `成功移动 ${movedCount} 个编码${failedCodes.length > 0 ? `，${failedCodes.length} 个失败` : ''}`
+    });
+  } catch (error) {
+    console.error('移动编码失败:', error);
+    res.status(500).json({ error: '移动编码失败' });
+  }
+};
+
 // 批量检查重复编码
 exports.batchCheckDuplicate = async (req, res) => {
   try {

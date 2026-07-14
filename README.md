@@ -183,6 +183,81 @@ docker run -d \
 
 > **注意**：如果您使用外部 MongoDB，请将 `MONGODB_URI` 环境变量修改为实际的数据库连接字符串，并确保容器能够访问该地址。
 
+### Docker 镜像导出与加载（离线部署）
+
+当需要在没有网络连接的生产环境中部署时，可以先将构建好的 Docker 镜像导出为文件，再将其传输到目标服务器上加载运行。
+
+#### 1. 在开发机上构建并导出镜像
+
+首先构建 Docker 镜像，然后使用 `docker save` 将镜像保存为 tar 文件：
+
+```bash
+# 构建镜像
+docker build -t htsm-dms .
+
+# 将镜像保存为 tar 文件
+docker save -o htsm-dms.tar htsm-dms
+```
+
+如果需要同时导出 MongoDB 镜像：
+
+```bash
+# 拉取 MongoDB 镜像（如果本地没有）
+docker pull mongo:6
+
+# 同时导出应用和 MongoDB 镜像到一个文件
+docker save -o htsm-dms-all.tar htsm-dms mongo:6
+```
+
+> 导出的 `htsm-dms.tar` 文件可直接通过 U 盘、内网传输等方式复制到生产服务器。
+
+#### 2. 在生产服务器上加载镜像并启动
+
+将 tar 文件传输到生产服务器后，使用 `docker load` 加载镜像，然后启动服务：
+
+```bash
+# 加载 Docker 镜像
+docker load -i htsm-dms.tar
+
+# 如果导出的是包含 MongoDB 的合集文件
+docker load -i htsm-dms-all.tar
+
+# 查看已加载的镜像，确认导入成功
+docker images | grep htsm
+```
+
+加载完成后，启动服务：
+
+```bash
+# 启动 MongoDB（如果使用合集文件导入）
+docker run -d --name htsm-mongo -p 27017:27017 -v mongo-data:/data/db mongo:6
+
+# 启动应用容器
+docker run -d \
+  --name htsm-app \
+  -p 5000:5000 \
+  --link htsm-mongo:mongo \
+  -e MONGODB_URI=mongodb://mongo:27017/htsm-dms \
+  htsm-dms
+```
+
+启动后，访问 `http://<服务器IP>:5000` 即可使用系统。
+
+#### 常用镜像管理命令
+
+```bash
+# 查看本地所有镜像
+docker images
+
+# 删除本地镜像（释放空间）
+docker rmi htsm-dms
+
+# 压缩导出文件以减小体积（可选）
+docker save htsm-dms | gzip > htsm-dms.tar.gz
+# 加载压缩的镜像文件
+docker load < htsm-dms.tar.gz
+```
+
 ## 配置
 
 - 后端配置：修改 `server/.env` 文件

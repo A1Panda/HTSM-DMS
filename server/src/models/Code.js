@@ -264,6 +264,21 @@ if (process.env.MONGODB_URI) {
       return { ...codeToDelete, productId };
     },
     
+    // 批量删除编码（用于删除产品时级联删除关联编码）
+    deleteMany: async (query = {}) => {
+      if (query.productId) {
+        const codesFile = path.join(DATA_DIR, `${query.productId}_codes.json`);
+        if (fs.existsSync(codesFile)) {
+          const data = fs.readFileSync(codesFile, 'utf8');
+          const codes = JSON.parse(data);
+          fs.unlinkSync(codesFile);
+          return { deletedCount: codes.length };
+        }
+        return { deletedCount: 0 };
+      }
+      return { deletedCount: 0 };
+    },
+    
     // 分页查询
     paginate: async (query = {}, options = {}) => {
       const { page = 1, limit = 1000 } = options;

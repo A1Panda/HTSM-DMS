@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const Code = require('../models/Code');
 const { validationResult } = require('express-validator');
 
 // 获取所有产品
@@ -203,7 +204,13 @@ exports.createProduct = async (req, res) => {
 // 删除产品
 exports.deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findByIdAndDelete(req.params.id);
+    const productId = req.params.id;
+    
+    // 先删除该产品下的所有编码（级联删除，避免产生孤立编码）
+    await Code.deleteMany({ productId });
+    
+    // 再删除产品本身
+    const product = await Product.findByIdAndDelete(productId);
     
     if (!product) {
       return res.status(404).json({ error: '产品不存在' });

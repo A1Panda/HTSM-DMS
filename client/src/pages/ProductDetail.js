@@ -1197,7 +1197,7 @@ const ProductDetail = () => {
         open={addModalVisible}
         onCancel={() => setAddModalVisible(false)}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         <CodeForm 
           onFinish={handleAddCode}
@@ -1215,7 +1215,7 @@ const ProductDetail = () => {
           setCurrentEditCode(null);
         }}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
       >
         {currentEditCode && (
           <CodeForm 
@@ -1404,7 +1404,7 @@ const ProductDetail = () => {
         onCancel={() => setIsExportModalVisible(false)}
         okText="导出"
         cancelText="取消"
-        destroyOnClose
+        destroyOnHidden
       >
         <div style={{ padding: '16px 0' }}>
           <p>将按录入时间（最新录入优先）导出指定数量的编码。</p>
@@ -1445,7 +1445,7 @@ const ProductDetail = () => {
         confirmLoading={moveLoading}
         okText="确认移动"
         cancelText="取消"
-        destroyOnClose
+        destroyOnHidden
       >
         <div style={{ padding: '8px 0' }}>
           <p>已选择 <strong>{selectedCodes.length}</strong> 个编码，请选择要移动到的目标产品：</p>

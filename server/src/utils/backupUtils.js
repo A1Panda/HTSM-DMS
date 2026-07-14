@@ -76,6 +76,7 @@ const performRestore = async (backupData) => {
 
     const idMap = {}; // oldId -> new ObjectId mapping
 
+    // 构建产品数据
     const productsToInsert = backupData.products.map(p => {
       const isIdValid = mongoose.Types.ObjectId.isValid(p.id);
       const newId = isIdValid ? new mongoose.Types.ObjectId(p.id) : new mongoose.Types.ObjectId();
@@ -87,10 +88,27 @@ const performRestore = async (backupData) => {
       return doc;
     });
 
-    const codesToInsert = backupData.codes.map(c => {
+    // 批量插入产品
+    if (productsToInsert.length > 0) {
+      await Product.insertMany(productsToInsert);
+    }
+
+    // 收集本次导入中有效的 productId 集合（用于过滤孤立编码）
+    const validProductIds = new Set(
+      backupData.products.map(p => {
+        const isIdValid = mongoose.Types.ObjectId.isValid(p.id);
+        return isIdValid ? new mongoose.Types.ObjectId(p.id).toString() : (idMap[p.id] || '').toString();
+      })
+    );
+
+    // 构建编码数据，过滤掉孤立编码（productId 不在产品列表中的）
+    let orphanCount = 0;
+    const codesToInsert = [];
+    for (const c of backupData.codes) {
+      // 检查该编码的 productId 是否对应有效的产品
       const isIdValid = mongoose.Types.ObjectId.isValid(c.id);
       const newId = isIdValid ? new mongoose.Types.ObjectId(c.id) : new mongoose.Types.ObjectId();
-      
+
       let mappedProductId;
       if (idMap[c.productId]) {
         mappedProductId = idMap[c.productId];
@@ -100,16 +118,32 @@ const performRestore = async (backupData) => {
         mappedProductId = new mongoose.Types.ObjectId(); // Fallback
       }
 
+      // 过滤孤立编码
+      if (!validProductIds.has(mappedProductId.toString())) {
+        orphanCount++;
+        continue;
+      }
+
       const doc = { ...c, _id: newId, productId: mappedProductId };
       delete doc.id;
-      return doc;
-    });
-
-    if (productsToInsert.length > 0) {
-      await Product.insertMany(productsToInsert);
+      codesToInsert.push(doc);
     }
-    if (codesToInsert.length > 0) {
-      await Code.insertMany(codesToInsert);
+
+    if (orphanCount > 0) {
+      console.warn(`[备份恢复] 检测到 ${orphanCount} 条孤立编码（无对应产品），已自动跳过`);
+    }
+
+    // 分批插入编码（使用底层 MongoDB 驱动，绕过 Mongoose 验证以提升速度）
+    const BATCH_SIZE = 10000;
+    for (let i = 0; i < codesToInsert.length; i += BATCH_SIZE) {
+      const batch = codesToInsert.slice(i, i + BATCH_SIZE);
+      try {
+        await Code.collection.insertMany(batch, { ordered: false });
+      } catch (batchError) {
+        // 单批失败不影响其他批次，记录警告继续
+        console.warn(`[备份恢复] 第 ${Math.floor(i / BATCH_SIZE) + 1} 批插入异常:`, batchError.message);
+      }
+      console.log(`[备份恢复] 编码导入进度: ${Math.min(i + BATCH_SIZE, codesToInsert.length)}/${codesToInsert.length}`);
     }
   } else {
     // 文件系统模式
@@ -125,16 +159,24 @@ const performRestore = async (backupData) => {
       }
     }
 
+    // 收集有效的 productId 集合（用于过滤孤立编码）
+    const validProductIds = new Set(backupData.products.map(p => p.id));
+
     // 写入产品数据
     fs.writeFileSync(path.join(DATA_DIR, 'products.json'), JSON.stringify(backupData.products, null, 2));
 
-    // 按产品分组写入编码数据
+    // 按产品分组写入编码数据，过滤孤立编码
+    let orphanCount = 0;
     const codesByProduct = {};
     backupData.products.forEach(p => {
       codesByProduct[p.id] = [];
     });
 
     backupData.codes.forEach(c => {
+      if (!validProductIds.has(c.productId)) {
+        orphanCount++;
+        return;
+      }
       if (!codesByProduct[c.productId]) {
         codesByProduct[c.productId] = [];
       }
@@ -142,6 +184,10 @@ const performRestore = async (backupData) => {
       const { productId, ...codeData } = c;
       codesByProduct[c.productId].push(codeData);
     });
+
+    if (orphanCount > 0) {
+      console.warn(`[备份恢复] 检测到 ${orphanCount} 条孤立编码（无对应产品），已自动跳过`);
+    }
 
     for (const [productId, codes] of Object.entries(codesByProduct)) {
       fs.writeFileSync(path.join(DATA_DIR, `${productId}_codes.json`), JSON.stringify(codes, null, 2));

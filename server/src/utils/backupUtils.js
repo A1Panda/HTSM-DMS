@@ -90,7 +90,7 @@ const performRestore = async (backupData) => {
 
     // 批量插入产品
     if (productsToInsert.length > 0) {
-      await Product.insertMany(productsToInsert);
+      await Product.collection.insertMany(productsToInsert, { ordered: false });
     }
 
     // 收集本次导入中有效的 productId 集合（用于过滤孤立编码）
@@ -101,49 +101,66 @@ const performRestore = async (backupData) => {
       })
     );
 
-    // 构建编码数据，过滤掉孤立编码（productId 不在产品列表中的）
+    // 分批处理并插入编码（边处理边插入，避免中间数组占用双倍内存）
+    const BATCH_SIZE = 10000;
+    const MAX_RETRIES = 3;
     let orphanCount = 0;
-    const codesToInsert = [];
-    for (const c of backupData.codes) {
-      // 检查该编码的 productId 是否对应有效的产品
-      const isIdValid = mongoose.Types.ObjectId.isValid(c.id);
-      const newId = isIdValid ? new mongoose.Types.ObjectId(c.id) : new mongoose.Types.ObjectId();
+    let insertedCount = 0;
+    const totalCodes = backupData.codes.length;
 
-      let mappedProductId;
-      if (idMap[c.productId]) {
-        mappedProductId = idMap[c.productId];
-      } else if (mongoose.Types.ObjectId.isValid(c.productId)) {
-        mappedProductId = new mongoose.Types.ObjectId(c.productId);
-      } else {
-        mappedProductId = new mongoose.Types.ObjectId(); // Fallback
+    for (let i = 0; i < totalCodes; i += BATCH_SIZE) {
+      const rawBatch = backupData.codes.slice(i, i + BATCH_SIZE);
+      const docs = [];
+
+      for (const c of rawBatch) {
+        const isIdValid = mongoose.Types.ObjectId.isValid(c.id);
+        const newId = isIdValid ? new mongoose.Types.ObjectId(c.id) : new mongoose.Types.ObjectId();
+
+        let mappedProductId;
+        if (idMap[c.productId]) {
+          mappedProductId = idMap[c.productId];
+        } else if (mongoose.Types.ObjectId.isValid(c.productId)) {
+          mappedProductId = new mongoose.Types.ObjectId(c.productId);
+        } else {
+          mappedProductId = new mongoose.Types.ObjectId();
+        }
+
+        // 过滤孤立编码
+        if (!validProductIds.has(mappedProductId.toString())) {
+          orphanCount++;
+          continue;
+        }
+
+        const doc = { ...c, _id: newId, productId: mappedProductId };
+        delete doc.id;
+        docs.push(doc);
       }
 
-      // 过滤孤立编码
-      if (!validProductIds.has(mappedProductId.toString())) {
-        orphanCount++;
-        continue;
-      }
+      if (docs.length === 0) continue;
 
-      const doc = { ...c, _id: newId, productId: mappedProductId };
-      delete doc.id;
-      codesToInsert.push(doc);
+      // 带重试的批量插入
+      let inserted = false;
+      for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+        try {
+          const result = await Code.collection.insertMany(docs, { ordered: false });
+          insertedCount += result.insertedCount;
+          inserted = true;
+          break;
+        } catch (batchError) {
+          if (attempt < MAX_RETRIES) {
+            console.warn(`[备份恢复] 第 ${Math.floor(i / BATCH_SIZE) + 1} 批插入失败，第 ${attempt} 次重试...`);
+            await new Promise(r => setTimeout(r, 1000 * attempt)); // 退避重试
+          } else {
+            console.error(`[备份恢复] 第 ${Math.floor(i / BATCH_SIZE) + 1} 批插入失败（已重试 ${MAX_RETRIES} 次）:`, batchError.message);
+            throw batchError; // 最终失败则抛出，停止导入
+          }
+        }
+      }
+      console.log(`[备份恢复] 编码导入进度: ${Math.min(i + BATCH_SIZE, totalCodes)}/${totalCodes} (已写入 ${insertedCount})`);
     }
 
     if (orphanCount > 0) {
       console.warn(`[备份恢复] 检测到 ${orphanCount} 条孤立编码（无对应产品），已自动跳过`);
-    }
-
-    // 分批插入编码（使用底层 MongoDB 驱动，绕过 Mongoose 验证以提升速度）
-    const BATCH_SIZE = 10000;
-    for (let i = 0; i < codesToInsert.length; i += BATCH_SIZE) {
-      const batch = codesToInsert.slice(i, i + BATCH_SIZE);
-      try {
-        await Code.collection.insertMany(batch, { ordered: false });
-      } catch (batchError) {
-        // 单批失败不影响其他批次，记录警告继续
-        console.warn(`[备份恢复] 第 ${Math.floor(i / BATCH_SIZE) + 1} 批插入异常:`, batchError.message);
-      }
-      console.log(`[备份恢复] 编码导入进度: ${Math.min(i + BATCH_SIZE, codesToInsert.length)}/${codesToInsert.length}`);
     }
   } else {
     // 文件系统模式

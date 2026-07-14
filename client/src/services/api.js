@@ -137,7 +137,8 @@ export const backupAPI = {
   // 手动备份
   exportBackup: () => api.get('/backup/export', { responseType: 'blob' }),
   importBackup: (formData) => api.post('/backup/import', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 600000 // 导入大文件设 10 分钟超时
   }),
   
   // 自动备份配置

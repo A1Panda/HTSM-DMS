@@ -11,7 +11,7 @@ const config = {
       ? '/api'
       : (process.env.REACT_APP_API_URL || 'http://localhost:5000/api'),
     // 请求超时时间（毫秒）
-    timeout: 10000
+    timeout: 60000
   },
   
   // UI配置

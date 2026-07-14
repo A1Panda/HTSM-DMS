@@ -283,11 +283,13 @@ app.use((err, req, res, next) => {
 
 // 启动服务器
 connectDB().then(() => {
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`服务器运行在 http://localhost:${PORT}`);
     // 启动自动备份定时任务
     scheduleAutoBackup();
   });
+  // 延长超时时间，防止大文件导入过程中断
+  server.timeout = 600000; // 10 分钟
 });
 
 module.exports = app;

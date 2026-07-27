@@ -108,33 +108,73 @@ npm start
 
 ## Docker 部署
 
-本系统支持使用 Docker 和 Docker Compose 进行容器化部署，这是生产环境推荐的部署方式。
+本系统使用 Docker 镜像导入方式进行容器化部署。`docker-compose.yml` 同时配置了 `image` 和 `build`，支持两种启动方式：
+
+- **导入镜像启动**（生产环境推荐）：先 `docker load` 导入镜像，再 `docker-compose up -d`
+- **本地构建启动**（开发环境）：直接 `docker-compose up -d --build`
 
 ### 前置条件
-- 确保本机已安装 [Docker](https://www.docker.com/products/docker-desktop) 和 [Docker Compose](https://docs.docker.com/compose/install/)。
+- 确保已安装 [Docker](https://www.docker.com/products/docker-desktop) 和 [Docker Compose](https://docs.docker.com/compose/install/)。
 
-### 方式一：使用 Docker Compose (推荐)
+### 部署流程
 
-在项目根目录下，运行以下命令一键启动所有服务（应用服务 + MongoDB）：
+#### 1. 在开发机上构建并导出镜像
+
+```bash
+# 构建应用镜像
+docker build -t htsm-dms-api:latest .
+
+# 拉取 MongoDB 镜像（如果本地没有）
+docker pull mongo:6
+
+# 导出应用镜像
+docker save -o htsm-dms-api.tar htsm-dms-api:latest
+
+# 导出 MongoDB 镜像
+docker save -o mongo-6.tar mongo:6
+
+# 或者将两者合并导出
+docker save -o htsm-dms-all.tar htsm-dms-api:latest mongo:6
+```
+
+将导出的 `.tar` 文件传输到目标服务器（U盘、内网等）。
+
+#### 2. 在目标服务器上导入镜像
+
+```bash
+# 导入镜像
+docker load -i htsm-dms-all.tar
+
+# 确认导入成功
+docker images | grep htsm
+```
+
+#### 3. 启动服务
+
+在项目根目录下（包含 `docker-compose.yml`），运行：
 
 ```bash
 docker-compose up -d
 ```
 
-启动后，访问 `http://localhost:5000` 即可使用系统。
+启动后，访问 `http://<服务器IP>:5000` 即可使用系统。
 
-#### 代码更新与镜像重建
+### 更新流程
 
-当您修改了代码或拉取了最新代码 (`git pull`) 后，需要重新构建 Docker 镜像以应用更改。请执行以下命令：
+当有新版本需要更新时，重复上述步骤：
 
 ```bash
-# 强制重新构建镜像并后台启动
-docker-compose up -d --build
+# 开发机：构建新镜像并导出
+docker build -t htsm-dms-api:latest .
+docker save -o htsm-dms-api.tar htsm-dms-api:latest
+
+# 目标服务器：停止旧容器 → 导入新镜像 → 重新启动
+docker-compose down
+docker load -i htsm-dms-api.tar
+docker-compose up -d
 ```
 
-此命令会自动检测代码变更，重新构建 `api` 服务镜像，并重建容器。
-
-#### 常用管理命令
+### 常用管理命令
 
 ```bash
 # 查看服务日志
@@ -142,120 +182,16 @@ docker-compose logs -f
 
 # 停止所有服务
 docker-compose down
-```
 
-### 方式二：手动使用 Docker 命令部署
-
-如果您不想使用 docker-compose，也可以使用原生 Docker 命令手动构建和运行容器。
-
-#### 1. 构建镜像
-
-首先在项目根目录下构建应用镜像：
-
-```bash
-docker build -t htsm-dms .
-```
-
-#### 2. 启动 MongoDB
-
-启动 MongoDB 容器（如果您已有外部 MongoDB，可跳过此步）：
-
-```bash
-# 启动 MongoDB 容器，并将数据持久化到 mongo-data 卷
-docker run -d --name htsm-mongo -p 27017:27017 -v mongo-data:/data/db mongo:6
-```
-
-#### 3. 启动应用
-
-启动应用容器并链接到 MongoDB：
-
-```bash
-# 启动应用容器
-# --link htsm-mongo:mongo 将 MongoDB 容器链接为 hostname "mongo"
-# -e MONGODB_URI=... 设置连接字符串
-docker run -d \
-  --name htsm-app \
-  -p 5000:5000 \
-  --link htsm-mongo:mongo \
-  -e MONGODB_URI=mongodb://mongo:27017/htsm-dms \
-  htsm-dms
-```
-
-> **注意**：如果您使用外部 MongoDB，请将 `MONGODB_URI` 环境变量修改为实际的数据库连接字符串，并确保容器能够访问该地址。
-
-### Docker 镜像导出与加载（离线部署）
-
-当需要在没有网络连接的生产环境中部署时，可以先将构建好的 Docker 镜像导出为文件，再将其传输到目标服务器上加载运行。
-
-#### 1. 在开发机上构建并导出镜像
-
-首先构建 Docker 镜像，然后使用 `docker save` 将镜像保存为 tar 文件：
-
-```bash
-# 构建镜像
-docker build -t htsm-dms .
-
-# 将镜像保存为 tar 文件
-docker save -o htsm-dms.tar htsm-dms
-```
-
-如果需要同时导出 MongoDB 镜像：
-
-```bash
-# 拉取 MongoDB 镜像（如果本地没有）
-docker pull mongo:6
-
-# 同时导出应用和 MongoDB 镜像到一个文件
-docker save -o htsm-dms-all.tar htsm-dms mongo:6
-```
-
-> 导出的 `htsm-dms.tar` 文件可直接通过 U 盘、内网传输等方式复制到生产服务器。
-
-#### 2. 在生产服务器上加载镜像并启动
-
-将 tar 文件传输到生产服务器后，使用 `docker load` 加载镜像，然后启动服务：
-
-```bash
-# 加载 Docker 镜像
-docker load -i htsm-dms.tar
-
-# 如果导出的是包含 MongoDB 的合集文件
-docker load -i htsm-dms-all.tar
-
-# 查看已加载的镜像，确认导入成功
-docker images | grep htsm
-```
-
-加载完成后，启动服务：
-
-```bash
-# 启动 MongoDB（如果使用合集文件导入）
-docker run -d --name htsm-mongo -p 27017:27017 -v mongo-data:/data/db mongo:6
-
-# 启动应用容器
-docker run -d \
-  --name htsm-app \
-  -p 5000:5000 \
-  --link htsm-mongo:mongo \
-  -e MONGODB_URI=mongodb://mongo:27017/htsm-dms \
-  htsm-dms
-```
-
-启动后，访问 `http://<服务器IP>:5000` 即可使用系统。
-
-#### 常用镜像管理命令
-
-```bash
-# 查看本地所有镜像
+# 查看本地镜像
 docker images
 
-# 删除本地镜像（释放空间）
-docker rmi htsm-dms
+# 删除旧镜像（释放空间）
+docker rmi htsm-dms-api:旧版本标签
 
 # 压缩导出文件以减小体积（可选）
-docker save htsm-dms | gzip > htsm-dms.tar.gz
-# 加载压缩的镜像文件
-docker load < htsm-dms.tar.gz
+docker save htsm-dms-api:latest | gzip > htsm-dms-api.tar.gz
+docker load < htsm-dms-api.tar.gz
 ```
 
 ## 配置

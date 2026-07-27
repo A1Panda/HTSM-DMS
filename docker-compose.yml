@@ -2,6 +2,7 @@ name: htsm-dms
 services:
   api:
     restart: always
+    image: htsm-dms-api:latest
     build: .
     container_name: htsm-dms
     ports:

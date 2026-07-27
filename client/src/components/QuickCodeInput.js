@@ -25,6 +25,7 @@ const QuickCodeInput = ({
   const [duplicateCode, setDuplicateCode] = useState('');
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const inputRef = useRef(null);
+  const needRefocusRef = useRef(false); // 提交完成后是否需要重新聚焦
 
   // 组件挂载时自动聚焦
   useEffect(() => {
@@ -32,6 +33,17 @@ const QuickCodeInput = ({
       inputRef.current.focus();
     }
   }, [autoFocus]);
+
+  // loading 结束后自动重新聚焦，确保连续扫码时光标不丢失
+  useEffect(() => {
+    if (!loading && needRefocusRef.current) {
+      needRefocusRef.current = false;
+      // 延迟聚焦，等待 React 完成 DOM 更新
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+    }
+  }, [loading]);
 
   // 清理编码，保留完整字符（不做数字提取）
   const cleanCode = (value) => {
@@ -104,12 +116,8 @@ const QuickCodeInput = ({
     onSubmit({ code: cleanedCode });
     setCode(''); // 清空输入框
     
-    // 提交后重新聚焦输入框，方便连续扫码
-    if (inputRef.current) {
-      setTimeout(() => {
-        inputRef.current.focus();
-      }, 100);
-    }
+    // 标记需要在 loading 结束后重新聚焦
+    needRefocusRef.current = true;
   };
 
   return (
@@ -174,12 +182,8 @@ const QuickCodeInput = ({
           setConfirmModalVisible(false);
           // 清空输入框
           setCode('');
-          // 重新聚焦
-          if (inputRef.current) {
-            setTimeout(() => {
-              inputRef.current.focus();
-            }, 100);
-          }
+          // loading 结束时自动重新聚焦
+          needRefocusRef.current = true;
         }}
         okText="继续录入"
         cancelText="取消"

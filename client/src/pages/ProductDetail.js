@@ -75,6 +75,7 @@ const ProductDetail = () => {
   const [modalSelectedCodes, setModalSelectedCodes] = useState([]);
   const [modalActionLoading, setModalActionLoading] = useState(false);
   const [modalCurrentPage, setModalCurrentPage] = useState(1);
+  const [modalCodePrefix, setModalCodePrefix] = useState(''); // 缺失编码的前缀，如 "HTSM-SB-"
   const modalPageSize = 100;
   
   // 批量选择日期范围
@@ -594,8 +595,9 @@ const ProductDetail = () => {
       return;
     }
 
-    // 1. 检查本地已存在的编码（预检查）
-    const isDuplicate = codes.some(c => c.code === extractedResult);
+    // 1. 检查本地已存在的编码（末尾数字相同即视为重复）
+    const resultNum = extractNumericValue(extractedResult);
+    const isDuplicate = !isNaN(resultNum) && codes.some(c => extractNumericValue(c.code) === resultNum);
     if (isDuplicate) {
       const now = Date.now();
       // 如果同一个重复编码在 2 秒内再次被扫到，则忽略，不弹窗提示
@@ -857,8 +859,9 @@ const ProductDetail = () => {
     try {
       setModalActionLoading(true);
       if (modalType === 'missing') {
-        await codeAPI.addCode(id, { code: codeStr });
-        message.success(`已添加缺失编码: ${codeStr}`);
+        const fullCode = modalCodePrefix + codeStr;
+        await codeAPI.addCode(id, { code: fullCode });
+        message.success(`已添加缺失编码: ${fullCode}`);
       } else {
         const targetCode = codes.find(c => c.code === codeStr);
         if (!targetCode) {
@@ -895,7 +898,10 @@ const ProductDetail = () => {
         for (let i = 0; i < modalSelectedCodes.length; i += BATCH_SIZE) {
           const batch = modalSelectedCodes.slice(i, i + BATCH_SIZE);
           try {
-            await Promise.all(batch.map(codeStr => codeAPI.addCode(id, { code: codeStr })));
+            await Promise.all(batch.map(codeStr => {
+              const fullCode = modalCodePrefix + codeStr;
+              return codeAPI.addCode(id, { code: fullCode });
+            }));
             successCount += batch.length;
           } catch (err) {
             console.error('Batch add error:', err);
@@ -998,6 +1004,23 @@ const ProductDetail = () => {
                     setModalSortOrder('asc');
                     setModalSelectedCodes([]);
                     setModalCurrentPage(1);
+                    // 从已有编码中自动提取最常见的前缀作为默认值
+                    let defaultPrefix = '';
+                    if (codes.length > 0) {
+                      const prefixCount = {};
+                      codes.forEach(c => {
+                        const prefix = String(c.code).replace(/(\d+)$/, '');
+                        if (prefix && prefix !== c.code) {
+                          prefixCount[prefix] = (prefixCount[prefix] || 0) + 1;
+                        }
+                      });
+                      const entries = Object.entries(prefixCount);
+                      if (entries.length > 0) {
+                        entries.sort((a, b) => b[1] - a[1]);
+                        defaultPrefix = entries[0][0];
+                      }
+                    }
+                    setModalCodePrefix(defaultPrefix);
                     setCodesModalVisible(true); 
                   }}>
                     缺失 {missingCodes.length} 个编码
@@ -1246,6 +1269,15 @@ const ProductDetail = () => {
                 { value: 'desc', label: '降序排列' }
               ]}
             />
+            {modalType === 'missing' && (
+              <Input
+                placeholder="编码前缀，如 HTSM-SB-"
+                value={modalCodePrefix}
+                onChange={(e) => setModalCodePrefix(e.target.value)}
+                style={{ width: 180 }}
+                allowClear
+              />
+            )}
           </Space>
           <Button 
             type="primary" 

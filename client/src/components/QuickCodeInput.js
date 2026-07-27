@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Input, Button, message, Tooltip, Alert, Modal } from 'antd';
 import { ScanOutlined, EnterOutlined, WarningOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
+import { extractNumericValue } from '../utils/codeUtils';
 
 /**
  * 快速编码输入组件
@@ -59,10 +60,12 @@ const QuickCodeInput = ({
     }
   };
 
-  // 检查编码是否重复
+  // 检查编码是否重复（末尾数字相同即视为重复）
   const checkDuplicate = (codeValue) => {
+    const num = extractNumericValue(codeValue);
+    if (isNaN(num)) return false;
     return existingCodes.some(existingCode => 
-      existingCode.code === codeValue
+      extractNumericValue(existingCode.code) === num
     );
   };
 

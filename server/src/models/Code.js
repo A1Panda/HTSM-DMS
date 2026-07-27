@@ -204,8 +204,12 @@ if (process.env.MONGODB_URI) {
         codes = JSON.parse(data);
       }
       
-      // 检查编码是否已存在
-      const existingCode = codes.find(c => c.code === codeData.code);
+      // 检查编码是否已存在（末尾数字相同即视为重复）
+      const existingCode = codes.find(c => {
+        const existingNum = extractNumericValue(c.code);
+        const newNum = extractNumericValue(codeData.code);
+        return !isNaN(existingNum) && !isNaN(newNum) && existingNum === newNum;
+      });
       if (existingCode) {
         throw new Error('编码已存在');
       }

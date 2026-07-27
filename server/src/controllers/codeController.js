@@ -130,49 +130,37 @@ exports.addCode = async (req, res) => {
       return res.status(404).json({ error: '产品不存在' });
     }
 
-    // 检查是否已存在（包括已删除的）
-    // 如果是 MongoDB 环境，需要显式检查，因为 unique 索引可能导致报错
-    if (process.env.MONGODB_URI) {
-      const existingCode = await Code.findOne({ productId, code });
-      if (existingCode) {
-        if (existingCode.deleted) {
-          // 如果已存在但已删除，则恢复它
-          existingCode.deleted = false;
-          existingCode.deletedAt = null;
-          existingCode.description = description || existingCode.description;
-          existingCode.date = date || existingCode.date;
-          existingCode.createdAt = new Date();
-          await existingCode.save();
-          return res.status(200).json(existingCode);
-        } else {
-          // 如果已存在且未删除，报错
-          return res.status(400).json({ error: '编码已存在，请使用不同的编码' });
+    // 检查是否已存在（末尾数字相同即视为重复）
+    const isMongoDB = !!process.env.MONGODB_URI;
+    
+    if (isMongoDB) {
+      // 获取该产品所有编码，按末尾数字检查重复
+      const allCodes = await Code.find({ productId });
+      const newNum = extractNumericValue(code);
+      
+      if (!isNaN(newNum)) {
+        // 检查未删除的编码中是否有末尾数字相同的
+        const duplicateActive = allCodes.find(c => !c.deleted && extractNumericValue(c.code) === newNum);
+        if (duplicateActive) {
+          return res.status(400).json({ error: `编码已存在（末尾数字 ${newNum} 重复），请使用不同的编码` });
+        }
+        
+        // 回收站中有末尾数字相同的编码 → 永久删除旧的，使用新的编码字符串录入
+        const duplicateDeleted = allCodes.find(c => c.deleted && extractNumericValue(c.code) === newNum);
+        if (duplicateDeleted) {
+          await Code.findByIdAndDelete(duplicateDeleted._id);
         }
       }
     } else {
-      // 文件系统环境
-      // 需要手动查找是否存在已删除的编码
-      // 注意：Code.find 在文件系统模式下支持 productId 和 deleted 过滤
-      // 我们先获取所有已删除的编码
+      // 文件系统环境 — 回收站中有末尾数字相同的编码 → 永久删除旧的
       const deletedCodes = await Code.find({ productId, deleted: true });
-      const existingDeleted = deletedCodes.find(c => c.code === code);
-      
-      if (existingDeleted) {
-        // 如果在回收站中找到了，执行恢复操作
-        const restoredCode = await Code.findByIdAndUpdate(
-          existingDeleted.id,
-          { 
-            deleted: false, 
-            deletedAt: null,
-            description: description || existingDeleted.description,
-            date: date || existingDeleted.date,
-            createdAt: new Date()
-          },
-          productId
-        );
-        return res.status(200).json(restoredCode);
+      const newNum = extractNumericValue(code);
+      if (!isNaN(newNum)) {
+        const duplicateDeleted = deletedCodes.find(c => extractNumericValue(c.code) === newNum);
+        if (duplicateDeleted) {
+          await Code.findByIdAndDelete(duplicateDeleted.id, productId);
+        }
       }
-      // 如果没在回收站找到，Code.create 会自动检查 active 列表并在存在时抛出错误
     }
     
     // 创建新编码
@@ -256,13 +244,17 @@ exports.updateCode = async (req, res) => {
       return res.status(400).json({ error: '编码不能为空或格式错误' });
     }
 
-    // 检查是否修改了编码内容且与其他编码冲突
+    // 检查是否修改了编码且末尾数字与其他编码冲突
     const isMongoDB = !!process.env.MONGODB_URI;
     
     if (isMongoDB) {
-      const existingCode = await Code.findOne({ productId, code, _id: { $ne: codeId } });
-      if (existingCode) {
-        return res.status(400).json({ error: '编码已存在，请使用不同的编码' });
+      const allCodes = await Code.find({ productId, _id: { $ne: codeId } });
+      const newNum = extractNumericValue(code);
+      if (!isNaN(newNum)) {
+        const duplicate = allCodes.find(c => extractNumericValue(c.code) === newNum);
+        if (duplicate) {
+          return res.status(400).json({ error: `编码已存在（末尾数字 ${newNum} 重复），请使用不同的编码` });
+        }
       }
       
       const updatedCode = await Code.findByIdAndUpdate(
@@ -276,13 +268,16 @@ exports.updateCode = async (req, res) => {
       }
       return res.json(updatedCode);
     } else {
-      // 文件系统环境
-      // 需要手动查找是否存在冲突的编码
+      // 文件系统环境 — 检查末尾数字是否与其他编码冲突
       const allCodes = await Code.find({ productId });
-      const existingConflict = allCodes.find(c => c.code === code && String(c._id || c.id) !== String(codeId));
-      
-      if (existingConflict) {
-        return res.status(400).json({ error: '编码已存在，请使用不同的编码' });
+      const newNum = extractNumericValue(code);
+      if (!isNaN(newNum)) {
+        const existingConflict = allCodes.find(c => 
+          extractNumericValue(c.code) === newNum && String(c._id || c.id) !== String(codeId)
+        );
+        if (existingConflict) {
+          return res.status(400).json({ error: `编码已存在（末尾数字 ${newNum} 重复），请使用不同的编码` });
+        }
       }
       
       const updatedCode = await Code.findByIdAndUpdate(
@@ -515,42 +510,51 @@ exports.batchCheckDuplicate = async (req, res) => {
       });
     }
     
-    // 使用 Map 找出重复项
-    const codeMap = new Map();
+    // 使用 Map 按末尾数字找出重复项
+    const codeMap = new Map(); // key: 末尾数字, value: { codes: [...], products: [...] }
     allCodes.forEach(item => {
-      if (codeMap.has(item.code)) {
-        codeMap.get(item.code).push({
+      const num = extractNumericValue(item.code);
+      if (isNaN(num)) return; // 无数字的编码不参与查重
+      
+      if (codeMap.has(num)) {
+        const entry = codeMap.get(num);
+        entry.products.push({
           id: item.productId,
           name: item.productName
         });
+        // 收集不同的编码字符串用于展示
+        if (!entry.codes.includes(item.code)) {
+          entry.codes.push(item.code);
+        }
       } else {
-        codeMap.set(item.code, [{
-          id: item.productId,
-          name: item.productName
-        }]);
+        codeMap.set(num, {
+          codes: [item.code],
+          products: [{
+            id: item.productId,
+            name: item.productName
+          }]
+        });
       }
     });
     
-    // 筛选出重复的编码（出现在多个产品中的）
+    // 筛选出重复的编码（末尾数字出现在多个产品中）
     const duplicates = [];
-    codeMap.forEach((products, code) => {
-      if (products.length > 1) {
-        // 去重：同一产品内可能有重复编码（理论上不应该，但以防万一）
-        const uniqueProducts = [];
-        const seenIds = new Set();
-        products.forEach(p => {
-          if (!seenIds.has(p.id)) {
-            seenIds.add(p.id);
-            uniqueProducts.push(p);
-          }
-        });
-        
-        if (uniqueProducts.length > 1) {
-          duplicates.push({
-            code: code,
-            products: uniqueProducts
-          });
+    codeMap.forEach((entry, num) => {
+      // 去重：同一产品内可能有重复编码
+      const uniqueProducts = [];
+      const seenIds = new Set();
+      entry.products.forEach(p => {
+        if (!seenIds.has(p.id)) {
+          seenIds.add(p.id);
+          uniqueProducts.push(p);
         }
+      });
+      
+      if (uniqueProducts.length > 1) {
+        duplicates.push({
+          code: entry.codes.join(', '),  // 展示所有不同的编码字符串
+          products: uniqueProducts
+        });
       }
     });
     

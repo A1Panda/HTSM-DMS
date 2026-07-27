@@ -44,6 +44,7 @@ import ScannerModal from '../components/ScannerModal';
 import QuickCodeInput from '../components/QuickCodeInput';
 import RecycleBinModal from '../components/RecycleBinModal';
 import ExportUtils from '../utils/exportUtils';
+import { extractNumericValue, extractNumericString } from '../utils/codeUtils';
 
 const { Title } = Typography;
 const { confirm } = Modal;
@@ -133,7 +134,7 @@ const ProductDetail = () => {
         const start = parseInt(rangeMatch[1], 10);
         const end = parseInt(rangeMatch[2], 10);
         result = result.filter(code => {
-          const num = parseInt(code.code, 10);
+          const num = extractNumericValue(code.code);
           return !isNaN(num) && num >= start && num <= end;
         });
       } else {
@@ -575,19 +576,10 @@ const ProductDetail = () => {
     ]
   };
 
-  // 智能提取编码（优先提取末尾数字）
+  // 智能提取编码（保留完整字符）
   const extractCode = (value) => {
     if (!value) return '';
-    
-    // 1. 尝试匹配末尾的连续数字 (针对 "HTSM1/3SN69801" -> "69801" 场景)
-    const endMatch = value.match(/(\d+)$/);
-    if (endMatch) {
-      return endMatch[1];
-    }
-    
-    // 2. 如果没有末尾数字，回退到提取所有数字
-    const numbers = value.replace(/\D/g, '');
-    return numbers || value.trim();
+    return value.trim();
   };
 
   const lastErrorRef = React.useRef({ code: '', time: 0 });
@@ -691,7 +683,12 @@ const ProductDetail = () => {
     }
     
     const existingCodes = codes.map(code => code.code);
-    const existingCodesSet = new Set(existingCodes);
+    // 构建「末尾数字 → 编码字符串」的映射集合，用于范围匹配
+    const numSet = new Set();
+    existingCodes.forEach(code => {
+      const num = extractNumericValue(code);
+      if (!isNaN(num)) numSet.add(num);
+    });
     
     const missingCodes = [];
     
@@ -703,24 +700,17 @@ const ProductDetail = () => {
       // 检查原字符串是否包含前导零
       const startStr = String(range.start).trim();
       const endStr = String(range.end).trim();
-      const hasLeadingZero = startStr.startsWith('0') || endStr.startsWith('0');
-      
-      const width = Math.max(
-        startStr.length, 
-        endStr.length
-      );
       
       if (!isNaN(start) && !isNaN(end) && start <= end) {
         // 防止超大范围导致页面卡死：放宽限制，以时间为主
-        const MAX_ITERATIONS = 5000000; // 调高到 500万 次
-        const MAX_TIME_MS = 800; // 调高到 800ms
+        const MAX_ITERATIONS = 5000000;
+        const MAX_TIME_MS = 800;
         const startTime = Date.now();
         let iterations = 0;
 
         for (let i = start; i <= end; i++) {
           iterations++;
           
-          // 每 10000 次检查一次时间，减少 Date.now() 调用开销
           if (iterations % 10000 === 0) {
             if (Date.now() - startTime > MAX_TIME_MS) {
               console.warn(`[ProductDetail] Range checking stopped due to timeout (${MAX_TIME_MS}ms). iterations: ${iterations}`);
@@ -733,17 +723,13 @@ const ProductDetail = () => {
             break;
           }
 
-          let expected = i.toString();
-          
-          // 如果起始值和结束值长度相同，则严格按照该长度补零（例如 1-100 不补，001-100 补零到3位）
-          if (startStr.length === endStr.length) {
-            expected = expected.padStart(startStr.length, '0');
-          } else if (hasLeadingZero) {
-            // 如果长度不同，但存在明确的前导零，按照最大宽度补零
-            expected = expected.padStart(width, '0');
-          }
-          
-          if (!existingCodesSet.has(expected)) {
+          // 直接比较提取的末尾数字，无需补零匹配字符串
+          if (!numSet.has(i)) {
+            // 缺失编码显示格式与原范围格式保持一致
+            let expected = i.toString();
+            if (startStr.length === endStr.length) {
+              expected = expected.padStart(startStr.length, '0');
+            }
             missingCodes.push(expected);
           }
         }
@@ -754,7 +740,11 @@ const ProductDetail = () => {
     const excessCodes = [];
     existingCodes.forEach(code => {
       const str = String(code).trim();
-      const codeNum = parseInt(str);
+      const codeNum = extractNumericValue(str);
+      const numStr = extractNumericString(str);
+      
+      // 无法提取数字的编码不参与范围判定，不视为超出
+      if (isNaN(codeNum)) return;
       
       let inAnyRange = false;
       let formatOk = false;
@@ -773,19 +763,16 @@ const ProductDetail = () => {
         );
         
         if (!isNaN(start) && !isNaN(end) && start <= end) {
-          const inRange = !isNaN(codeNum) && codeNum >= start && codeNum <= end;
+          const inRange = codeNum >= start && codeNum <= end;
           
           let currentFormatOk = true;
-          // 只有在明确需要固定长度时，才检查格式
+          // 格式检查针对提取出的纯数字部分
           if (startStr.length === endStr.length) {
-            // 如果起止长度相同，说明是固定宽度，比如 100-200，那么输入的码必须也是3位
-            currentFormatOk = str.length === startStr.length;
+            currentFormatOk = numStr.length === startStr.length;
           } else if (hasLeadingZero) {
-            // 如果有前导零，比如 01-100，则要求输入码的长度必须等于最大宽度
-            currentFormatOk = str.length === width;
+            currentFormatOk = numStr.length === width;
           } else {
-            // 如果没有前导零（例如 1-100），那么输入的码也不应该有前导零（除非它本身就是数字0）
-            if (str.length > 1 && str.startsWith('0')) {
+            if (numStr.length > 1 && numStr.startsWith('0')) {
               currentFormatOk = false;
             }
           }

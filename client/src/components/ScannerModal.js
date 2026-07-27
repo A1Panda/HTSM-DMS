@@ -42,7 +42,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
           scanner.init(
             // 扫描成功回调
             (decodedText) => {
-              const cleanedText = decodedText.replace(/\D/g, '');
+              const cleanedText = decodedText.trim();
               if (!cleanedText) return;
               const now = Date.now();
               if (continuous) {
@@ -108,17 +108,16 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
     onCancel();
   };
 
-  // 清理编码，只保留数字
+  // 清理编码，保留完整字符
   const cleanCode = (value) => {
     if (!value) return value;
-    // 只保留数字
-    return value.replace(/\D/g, '');
+    return value.trim();
   };
 
   // 使用扫描结果
   const handleUseScanResult = () => {
     if (scanResult) {
-      // 清理扫描结果，只保留数字
+      // 清理扫描结果
       const cleanedResult = cleanCode(scanResult);
       onScan(cleanedResult);
       handleCancel();
@@ -251,7 +250,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
             if (contents && contents.length > 0) {
               // 取第一个识别到的内容
               const decoded = String(contents[0]).trim();
-              const cleanedDecoded = decoded.replace(/\D/g, '');
+              const cleanedDecoded = decoded;
               
               if (cleanedDecoded) {
                 // 与连续扫描逻辑保持一致：对同一编码做节流
@@ -292,7 +291,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
 
                 if (invertedContents && invertedContents.length > 0) {
                   const decoded = String(invertedContents[0]).trim();
-                  const cleanedDecoded = decoded.replace(/\D/g, '');
+                  const cleanedDecoded = decoded;
                   
                   if (cleanedDecoded) {
                     // 与连续扫描逻辑保持一致：对同一编码做节流
@@ -330,7 +329,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       }
 
       const decoded = result.data.trim();
-      const cleanedDecoded = decoded.replace(/\D/g, '');
+      const cleanedDecoded = decoded;
       if (!cleanedDecoded) {
         showThrottledWarning('二维码内容为空或无法解析出数字');
         setQrSnapshotLoading(false);
@@ -445,21 +444,21 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       const ocrText = result.content || '';
       console.log('[OCR] 识别原始文本:', ocrText);
 
-      // 只保留数字（去掉所有非数字字符，包括 '-'）
-      const digitsOnly = (ocrText || '').replace(/\D/g, '');
+      // 保留完整字符（不做数字提取）
+      const ocrResult = (ocrText || '').trim();
 
-      if (!digitsOnly) {
-        showThrottledWarning('未能识别出清晰的数字，请靠近一些或调整光线后重试');
+      if (!ocrResult) {
+        showThrottledWarning('未能识别出清晰的内容，请靠近一些或调整光线后重试');
         setOcrLoading(false);
         return;
       }
 
-      setScanResult(digitsOnly);
-      message.success('已通过 OCR 识别出数字');
+      setScanResult(ocrResult);
+      message.success('已通过 OCR 识别出内容');
 
-      // 直接回调上层使用这个数字
+      // 直接回调上层使用这个结果
       if (onScan) {
-        onScan(digitsOnly);
+        onScan(ocrResult);
       }
     } catch (err) {
       console.error('[OCR] 识别流程异常:', err);

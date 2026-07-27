@@ -29,6 +29,7 @@ import {
 import { productAPI, codeAPI } from '../services/api';
 import ProductCard from '../components/ProductCard';
 import ProductForm from '../components/ProductForm';
+import { extractNumericValue, extractNumericString } from '../utils/codeUtils';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -394,7 +395,12 @@ const ProductList = () => {
     
     const codes = productCodes[product.id] || [];
     const existingCodes = codes.map(code => code.code);
-    const existingCodesSet = new Set(existingCodes);
+    // 构建「末尾数字」的集合，用于范围匹配
+    const numSet = new Set();
+    existingCodes.forEach(code => {
+      const num = extractNumericValue(code);
+      if (!isNaN(num)) numSet.add(num);
+    });
     
     const missingCodes = [];
     
@@ -403,27 +409,18 @@ const ProductList = () => {
       const start = parseInt(range.start);
       const end = parseInt(range.end);
       
-      // 检查原字符串是否包含前导零
       const startStr = String(range.start).trim();
       const endStr = String(range.end).trim();
-      const hasLeadingZero = startStr.startsWith('0') || endStr.startsWith('0');
-      
-      const width = Math.max(
-        startStr.length, 
-        endStr.length
-      );
       
       if (!isNaN(start) && !isNaN(end) && start <= end) {
-        // 防止超大范围导致页面卡死：放宽限制，以时间为主
-        const MAX_ITERATIONS = 5000000; // 调高到 500万 次
-        const MAX_TIME_MS = 800; // 调高到 800ms，不到 1 秒的卡顿用户可接受，同时能处理极大范围
+        const MAX_ITERATIONS = 5000000;
+        const MAX_TIME_MS = 800;
         const startTime = Date.now();
         let iterations = 0;
 
         for (let i = start; i <= end; i++) {
           iterations++;
           
-          // 每 10000 次检查一次时间，减少 Date.now() 调用开销
           if (iterations % 10000 === 0) {
             if (Date.now() - startTime > MAX_TIME_MS) {
               console.warn(`[ProductList] Range checking stopped due to timeout (${MAX_TIME_MS}ms). iterations: ${iterations}`);
@@ -436,15 +433,11 @@ const ProductList = () => {
             break;
           }
 
-          let expected = i.toString();
-          
-          if (startStr.length === endStr.length) {
-            expected = expected.padStart(startStr.length, '0');
-          } else if (hasLeadingZero) {
-            expected = expected.padStart(width, '0');
-          }
-          
-          if (!existingCodesSet.has(expected)) {
+          if (!numSet.has(i)) {
+            let expected = i.toString();
+            if (startStr.length === endStr.length) {
+              expected = expected.padStart(startStr.length, '0');
+            }
             missingCodes.push(expected);
           }
         }
@@ -455,7 +448,10 @@ const ProductList = () => {
     const excessCodes = [];
     existingCodes.forEach(code => {
       const str = String(code).trim();
-      const codeNum = parseInt(str);
+      const codeNum = extractNumericValue(str);
+      const numStr = extractNumericString(str);
+      
+      if (isNaN(codeNum)) return;
       
       let inAnyRange = false;
       let formatOk = false;
@@ -474,16 +470,15 @@ const ProductList = () => {
         );
         
         if (!isNaN(start) && !isNaN(end) && start <= end) {
-          const inRange = !isNaN(codeNum) && codeNum >= start && codeNum <= end;
+          const inRange = codeNum >= start && codeNum <= end;
           
           let currentFormatOk = true;
           if (startStr.length === endStr.length) {
-            currentFormatOk = str.length === startStr.length;
+            currentFormatOk = numStr.length === startStr.length;
           } else if (hasLeadingZero) {
-            currentFormatOk = str.length === width;
+            currentFormatOk = numStr.length === width;
           } else {
-            // 如果没有前导零（例如 1-100），那么输入的码也不应该有前导零
-            if (str.length > 1 && str.startsWith('0')) {
+            if (numStr.length > 1 && numStr.startsWith('0')) {
               currentFormatOk = false;
             }
           }

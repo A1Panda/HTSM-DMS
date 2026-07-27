@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
+const { extractNumericValue } = require('../utils/codeUtils');
 
 // 定义编码模式
 const codeSchema = new mongoose.Schema({
@@ -99,10 +100,12 @@ if (process.env.MONGODB_URI) {
           if (!!code.deleted !== query.deleted) return false;
         }
 
-        // 2. code 范围匹配 (字符串比较)
+        // 2. code 范围匹配 (提取末尾数字进行数值比较，兼容含前缀的编码如"文版-123")
         if (query.code) {
-          if (query.code.$gte && code.code < query.code.$gte) return false;
-          if (query.code.$lte && code.code > query.code.$lte) return false;
+          const codeNum = extractNumericValue(code.code);
+          if (isNaN(codeNum)) return false;
+          if (query.code.$gte && codeNum < parseInt(query.code.$gte)) return false;
+          if (query.code.$lte && codeNum > parseInt(query.code.$lte)) return false;
         }
 
         // 3. 日期范围匹配 (createdAt 或 date)

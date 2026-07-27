@@ -1,6 +1,7 @@
 const Code = require('../models/Code');
 const Product = require('../models/Product');
 const { validationResult } = require('express-validator');
+const { extractNumericValue } = require('../utils/codeUtils');
 
 // 获取所有编码（带分页）
 exports.getAllCodes = async (req, res) => {
@@ -12,12 +13,11 @@ exports.getAllCodes = async (req, res) => {
     
     const query = productId ? { productId } : {};
     
-    // 编码范围搜索
-    if (codeStart || codeEnd) {
-      query.code = {};
-      if (codeStart) query.code.$gte = codeStart;
-      if (codeEnd) query.code.$lte = codeEnd;
-    }
+    // 编码范围搜索 — 不做 $gte/$lte 字符串比较（编码可能含前缀如"文版-123"），
+    // 改为查询后按提取数字过滤
+    const hasCodeRange = !!(codeStart || codeEnd);
+    const numStart = codeStart ? parseInt(codeStart) : NaN;
+    const numEnd = codeEnd ? parseInt(codeEnd) : NaN;
     
     // 日期范围搜索 (同时匹配 createdAt 或 date 字段)
     if (startDate || endDate) {
@@ -75,6 +75,17 @@ exports.getAllCodes = async (req, res) => {
     
     const result = await Code.paginate(query, { page, limit });
     
+    // 编码范围后过滤：从编码中提取末尾数字进行数值比较
+    if (hasCodeRange && result.codes) {
+      result.codes = result.codes.filter(code => {
+        const num = extractNumericValue(code.code);
+        if (isNaN(num)) return false;
+        if (!isNaN(numStart) && num < numStart) return false;
+        if (!isNaN(numEnd) && num > numEnd) return false;
+        return true;
+      });
+    }
+    
     res.json(result);
   } catch (error) {
     console.error('获取所有编码失败:', error);
@@ -108,9 +119,9 @@ exports.addCode = async (req, res) => {
     const { productId } = req.params;
     let { code, description, date } = req.body;
     
-    // 清理编码，只保留数字
+    // 清理编码，保留完整字符
     if (code) {
-      code = code.replace(/\D/g, '');
+      code = code.trim();
     }
     
     // 检查产品是否存在
@@ -230,9 +241,9 @@ exports.updateCode = async (req, res) => {
     const { productId, codeId } = req.params;
     let { code, description, date } = req.body;
     
-    // 清理编码，只保留数字
+    // 清理编码，保留完整字符
     if (code) {
-      code = code.replace(/\D/g, '');
+      code = code.trim();
     }
     
     // 检查产品是否存在

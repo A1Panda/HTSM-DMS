@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   Row, 
   Col, 
@@ -54,8 +55,41 @@ const ProductList = () => {
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [currentFilter, setCurrentFilter] = useState('all');
+  
+  // 使用 URL 参数持久化搜索状态，返回时保持搜索上下文
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchText, setSearchText] = useState(searchParams.get('q') || '');
+  const currentFilter = searchParams.get('filter') || 'all';
+  const sortField = searchParams.get('sort') || 'createdAt';
+  const sortOrder = searchParams.get('order') || 'desc';
+  
+  // 更新分类筛选并同步到 URL
+  const updateFilter = useCallback((value) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (value && value !== 'all') {
+      newParams.set('filter', value);
+    } else {
+      newParams.delete('filter');
+    }
+    setSearchParams(newParams, { replace: true });
+  }, [searchParams, setSearchParams]);
+  
+  // 更新排序并同步到 URL
+  const updateSort = useCallback((field, order) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (field !== 'createdAt') {
+      newParams.set('sort', field);
+    } else {
+      newParams.delete('sort');
+    }
+    if (order !== 'desc') {
+      newParams.set('order', order);
+    } else {
+      newParams.delete('order');
+    }
+    setSearchParams(newParams, { replace: true });
+  }, [searchParams, setSearchParams]);
+  
   const [productCodes, setProductCodes] = useState({});
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [batchMode, setBatchMode] = useState(false);
@@ -67,8 +101,6 @@ const ProductList = () => {
   
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
-  const [sortOrder, setSortOrder] = useState('desc'); // 'asc' | 'desc'
-  const [sortField, setSortField] = useState('createdAt'); // 'createdAt' | 'name'
   const searchInputRef = useRef(null);
   
   // 批量查重相关状态
@@ -78,7 +110,7 @@ const ProductList = () => {
 
   // 分页状态
   const [pagination, setPagination] = useState({
-    current: 1,
+    current: parseInt(searchParams.get('page')) || 1,
     pageSize: 12, // 默认每页12个，适合 2, 3, 4, 6 列布局
     total: 0
   });
@@ -185,13 +217,21 @@ const ProductList = () => {
 
   // 初始加载
   useEffect(() => {
-    // 使用默认参数加载
-    loadProducts(1, 12, '', 'all', 'createdAt', 'desc');
+    // 从 URL 恢复搜索状态并加载
+    const initPage = parseInt(searchParams.get('page')) || 1;
+    loadProducts(initPage, 12, searchText, currentFilter, sortField, sortOrder);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // 仅挂载时执行一次
 
   // 处理页码改变
   const handlePageChange = (page, pageSize) => {
+    const newParams = new URLSearchParams(searchParams);
+    if (page > 1) {
+      newParams.set('page', page);
+    } else {
+      newParams.delete('page');
+    }
+    setSearchParams(newParams, { replace: true });
     loadProducts(page, pageSize);
   };
 
@@ -329,41 +369,62 @@ const ProductList = () => {
     loadProductsRef.current = loadProducts;
   }, [loadProducts]);
 
-  // 搜索产品（防抖）
-  const debouncedSearch = useRef(
+  // 仅 API 调用防抖（UI 更新和 URL 同步立即生效）
+  const skipDebounceRef = useRef(false);
+  const debouncedLoadRef = useRef(
     debounce((value) => {
-      setSearchText(value);
-      // 使用最新的 loadProducts 函数
-      // 传递 value 作为 search 参数，其他参数使用默认值（即当前的 state）
-      // 注意：我们需要显式传递 undefined 以触发默认参数
+      if (skipDebounceRef.current) {
+        skipDebounceRef.current = false;
+        return;
+      }
       loadProductsRef.current(1, undefined, value);
     }, 500)
   ).current;
 
-  const handleSearch = useCallback((value) => {
-    debouncedSearch(value);
-  }, [debouncedSearch, pagination.pageSize, currentFilter, sortField, sortOrder, loadProducts]);
+  // 搜索输入变化：即时更新 UI + URL，防抖触发 API
+  const handleSearchChange = useCallback((value) => {
+    setSearchText(value);
+    const newParams = new URLSearchParams(searchParams);
+    if (value) {
+      newParams.set('q', value);
+    } else {
+      newParams.delete('q');
+    }
+    setSearchParams(newParams, { replace: true });
+    debouncedLoadRef(value);
+  }, [searchParams, setSearchParams]);
+
+  // 回车搜索：立即触发 API（不走防抖）
+  const handleSearchSubmit = useCallback((value) => {
+    setSearchText(value);
+    const newParams = new URLSearchParams(searchParams);
+    if (value) {
+      newParams.set('q', value);
+    } else {
+      newParams.delete('q');
+    }
+    setSearchParams(newParams, { replace: true });
+    skipDebounceRef.current = true; // 跳过防抖回调
+    loadProducts(1, undefined, value);
+  }, [searchParams, setSearchParams, loadProducts]);
 
   // 按分类筛选
   const handleCategoryFilter = useCallback((category) => {
-    setCurrentFilter(category);
+    updateFilter(category);
     // 筛选时重置到第一页
     loadProducts(1, pagination.pageSize, searchText, category, sortField, sortOrder);
-  }, [pagination.pageSize, searchText, sortField, sortOrder, loadProducts]);
+  }, [pagination.pageSize, searchText, sortField, sortOrder, loadProducts, updateFilter]);
 
   // 切换排序
   const handleSort = useCallback((field) => {
     let newOrder = 'desc';
     if (sortField === field) {
       newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-      setSortOrder(newOrder);
-    } else {
-      setSortField(field);
-      setSortOrder('desc');
     }
+    updateSort(field, newOrder);
     // 排序时重置到第一页
     loadProducts(1, pagination.pageSize, searchText, currentFilter, field, newOrder);
-  }, [sortField, sortOrder, pagination.pageSize, searchText, currentFilter, loadProducts]);
+  }, [sortField, sortOrder, pagination.pageSize, searchText, currentFilter, loadProducts, updateSort]);
 
   // 检查范围内缺失编码和超出范围的编码（使用useCallback优化）
   const checkCodeRangeStatus = useCallback((product) => {
@@ -577,12 +638,13 @@ const ProductList = () => {
           )}
           
           <Input.Search
+            value={searchText}
             ref={searchInputRef}
             placeholder="搜索产品名称、描述或分类..."
             allowClear
             enterButton={<SearchOutlined />}
-            onSearch={(value) => handleSearch(value)}
-            onChange={(e) => handleSearch(e.target.value)}
+            onSearch={(value) => handleSearchSubmit(value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             style={{ flex: 1, minWidth: 200, maxWidth: 400 }}
           />
           
@@ -644,10 +706,11 @@ const ProductList = () => {
             {searchText || currentFilter !== 'all' ? (
               <Button onClick={() => {
                 setSearchText('');
-                setCurrentFilter('all');
-                if (searchInputRef.current) {
-                  searchInputRef.current.input.value = '';
-                }
+                updateFilter('all');
+                // 清除 URL 中的搜索参数
+                const newParams = new URLSearchParams(searchParams);
+                newParams.delete('q');
+                setSearchParams(newParams, { replace: true });
                 loadProducts(1, pagination.pageSize, '', 'all', sortField, sortOrder);
               }}>
                 清除筛选

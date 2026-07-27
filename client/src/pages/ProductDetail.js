@@ -813,7 +813,7 @@ const ProductDetail = () => {
     return (
       <div style={{ textAlign: 'center', padding: '50px' }}>
         <Empty description="产品不存在" />
-        <Button type="primary" onClick={() => navigate('/products')}>
+        <Button type="primary" onClick={() => navigate(-1)}>
           返回产品列表
         </Button>
       </div>
@@ -958,7 +958,7 @@ const ProductDetail = () => {
       <div style={{ marginBottom: 16 }}>
         <Button 
           icon={<ArrowLeftOutlined />} 
-          onClick={() => navigate('/products')}
+          onClick={() => navigate(-1)}
         >
           返回产品列表
         </Button>

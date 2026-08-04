@@ -561,18 +561,96 @@ const ProductDetail = () => {
     }
   };
 
+  // 导出完整编码 - 全部
+  const handleExportAll = () => {
+    if (codes.length === 0) {
+      message.warning('没有可导出的编码');
+      return;
+    }
+    const success = ExportUtils.exportCodes(codes, product.name);
+    if (success) {
+      message.success('已导出全部编码');
+    } else {
+      message.error('导出失败');
+    }
+  };
+
+  // 仅导出数字 - 全部
+  const handleExportNumericAll = () => {
+    if (codes.length === 0) {
+      message.warning('没有可导出的编码');
+      return;
+    }
+    const success = ExportUtils.exportCodesNumericOnly(codes, product.name, 'all');
+    if (success) {
+      message.success('已导出全部编码（仅数字）');
+    } else {
+      message.error('导出失败');
+    }
+  };
+
+  // 仅导出数字 - 按日期分Sheet
+  const handleExportNumericSmart = () => {
+    if (codes.length === 0) {
+      message.warning('没有可导出的编码');
+      return;
+    }
+    const success = ExportUtils.exportCodesNumericOnly(codes, product.name, 'smart');
+    if (success) {
+      message.success('已导出编码（仅数字，分Sheet）');
+    } else {
+      message.error('导出失败');
+    }
+  };
+
+  // 仅导出数字 - 指定数量
+  const [isNumericExportModalVisible, setIsNumericExportModalVisible] = useState(false);
+  const [numericExportQuantity, setNumericExportQuantity] = useState(50);
+
+  const showNumericQuantityExportModal = () => {
+    if (codes.length === 0) {
+      message.warning('没有可导出的编码');
+      return;
+    }
+    setNumericExportQuantity(codes.length);
+    setIsNumericExportModalVisible(true);
+  };
+
+  const handleNumericQuantityExportConfirm = () => {
+    if (!numericExportQuantity || numericExportQuantity <= 0) {
+      message.warning('请输入有效的导出数量');
+      return;
+    }
+    const actualQuantity = Math.min(numericExportQuantity, codes.length);
+    const success = ExportUtils.exportCodesNumericOnly(codes, product.name, 'quantity', actualQuantity);
+    if (success) {
+      message.success(`已导出 ${actualQuantity} 个编码（仅数字）`);
+      setIsNumericExportModalVisible(false);
+    } else {
+      message.error('导出失败');
+    }
+  };
+
   // 导出下拉菜单
   const exportMenu = {
     items: [
       {
-        key: 'smart',
-        label: '按日期时间智能导出 (分Sheet页)',
-        onClick: handleSmartExport,
+        key: 'full',
+        label: '导出完整编码',
+        children: [
+          { key: 'full-all', label: '全部', onClick: handleExportAll },
+          { key: 'smart', label: '按日期分Sheet', onClick: handleSmartExport },
+          { key: 'quantity', label: '指定数量', onClick: showQuantityExportModal },
+        ]
       },
       {
-        key: 'quantity',
-        label: '按日期排序导出指定数量',
-        onClick: showQuantityExportModal,
+        key: 'numeric',
+        label: '仅导出数字',
+        children: [
+          { key: 'numeric-all', label: '全部', onClick: handleExportNumericAll },
+          { key: 'numeric-smart', label: '按日期分Sheet', onClick: handleExportNumericSmart },
+          { key: 'numeric-quantity', label: '指定数量', onClick: showNumericQuantityExportModal },
+        ]
       }
     ]
   };
@@ -1434,6 +1512,34 @@ const ProductDetail = () => {
               max={codes.length}
               value={exportQuantity}
               onChange={setExportQuantity}
+              style={{ width: 120 }}
+            />
+            <span style={{ marginLeft: 8, color: '#999' }}>
+              (最多可导出 {codes.length} 个)
+            </span>
+          </div>
+        </div>
+      </Modal>
+
+      {/* 仅导出数字 - 指定数量对话框 */}
+      <Modal
+        title="仅导出数字 - 指定数量"
+        open={isNumericExportModalVisible}
+        onOk={handleNumericQuantityExportConfirm}
+        onCancel={() => setIsNumericExportModalVisible(false)}
+        okText="导出"
+        cancelText="取消"
+        destroyOnHidden
+      >
+        <div style={{ padding: '16px 0' }}>
+          <p>将按录入时间（最新录入优先）导出指定数量的编码，编码列仅保留末尾数字。</p>
+          <div style={{ display: 'flex', alignItems: 'center', marginTop: 16 }}>
+            <span style={{ marginRight: 8 }}>导出数量：</span>
+            <InputNumber
+              min={1}
+              max={codes.length}
+              value={numericExportQuantity}
+              onChange={setNumericExportQuantity}
               style={{ width: 120 }}
             />
             <span style={{ marginLeft: 8, color: '#999' }}>

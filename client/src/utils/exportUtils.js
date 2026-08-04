@@ -181,6 +181,81 @@ const ExportUtils = {
 
     // 调用原有的单sheet导出
     return ExportUtils.exportCodes(targetCodes, productName);
+  },
+
+  /**
+   * 仅导出编码的数字部分（去掉前面的文本）
+   * @param {Array} codes 编码数据
+   * @param {string} productName 产品名称
+   * @param {string} mode 导出模式 'smart' | 'quantity' | 'all'
+   * @param {number} quantity 当 mode='quantity' 时的导出数量
+   * @returns {boolean} 是否成功
+   */
+  exportCodesNumericOnly: (codes, productName, mode = 'all', quantity = null) => {
+    // 从编码中提取末尾数字字符串
+    const extractNumeric = (code) => {
+      if (!code) return '';
+      const match = String(code).match(/(\d+)$/);
+      return match ? match[1] : code;
+    };
+
+    // 转换编码数据，仅保留数字部分
+    const mapToNumericOnly = (codeList) => codeList.map(code => ({
+      '编码': extractNumeric(code.code),
+      '描述': code.description || '',
+      '日期': code.date || '',
+      '创建时间': new Date(code.createdAt).toLocaleString()
+    }));
+
+    const today = new Date().toISOString().split('T')[0];
+    const baseFileName = `${productName}_仅数字编码`;
+
+    if (mode === 'smart') {
+      // 按日期分组导出多Sheet
+      const groups = {};
+      codes.forEach(code => {
+        let dateKey = '未分类';
+        if (code.createdAt) {
+          const dateObj = new Date(code.createdAt);
+          if (!isNaN(dateObj.getTime())) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            dateKey = `${year}-${month}-${day}`;
+          }
+        } else if (code.date) {
+          dateKey = code.date;
+        }
+        if (!groups[dateKey]) groups[dateKey] = [];
+        groups[dateKey].push(code);
+      });
+
+      const sheetsData = Object.keys(groups).map(dateKey => ({
+        sheetName: dateKey.substring(0, 31).replace(/[\\/*?:\[\]]/g, '_'),
+        data: mapToNumericOnly(groups[dateKey])
+      }));
+
+      return ExportUtils.exportToExcelMultipleSheets(sheetsData, {
+        fileName: `${baseFileName}_智能_${today}`
+      });
+    }
+
+    if (mode === 'quantity') {
+      const sortedCodes = [...codes].sort((a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      const targetCodes = sortedCodes.slice(0, Math.min(quantity, codes.length));
+      return ExportUtils.exportToExcel(mapToNumericOnly(targetCodes), {
+        fileName: `${baseFileName}_${targetCodes.length}条_${today}`,
+        sheetName: '编码列表'
+      });
+    }
+
+    // mode === 'all'
+    return ExportUtils.exportToExcel(mapToNumericOnly(codes), {
+      fileName: `${baseFileName}_${today}`,
+      sheetName: '编码列表'
+    });
   }
 };
 

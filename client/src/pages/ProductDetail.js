@@ -1043,7 +1043,13 @@ const ProductDetail = () => {
       </div>
       
       <Card style={{ marginBottom: 16 }}>
-        <Title level={2}>{product.name}</Title>
+        <Title
+          level={2}
+          style={{ wordBreak: 'break-all' }}
+          title={product.name}
+        >
+          {product.name}
+        </Title>
         
         <Descriptions bordered column={{ xs: 1, sm: 2, md: 3 }}>
           <Descriptions.Item label="产品描述">{product.description || '暂无描述'}</Descriptions.Item>

@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
-import { Form, Input, InputNumber, Button, AutoComplete, Row, Col } from 'antd';
-import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
+import React, { useEffect, useRef, useState } from 'react';
+import { Form, Input, InputNumber, Button, AutoComplete, Select, Row, Col, Modal, Spin, ConfigProvider } from 'antd';
+import { MinusCircleOutlined, PlusOutlined, EditOutlined, NumberOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
+import { kgdAPI } from '../services/api';
 
 const { TextArea } = Input;
 
@@ -16,6 +17,100 @@ const { TextArea } = Input;
  */
 const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialValues = {}, loading = false, submitText = '提交' }) => {
   const [form] = Form.useForm();
+
+  // 创建模式下产品名称默认从快工单商品列表选择；手动输入需额外操作（确认弹窗）
+  const isEdit = !!(initialValues && initialValues.id);
+  const [manualName, setManualName] = useState(false); // 是否手动输入产品名称
+  const [goodsOptions, setGoodsOptions] = useState([]);
+  const [goodsLoading, setGoodsLoading] = useState(false);
+  const goodsSearchTimer = useRef(null);
+
+  // 搜索快工单商品（防抖 300ms；仅有关键字时才搜索，避免一次拉取全部商品）
+  const searchGoods = (keyword) => {
+    if (goodsSearchTimer.current) clearTimeout(goodsSearchTimer.current);
+    const kw = (keyword || '').trim();
+    if (!kw) {
+      setGoodsOptions([]);
+      return;
+    }
+    goodsSearchTimer.current = setTimeout(async () => {
+      try {
+        setGoodsLoading(true);
+        const res = await kgdAPI.getGoods(kw);
+        const goods = res.data || [];
+        setGoodsOptions(goods.map(g => {
+          const fullLabel = `${g.name}${g.standard ? `（${g.standard}）` : ''}${g.code ? ` [${g.code}]` : ''}`;
+          return {
+            key: g.id,
+            value: g.name,
+            label: <span className="goods-option-label" title={fullLabel}>{fullLabel}</span>,
+            goods: g // 携带完整商品数据，选中后用于自动填充描述/分类/需求数量
+          };
+        }));
+      } catch (err) {
+        console.error('搜索快工单商品失败:', err);
+        setGoodsOptions([]);
+      } finally {
+        setGoodsLoading(false);
+      }
+    }, 300);
+  };
+
+  /** 由 HT 图号推导产品分类：取第一个 '-' 之前的前缀，去掉开头 G/g（如 G050-xxx → 050） */
+  const deriveCategory = (htNo) => {
+    if (!htNo) return '';
+    const prefix = String(htNo).split('-')[0] || '';
+    return /^G/i.test(prefix) ? prefix.slice(1) : '';
+  };
+
+  /** 选择商品后自动填充：产品描述（规格/HT图号）、分类（HT前缀去G）、需求数量（最新订单计划数） */
+  const handleGoodsChange = (value) => {
+    const goods = goodsOptions.find(o => o.value === value)?.goods;
+    if (!goods) return;
+
+    const htNo = goods.fieldValues?.['HT图号'] || '';
+    const standard = goods.standard || '';
+    const descParts = [];
+    if (standard) descParts.push(`规格：${standard}`);
+    if (htNo) descParts.push(`HT图号：${htNo}`);
+    const newCategory = deriveCategory(htNo);
+
+    form.setFieldsValue({
+      description: descParts.join('；'),
+      // 有 HT 前缀才覆盖分类，避免清掉用户已填内容
+      ...(newCategory ? { category: newCategory } : {}),
+    });
+
+    // 需求数量：查该商品最新加工单的计划数
+    if (goods.name) {
+      kgdAPI.getBillNum(goods.name)
+        .then((res) => {
+          const bills = res.data || [];
+          if (!bills.length) return;
+          const latest = bills.reduce((a, b) => ((b.createdAt || '') > (a.createdAt || '') ? b : a));
+          const num = parseInt(latest.num, 10);
+          if (!isNaN(num) && num > 0) {
+            form.setFieldsValue({ requiredQuantity: num });
+          }
+        })
+        .catch((err) => console.error('获取加工单数量失败:', err));
+    }
+  };
+
+  // 手动输入产品名称需确认（额外操作）
+  const handleManualName = () => {
+    Modal.confirm({
+      title: '手动输入产品名称',
+      icon: <EditOutlined />,
+      content: '手动添加的产品名称不会关联快工单商品数据。请确认该产品不在快工单商品列表中，否则建议改为从商品列表选择。确定要手动输入吗？',
+      okText: '确定',
+      cancelText: '取消',
+      onOk: () => {
+        setManualName(true);
+        form.setFieldsValue({ name: '' });
+      }
+    });
+  };
 
   // 转换初始值
   useEffect(() => {
@@ -59,6 +154,12 @@ const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialVal
   };
 
   const handleSubmit = (values) => {
+    // 提交后清理商品搜索防抖定时器
+    if (goodsSearchTimer.current) {
+      clearTimeout(goodsSearchTimer.current);
+      goodsSearchTimer.current = null;
+    }
+
     // 提交时，如果用户使用了 codeRanges，我们提取第一个作为 codeStart/codeEnd 兼容旧版
     const submitValues = { ...values };
     
@@ -115,151 +216,194 @@ const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialVal
   };
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={handleSubmit}
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: '#007AFF',
+          colorLink: '#007AFF',
+          colorText: '#1d1d1f',
+          colorTextSecondary: '#6e6e73',
+          colorBorder: '#d1d1d6',
+          borderRadius: 10,
+          controlHeight: 40,
+          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro SC', 'PingFang SC', 'Microsoft YaHei', sans-serif"
+        },
+        components: {
+          Form: { itemMarginBottom: 20 }
+        }
+      }}
     >
-      <Form.Item
-        name="name"
-        label="产品名称"
-        rules={[{ required: true, message: '请输入产品名称' }]}
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSubmit}
+        className="apple-product-form"
       >
-        <Input placeholder="请输入产品名称" />
-      </Form.Item>
-      
-      <Form.Item
-        name="description"
-        label="产品描述"
-      >
-        <TextArea placeholder="请输入产品描述（可选）" rows={3} />
-      </Form.Item>
-      
-      <Form.Item
-        name="category"
-        label="产品分类"
-      >
-        <AutoComplete
-          placeholder="请选择或输入产品分类（可选）"
-          allowClear
-          filterOption={(inputValue, option) =>
-            option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
-          }
-          options={categories.map(category => ({
-            value: category,
-            label: category
-          }))}
-        />
-      </Form.Item>
-      
-      <Form.Item
-        name="requiredQuantity"
-        label="需求数量"
-      >
-        <InputNumber min={0} style={{ width: '100%' }} />
-      </Form.Item>
-      
-      <div style={{ marginBottom: 16 }}>
-        <div style={{ marginBottom: 8 }}>编码范围（可添加多个不连续的号码段）:</div>
-        <Form.List name="codeRanges">
-          {(fields, { add, remove }) => (
-            <>
-              {fields.map(({ key, name, ...restField }) => (
-                <Row key={key} gutter={8} align="middle" style={{ marginBottom: 12 }}>
-                  <Col span={11}>
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'start']}
-                      style={{ marginBottom: 0 }}
-                      rules={[
-                        {
-                          validator: async (_, value) => {
-                            const end = form.getFieldValue(['codeRanges', name, 'end']);
-                            if (value && end) {
-                              const s = parseInt(value);
-                              const e = parseInt(end);
-                              if (s > e) {
-                                return Promise.reject(new Error('起始值不能大于结束值'));
-                              }
-                              if (e - s > 1000000) {
-                                return Promise.reject(new Error('号码段范围过大(超过100万)，请分段添加'));
-                              }
-                            }
-                            return Promise.resolve();
-                          }
-                        }
-                      ]}
-                    >
-                      <Input addonBefore="起始值" placeholder="如: 168000" onChange={() => {
-                        handleRangeChange();
-                        // 触发结束值的校验
-                        form.validateFields([['codeRanges', name, 'end']]);
-                      }} />
-                    </Form.Item>
-                  </Col>
-                  <Col span={1} style={{ textAlign: 'center', color: '#999', lineHeight: '32px' }}>
-                    -
-                  </Col>
-                  <Col span={11}>
-                    <Form.Item
-                      {...restField}
-                      name={[name, 'end']}
-                      style={{ marginBottom: 0 }}
-                      rules={[
-                        {
-                          validator: async (_, value) => {
-                            const start = form.getFieldValue(['codeRanges', name, 'start']);
-                            if (start && value) {
-                              const s = parseInt(start);
-                              const e = parseInt(value);
-                              if (s > e) {
-                                return Promise.reject(new Error('结束值不能小于起始值'));
-                              }
-                              if (e - s > 1000000) {
-                                return Promise.reject(new Error('号码段范围过大(超过100万)，请分段添加'));
-                              }
-                            }
-                            return Promise.resolve();
-                          }
-                        }
-                      ]}
-                    >
-                      <Input addonBefore="结束值" placeholder="如: 168050" onChange={() => {
-                        handleRangeChange();
-                        // 触发起始值的校验
-                        form.validateFields([['codeRanges', name, 'start']]);
-                      }} />
-                    </Form.Item>
-                  </Col>
-                  <Col span={1} style={{ textAlign: 'center', lineHeight: '32px' }}>
-                    {fields.length > 1 && (
-                      <MinusCircleOutlined 
-                        style={{ color: '#ff4d4f', fontSize: '16px', cursor: 'pointer' }}
-                        onClick={() => { remove(name); setTimeout(handleRangeChange, 0); }} 
-                      />
-                    )}
-                  </Col>
-                </Row>
-              ))}
-              <Form.Item>
-                <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                  添加号码段
-                </Button>
-              </Form.Item>
-            </>
+        <Form.Item
+          name="name"
+          label="产品名称"
+          rules={[{ required: true, message: isEdit || manualName ? '请输入产品名称' : '请选择产品名称' }]}
+        >
+          {isEdit || manualName ? (
+            <Input placeholder="请输入产品名称" />
+          ) : (
+            <div style={{ display: 'flex', gap: 8 }}>
+              <Select
+                showSearch
+                style={{ flex: 1, minWidth: 0 }}
+                placeholder="搜索商品：名称/编号/规格/HT图号"
+                filterOption={false}
+                onSearch={searchGoods}
+                onChange={handleGoodsChange}
+                options={goodsOptions}
+                loading={goodsLoading}
+                allowClear
+                popupClassName="long-text-select-popup"
+                notFoundContent={goodsLoading ? <Spin size="small" /> : '输入名称/编号/规格/HT图号搜索'}
+              />
+              <Button icon={<EditOutlined />} onClick={handleManualName}>
+                手动添加
+              </Button>
+            </div>
           )}
-        </Form.List>
-      </div>
-      
-      <Form.Item>
-        <Button type="primary" htmlType="submit" loading={loading} style={{ marginRight: 8 }}>
-          {submitText}
-        </Button>
-        {onCancel && (
-          <Button onClick={onCancel}>取消</Button>
-        )}
-      </Form.Item>
-    </Form>
+        </Form.Item>
+        
+        <Form.Item
+          name="description"
+          label="产品描述"
+        >
+          <TextArea placeholder="请输入产品描述（可选）" rows={3} showCount maxLength={500} />
+        </Form.Item>
+        
+        <Form.Item
+          name="category"
+          label="产品分类"
+        >
+          <AutoComplete
+            placeholder="请选择或输入产品分类（可选）"
+            allowClear
+            filterOption={(inputValue, option) =>
+              option.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1
+            }
+            options={categories.map(category => ({
+              value: category,
+              label: category
+            }))}
+          />
+        </Form.Item>
+        
+        <Form.Item
+          name="requiredQuantity"
+          label="需求数量"
+        >
+          <InputNumber min={0} style={{ width: '100%' }} />
+        </Form.Item>
+        
+        <div className="code-range-section">
+          <div className="code-range-section-title">
+            <NumberOutlined /> 编码范围
+            <span className="code-range-section-sub">可添加多个不连续的号码段</span>
+          </div>
+          <Form.List name="codeRanges">
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Row key={key} gutter={8} align="middle" style={{ marginBottom: 12 }}>
+                    <Col span={11}>
+                      <Form.Item
+                        {...restField}
+                        name={[name, 'start']}
+                        style={{ marginBottom: 0 }}
+                        rules={[
+                          {
+                            validator: async (_, value) => {
+                              const end = form.getFieldValue(['codeRanges', name, 'end']);
+                              if (value && end) {
+                                const s = parseInt(value);
+                                const e = parseInt(end);
+                                if (s > e) {
+                                  return Promise.reject(new Error('起始值不能大于结束值'));
+                                }
+                                if (e - s > 1000000) {
+                                  return Promise.reject(new Error('号码段范围过大(超过100万)，请分段添加'));
+                                }
+                              }
+                              return Promise.resolve();
+                            }
+                          }
+                        ]}
+                      >
+                        <Input addonBefore="起始值" placeholder="如: 168000" onChange={() => {
+                          handleRangeChange();
+                          // 触发结束值的校验
+                          form.validateFields([['codeRanges', name, 'end']]);
+                        }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={1} style={{ textAlign: 'center', color: '#999', lineHeight: '32px' }}>
+                      -
+                    </Col>
+                    <Col span={11}>
+                      <Form.Item
+                        {...restField}
+                        name={[name, 'end']}
+                        style={{ marginBottom: 0 }}
+                        rules={[
+                          {
+                            validator: async (_, value) => {
+                              const start = form.getFieldValue(['codeRanges', name, 'start']);
+                              if (start && value) {
+                                const s = parseInt(start);
+                                const e = parseInt(value);
+                                if (s > e) {
+                                  return Promise.reject(new Error('结束值不能小于起始值'));
+                                }
+                                if (e - s > 1000000) {
+                                  return Promise.reject(new Error('号码段范围过大(超过100万)，请分段添加'));
+                                }
+                              }
+                              return Promise.resolve();
+                            }
+                          }
+                        ]}
+                      >
+                        <Input addonBefore="结束值" placeholder="如: 168050" onChange={() => {
+                          handleRangeChange();
+                          // 触发起始值的校验
+                          form.validateFields([['codeRanges', name, 'start']]);
+                        }} />
+                      </Form.Item>
+                    </Col>
+                    <Col span={1} style={{ textAlign: 'center', lineHeight: '32px' }}>
+                      {fields.length > 1 && (
+                        <MinusCircleOutlined 
+                          style={{ color: '#ff3b30', fontSize: '16px', cursor: 'pointer' }}
+                          onClick={() => { remove(name); setTimeout(handleRangeChange, 0); }} 
+                        />
+                      )}
+                    </Col>
+                  </Row>
+                ))}
+                <Form.Item>
+                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                    添加号码段
+                  </Button>
+                </Form.Item>
+              </>
+            )}
+          </Form.List>
+        </div>
+        
+        <Form.Item className="apple-form-actions">
+          <Button type="primary" htmlType="submit" loading={loading} style={{ marginRight: 8 }}>
+            {submitText}
+          </Button>
+          {onCancel && (
+            <Button onClick={onCancel}>取消</Button>
+          )}
+        </Form.Item>
+      </Form>
+    </ConfigProvider>
   );
 };
 

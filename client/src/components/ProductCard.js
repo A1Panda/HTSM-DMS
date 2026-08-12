@@ -101,13 +101,17 @@ const ProductCard = memo(({
 
       {/* 产品标题和描述区域 */}
       <div style={{ marginBottom: 16 }}>
-        <div style={{ 
-          fontSize: '16px', 
-          fontWeight: 'bold', 
-          marginBottom: 8,
-          minHeight: '24px',
-          lineHeight: '24px'
-        }}>
+        <div
+          className="product-card-name"
+          title={product.name}
+          style={{
+            fontSize: '16px',
+            fontWeight: 'bold',
+            marginBottom: 8,
+            minHeight: '24px',
+            lineHeight: '24px'
+          }}
+        >
           {product.name}
         </div>
         <div style={{ 

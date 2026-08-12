@@ -90,6 +90,139 @@
   white-space: normal;
 }
 
+/* 商品选择下拉选项：超长文本省略号截断 */
+.goods-option-label {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+/* 超长文本下拉面板：限制宽度并截断选项 */
+.long-text-select-popup {
+  max-width: 480px;
+}
+
+.long-text-select-popup .ant-select-item-option-content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ===== 添加/编辑产品弹窗 - 苹果风格 ===== */
+.apple-modal .ant-modal-content {
+  border-radius: 16px;
+  padding: 28px 32px 24px;
+  box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.12), 0 8px 16px -8px rgba(0, 0, 0, 0.06);
+}
+
+.apple-modal .ant-modal-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f2f2f7;
+}
+
+.apple-modal .ant-modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #1d1d1f;
+}
+
+.apple-modal .ant-modal-close {
+  top: 20px;
+  inset-inline-end: 24px;
+}
+
+.apple-modal .ant-modal-close:hover {
+  background: #f2f2f7;
+}
+
+/* 表单 label 强化 */
+.apple-product-form .ant-form-item-label > label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1d1d1f;
+}
+
+/* 产品名称选择区：Select 与按钮高度统一、间距舒适 */
+.apple-product-form .ant-form-item-control-input-content > div[style*="flex"] {
+  align-items: center;
+}
+
+/* 编码范围分组卡片 */
+.code-range-section {
+  background: #f5f5f7;
+  border: 1px solid #e8e8ed;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 4px;
+}
+
+.code-range-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d1d1f;
+  margin-bottom: 14px;
+}
+
+.code-range-section-title .anticon {
+  color: #007aff;
+  font-size: 15px;
+}
+
+.code-range-section-sub {
+  font-size: 12px;
+  font-weight: 400;
+  color: #8e8e93;
+  margin-left: auto;
+}
+
+.code-range-section .ant-input-group-addon {
+  background: #f2f2f7;
+  color: #6e6e73;
+  font-size: 13px;
+}
+
+.code-range-section .ant-btn-dashed {
+  border-color: #d1d1d6;
+  color: #48484a;
+  background: #fff;
+  border-radius: 10px;
+}
+
+.code-range-section .ant-btn-dashed:hover {
+  color: #007aff;
+  border-color: #007aff;
+}
+
+/* 表单操作区：右对齐、间距舒适 */
+.apple-form-actions {
+  margin-top: 24px;
+  margin-bottom: 0 !important;
+  text-align: right;
+}
+
+.apple-form-actions .ant-btn {
+  min-width: 88px;
+  border-radius: 999px;
+}
+
+/* 产品卡片名称：最多两行，超出省略 */
+.product-card-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: break-all;
+}
+
 .product-card .ant-card-actions {
   background: #fafafa;
   border-top: 1px solid #f0f0f0;

@@ -152,11 +152,24 @@ export const backupAPI = {
   deleteLocalBackup: (filename) => api.delete(`/backup/${filename}`)
 };
 
+// 快工单开放接口代理（产品名称来源）
+export const kgdAPI = {
+  // 商品列表（keyword 模糊查询商品名/编号/规格，来自快工单系统）
+  getGoods: (keyword = '') => api.get('/kgd/goods', {
+    params: keyword ? { keyword } : {}
+  }),
+  // 加工单数量（按商品名精确匹配，取最新订单计划数自动填需求数量）
+  getBillNum: (goodsName) => api.get('/kgd/bill-num', {
+    params: { goodsName }
+  })
+};
+
 const defaultAPI = {
   product: productAPI,
   code: codeAPI,
   stats: statsAPI,
-  backup: backupAPI
+  backup: backupAPI,
+  kgd: kgdAPI
 };
 
 export default defaultAPI;

@@ -771,6 +771,10 @@ const ProductList = () => {
         open={modalVisible}
         onCancel={() => setModalVisible(false)}
         footer={null}
+        destroyOnHidden
+        className="apple-modal"
+        width={640}
+        centered
       >
         <ProductForm 
           onFinish={handleAddProduct}
@@ -790,6 +794,9 @@ const ProductList = () => {
         }}
         footer={null}
         destroyOnHidden
+        className="apple-modal"
+        width={640}
+        centered
       >
         <ProductForm 
           initialValues={editingProduct}

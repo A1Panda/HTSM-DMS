@@ -1,0 +1,107 @@
+// 快工单开放接口代理（只读，供前端获取商品名称来源）
+// 通过「快工单工序细化管理系统」的 /api/report-data/* 转发，凭证 X-API-Key 由本服务端持有，不暴露给浏览器
+const axios = require('axios');
+
+const KGD_BASE_URL = process.env.KGD_API_BASE_URL || 'http://localhost:3001';
+const KGD_API_KEY = process.env.KGD_API_KEY || '';
+
+/**
+ * 拉取快工单商品列表（keyword 透传 goods_keyword，空则返回全部）
+ */
+async function fetchGoods(keyword) {
+  const url = `${KGD_BASE_URL}/api/report-data/goods`;
+  const response = await axios.get(url, {
+    params: keyword ? { keyword } : {},
+    headers: { 'X-API-Key': KGD_API_KEY },
+    timeout: 30000
+  });
+  return response.data || [];
+}
+
+/**
+ * 商品列表代理：GET /api/kgd/goods?keyword=xxx
+ * 转发到快工单系统 /api/report-data/goods，按商品名/编号/规格模糊查询。
+ * 快工单 goods_keyword 只匹配名称/编号/规格，HT 图号等扩展字段在这里本地补充过滤：
+ * 先按关键字走服务端过滤（快），若未命中（如纯 HT 图号搜索）则回退拉取全量后本地过滤。
+ */
+exports.getGoods = async (req, res) => {
+  try {
+    if (!KGD_API_KEY) {
+      return res.status(500).json({ error: '服务器未配置快工单 API Key，请在 .env 中设置 KGD_API_KEY' });
+    }
+
+    const keyword = (req.query.keyword || '').trim();
+
+    let list = await fetchGoods(keyword);
+
+    const kw = keyword.toLowerCase();
+    if (kw) {
+      const hit = (g) =>
+        (g.name ?? '').toLowerCase().includes(kw) ||
+        (g.code ?? '').toLowerCase().includes(kw) ||
+        (g.standard ?? '').toLowerCase().includes(kw) ||
+        (g.fieldValueList ?? []).some((f) => String(f.value ?? '').toLowerCase().includes(kw));
+      let filtered = list.filter(hit);
+      if (!filtered.length) {
+        // 服务端过滤未命中（如纯 HT 图号）→ 拉全量后本地过滤
+        list = await fetchGoods('');
+        filtered = list.filter(hit);
+      }
+      list = filtered;
+    }
+
+    res.json(list);
+  } catch (error) {
+    console.error('获取快工单商品列表失败:', error.response?.data || error.message);
+    res.status(502).json({
+      error: '获取快工单商品列表失败',
+      detail: error.response?.data?.error || error.message
+    });
+  }
+};
+
+/**
+ * 加工单数量代理：GET /api/kgd/bill-num?goodsName=xxx
+ * 转发到快工单系统 /api/report-data/produce-bills（goods_keyword 模糊查询），
+ * 本地再按商品名精确匹配，返回该商品的加工单列表（含计划数 num 与创建时间），
+ * 供前端选择商品后按最新订单自动填写需求数量。
+ */
+exports.getBillNum = async (req, res) => {
+  try {
+    if (!KGD_API_KEY) {
+      return res.status(500).json({ error: '服务器未配置快工单 API Key，请在 .env 中设置 KGD_API_KEY' });
+    }
+
+    const goodsName = (req.query.goodsName || '').trim();
+    if (!goodsName) {
+      return res.status(400).json({ error: '缺少 goodsName 参数' });
+    }
+
+    const url = `${KGD_BASE_URL}/api/report-data/produce-bills`;
+    const response = await axios.get(url, {
+      params: { goods_keyword: goodsName },
+      headers: { 'X-API-Key': KGD_API_KEY },
+      timeout: 30000
+    });
+
+    const { list = [] } = response.data || {};
+    // goods_keyword 为模糊查询，这里按完整商品名精确匹配
+    const bills = list
+      .filter((b) => (b.goods?.name ?? '') === goodsName)
+      .map((b) => ({
+        code: b.code ?? '',
+        num: b.num ?? '0',
+        status: b.status ?? null,
+        statusName: b.status_name ?? '',
+        createdAt: b.created_at ?? null,
+      }));
+
+    res.json(bills);
+  } catch (error) {
+    console.error('获取加工单数量失败:', error.response?.data || error.message);
+    res.status(502).json({
+      error: '获取加工单数量失败',
+      detail: error.response?.data?.error || error.message
+    });
+  }
+};

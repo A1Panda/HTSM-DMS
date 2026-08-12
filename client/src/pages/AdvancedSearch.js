@@ -312,9 +312,11 @@ const AdvancedSearch = () => {
               <Row gutter={16}>
                 <Col xs={24} sm={24} md={12} lg={6}>
                   <Form.Item name="productId" label="所属产品">
-                    <Select placeholder="请选择产品" allowClear showSearch optionFilterProp="children">
+                    <Select placeholder="请选择产品" allowClear showSearch optionFilterProp="children" popupClassName="long-text-select-popup">
                       {products.map(p => (
-                        <Option key={p.id} value={p.id}>{p.name}</Option>
+                        <Option key={p.id} value={p.id} title={p.name}>
+                          <span className="goods-option-label">{p.name}</span>
+                        </Option>
                       ))}
                     </Select>
                   </Form.Item>

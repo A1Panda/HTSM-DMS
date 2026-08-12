@@ -203,7 +203,9 @@ const ActivityStream = ({ activityData, loading }) => {
                             <span>编码: <strong>{item.code}</strong></span>
                           )}
                           {item.productName && (
-                            <span> • 产品: {item.productName}</span>
+                            <span title={item.productName} style={{ display: 'inline-block', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', verticalAlign: 'bottom' }}>
+                              {' '}• 产品: {item.productName}
+                            </span>
                           )}
                         </div>
                       }

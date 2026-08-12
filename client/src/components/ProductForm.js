@@ -76,8 +76,8 @@ const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialVal
     const newCategory = deriveCategory(htNo);
 
     form.setFieldsValue({
+      name: value, // 显式设置名称，防止 showSearch 的搜索文本覆盖选中值
       description: descParts.join('；'),
-      // 有 HT 前缀才覆盖分类，避免清掉用户已填内容
       ...(newCategory ? { category: newCategory } : {}),
     });
 

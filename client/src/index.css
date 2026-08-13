@@ -1,64 +1,94 @@
+/* ==========================================================================
+   产品编码管理系统 · 品牌设计令牌（对齐 .design 原型 colors_and_type.css）
+   通过 ConfigProvider theme.token 映射到 Ant Design 组件
+   ========================================================================== */
+:root {
+  /* 主色 */
+  --htsm-primary: #1747E6;
+  --htsm-primary-hover: #3D68F0;
+  --htsm-primary-active: #1037B8;
+  --htsm-primary-soft: #E8EEFD;
+  --htsm-primary-ink: #FFFFFF;
+  --htsm-accent-violet: #7A5AF8;
+
+  /* 中性色 */
+  --htsm-bg: #F3F6FB;
+  --htsm-surface: #FFFFFF;
+  --htsm-surface-2: #F7F9FD;
+  --htsm-surface-3: #EFF3FA;
+  --htsm-ink: #12203A;
+  --htsm-ink-2: #5A6B85;
+  --htsm-ink-3: #8A98AE;
+  --htsm-line: #E1E8F2;
+  --htsm-line-strong: #C9D4E4;
+
+  /* 状态色 */
+  --htsm-state-success: #12A05C;
+  --htsm-state-success-hover: #0E8049;
+  --htsm-state-warning: #C98A13;
+  --htsm-state-warning-hover: #A8720E;
+  --htsm-state-error: #D93A3A;
+  --htsm-state-error-hover: #B62E2E;
+  --htsm-state-info: #1747E6;
+
+  /* 状态浅底 */
+  --htsm-state-success-soft: #E4F7EE;
+  --htsm-state-warning-soft: #FBF3DF;
+  --htsm-state-error-soft: #FCE9E9;
+  --htsm-state-info-soft: #E8EEFD;
+
+  /* 圆角 */
+  --htsm-r-sm: 4px;
+  --htsm-r-md: 8px;
+  --htsm-r-lg: 12px;
+  --htsm-r-pill: 999px;
+
+  /* 阴影 */
+  --htsm-shadow-1: 0 1px 2px rgba(18, 32, 58, 0.04), 0 4px 12px rgba(18, 32, 58, 0.06);
+  --htsm-shadow-2: 0 6px 20px rgba(18, 32, 58, 0.10);
+
+  /* 深色侧边栏 */
+  --htsm-sidebar-bg: #101B30;
+  --htsm-sidebar-bg-hover: #1A2A4A;
+  --htsm-sidebar-text: #93A3BF;
+  --htsm-sidebar-text-active: #FFFFFF;
+  --htsm-sidebar-accent: #1747E6;
+  --htsm-font-mono: 'SF Mono', 'JetBrains Mono', Consolas, Menlo, monospace;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Roboto', 'Oxygen', 'Ubuntu',
+    'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f0f2f5;
+  background-color: var(--htsm-bg);
+  color: var(--htsm-ink);
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
-.site-layout-content {
-  min-height: 280px;
-  padding: 24px;
-  background: #fff;
+/* 等宽数字（编码/号码段/统计数值） */
+.htsm-mono {
+  font-variant-numeric: tabular-nums;
+  font-family: 'SF Mono', 'JetBrains Mono', Consolas, Menlo, monospace;
 }
 
-.logo {
-  height: 32px;
-  margin: 16px;
-  color: white;
-  font-size: 18px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
+/* ===== 全局品牌滚动条 ===== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
-
-.ant-layout-header {
-  display: flex;
-  align-items: center;
+::-webkit-scrollbar-thumb {
+  background: var(--htsm-line-strong);
+  border-radius: var(--htsm-r-pill);
 }
-
-.header-title {
-  color: white;
-  margin: 0 0 0 12px;
-  font-size: 18px;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--htsm-ink-3);
 }
-
-.site-layout-background {
-  background: #fff;
-}
-
-.ant-layout-footer {
-  text-align: center;
-}
-
-/* 分页器左右铺满并居中页码 */
-.full-width-pagination.ant-pagination {
-  display: flex !important;
-  width: 100% !important;
-  justify-content: center;
-}
-
-.full-width-pagination .ant-pagination-total-text {
-  margin-right: auto;
-}
-
-.full-width-pagination .ant-pagination-options {
-  margin-left: auto;
+::-webkit-scrollbar-track {
+  background: transparent;
 }

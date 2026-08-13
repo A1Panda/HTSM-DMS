@@ -1,26 +1,41 @@
+# 产品编码管理系统 - Docker 一键编排
+# 使用方式：docker compose up -d --build
+# 环境变量（PORT、MONGODB_URI、KGD_*、IFLYTEK_OCR_* 等）从项目根目录 .env 读取，可覆盖下方默认值
 name: htsm-dms
+
 services:
+  # ==================== 应用服务（后端 + 前端静态托管） ====================
   api:
     restart: always
     image: htsm-dms-api:latest
     build: .
     container_name: htsm-dms
     ports:
-      - "5000:5000"
+      - "${PORT:-5000}:5000"
     environment:
-      - NODE_ENV=production
-      - PORT=5000
-      - MONGODB_URI=mongodb://mongo:27017/htsm-dms
-      - IFLYTEK_OCR_APPID=6e751b44
-      - IFLYTEK_OCR_API_KEY=52078ebea274a1a4b7fe9f843019bac1
-      - IFLYTEK_OCR_API_SECRET=YzA3OTMzN2I0ODFhODYzYzYzMDUxZTBm
-      - IFLYTEK_OCR_PATH=/v1/private/sf8e6aca1
-      - KGD_API_BASE_URL=http://192.168.110.100:3001
-      - KGD_API_KEY=7aa6aa6cacc3c3574873f1c5f95b001e4094ebfe2bcce36ac71553ade1385c74
+      # 运行环境（生产模式，前端从 client/build 静态托管）
+      NODE_ENV: ${NODE_ENV:-production}
+      # 服务监听端口
+      PORT: ${PORT:-5000}
+      # 数据库连接串（容器内通过服务名 mongo 访问；留空则回退为文件系统存储 data/*.json）
+      MONGODB_URI: ${MONGODB_URI:-mongodb://mongo:27017/htsm-dms}
+      # 科大讯飞 OCR 凭证（图片识别，可选，留空则禁用 OCR）
+      IFLYTEK_OCR_APPID: ${IFLYTEK_OCR_APPID:-}
+      IFLYTEK_OCR_API_KEY: ${IFLYTEK_OCR_API_KEY:-}
+      IFLYTEK_OCR_API_SECRET: ${IFLYTEK_OCR_API_SECRET:-}
+      IFLYTEK_OCR_PATH: ${IFLYTEK_OCR_PATH:-/v1/private/sf8e6aca1}
+      # 快工单工序细化管理系统开放接口地址（产品名称来源）
+      # 本地联调用 http://localhost:3001；访问服务器快工单用 http://192.168.110.100:3001
+      KGD_API_BASE_URL: ${KGD_API_BASE_URL:-http://localhost:3001}
+      # 快工单开放接口共享密钥（Header: X-API-Key，需与快工单系统 PLUGIN_API_KEY 一致）
+      KGD_API_KEY: ${KGD_API_KEY:-}
     volumes:
+      # 持久化数据目录（文件系统存储模式下存放 data/*.json）
       - ./data:/app/data
     depends_on:
       - mongo
+
+  # ==================== MongoDB 数据库 ====================
   mongo:
     restart: always
     image: mongo:6
@@ -29,5 +44,6 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+
 volumes:
   mongo-data:

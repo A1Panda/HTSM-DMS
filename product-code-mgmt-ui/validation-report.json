@@ -1,0 +1,95 @@
+{
+  "success": true,
+  "outcome": "passed",
+  "repairable": true,
+  "terminalViolations": [],
+  "terminalBlockingSummary": null,
+  "skillProvenance": {
+    "name": "solo-design",
+    "version": "2026.07.22.00.00.00",
+    "version_source": "skill-release-manifest.json",
+    "runtime_skill_dir": null,
+    "recorded_at": null,
+    "expected_version": "2026.07.22.00.00.00",
+    "status": "matched",
+    "read_status": "loaded"
+  },
+  "operatingMode": "free-explore",
+  "renderBlockingErrorCount": 0,
+  "softWarningCount": 0,
+  "renderBlockingErrors": [],
+  "errorSignatures": [],
+  "softWarnings": [],
+  "repairPlanHints": [],
+  "repairActionTable": [],
+  "errorCount": 0,
+  "warningCount": 0,
+  "errors": [],
+  "warnings": [],
+  "validationRunDisciplineStatus": {
+    "declared": true,
+    "restoreMode": false,
+    "maxFullValidationRuns": 2,
+    "validationHistoryCount": 0,
+    "repairLedgerCount": 0,
+    "softWarningsTriggerRepair": false,
+    "terminalState": null,
+    "nextAction": null,
+    "violations": [],
+    "success": true
+  },
+  "terminalState": null,
+  "nextCheck": {
+    "type": "finish-readiness",
+    "command": "node \"c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-finish-readiness.mjs\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\" --check=all",
+    "fullValidationAllowed": false,
+    "reason": "workspace validation passed; run complete finish readiness before final delivery"
+  },
+  "repairBatch": [],
+  "repairContextPacket": {
+    "schema_version": "1.0",
+    "purpose": "small-context repair packet; read this before full validation-report.json",
+    "success": true,
+    "terminalState": null,
+    "skillProvenance": {
+      "name": "solo-design",
+      "version": "2026.07.22.00.00.00",
+      "version_source": "skill-release-manifest.json",
+      "runtime_skill_dir": null,
+      "recorded_at": null,
+      "expected_version": "2026.07.22.00.00.00",
+      "status": "matched",
+      "read_status": "loaded"
+    },
+    "renderBlockingErrorCount": 0,
+    "softWarningCount": 0,
+    "renderBlockingErrors": [],
+    "repairActionTable": [],
+    "nextCheck": {
+      "type": "finish-readiness",
+      "command": "node \"c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-finish-readiness.mjs\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\" --check=all",
+      "fullValidationAllowed": false,
+      "reason": "workspace validation passed; run complete finish readiness before final delivery"
+    },
+    "forbidden": [
+      "do not read validator source",
+      "do not rerun full validation when nextCheck.fullValidationAllowed=false",
+      "do not start preview/browser unless user explicitly asks",
+      "do not hand-edit repair ledger fields"
+    ]
+  },
+  "projectFileHashes": {
+    "product-code-mgmt-ui.design": "54d8e57ec3266b4072f532815bad0d36f7c743ac95f0e410554f22018b5a6891",
+    "colors_and_type.css": "d48d1ca7cd5b345a555a27e515524346550fce1be5ca7e648bbfce3c06c8367e",
+    "runtime-orchestration-summary.json": "bac76b878bc2db1f9c6af8f110cf5c5a38d39fb72b25b16f4e67811e5c886c1e",
+    "pages/404.html": "1bf9cbab25d40479e086bb3b8d320747abbc3536be9efd2cb6d108c13452cb11",
+    "pages/backup.html": "4a1f166b657febc10f2bfede2a225e7df385ddadc2e0183472ef4b5f3daab724",
+    "pages/product-detail.html": "f59ad706f92831a263026530adbb6b95133bb89c796ffb129afa71a84bb89282",
+    "pages/products.html": "28df88bdd9916ae0c2bec7328657ceeb091cab655654f6d4707d7210ab916775",
+    "pages/search.html": "5a014e3df9a7127f4f5cce8652b4038a69755d2124136094711f4dd6e166c033"
+  },
+  "designDir": "d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui",
+  "expectedPages": null,
+  "requireInteractions": null,
+  "checkedAt": "2026-08-13T04:28:54.848Z"
+}

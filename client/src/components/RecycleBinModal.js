@@ -52,7 +52,7 @@ const RecycleBinModal = ({
   const handleBatchRestoreClick = () => {
     Modal.confirm({
       title: `确定要恢复选中的 ${selectedRowKeys.length} 个编码吗？`,
-      icon: <ExclamationCircleOutlined style={{ color: '#52c41a' }} />,
+      icon: <ExclamationCircleOutlined style={{ color: 'var(--htsm-state-success)' }} />,
       content: '恢复后的编码将重新出现在产品列表中。',
       okText: '恢复',
       onOk: () => {
@@ -106,7 +106,7 @@ const RecycleBinModal = ({
              全选
            </Checkbox>
            {selectedRowKeys.length > 0 && (
-             <span style={{ marginLeft: 8, color: '#666' }}>
+             <span style={{ marginLeft: 8, color: 'var(--htsm-ink-2)' }}>
                已选择 {selectedRowKeys.length} 项
              </span>
            )}
@@ -151,7 +151,7 @@ const RecycleBinModal = ({
                 <Button 
                   key="restore"
                   type="text" 
-                  style={{ color: '#52c41a' }}
+                  style={{ color: 'var(--htsm-state-success)' }}
                   icon={<UndoOutlined />} 
                   onClick={() => onRestore(code.id)}
                 />
@@ -163,7 +163,7 @@ const RecycleBinModal = ({
                 okText="删除"
                 cancelText="取消"
                 okType="danger"
-                icon={<ExclamationCircleOutlined style={{ color: 'red' }} />}
+                icon={<ExclamationCircleOutlined style={{ color: 'var(--htsm-state-error)' }} />}
               >
                 <Tooltip title="永久删除">
                   <Button 
@@ -191,7 +191,7 @@ const RecycleBinModal = ({
               description={
                 <Space direction="vertical" size={0}>
                   <span>{code.description || '无描述'}</span>
-                  <span style={{ fontSize: '12px', color: '#999' }}>
+                  <span style={{ fontSize: '12px', color: 'var(--htsm-ink-3)' }}>
                     删除时间: {code.deletedAt ? new Date(code.deletedAt).toLocaleString() : '未知'}
                   </span>
                 </Space>

@@ -129,7 +129,7 @@ const QuickCodeInput = ({
           onChange={handleChange}
           onKeyPress={handleKeyPress}
           placeholder="输入或扫描编码（支持自动提取末尾数字）"
-          prefix={<ScanOutlined style={{ color: '#1890ff' }} />}
+          prefix={<ScanOutlined style={{ color: 'var(--htsm-primary)' }} />}
           disabled={loading}
           style={{ flex: 1 }}
           autoComplete="off"
@@ -169,7 +169,7 @@ const QuickCodeInput = ({
       <Modal
         title={
           <span>
-            <WarningOutlined style={{ color: '#ff4d4f', marginRight: 8 }} />
+            <WarningOutlined style={{ color: 'var(--htsm-state-error)', marginRight: 8 }} />
             编码重复确认
           </span>
         }
@@ -191,7 +191,7 @@ const QuickCodeInput = ({
       >
         <div style={{ padding: '16px 0' }}>
           <p style={{ fontSize: '16px' }}>
-            <b>警告：</b>编码 <span style={{ color: '#ff4d4f', fontWeight: 'bold' }}>{duplicateCode}</span> 已存在！
+            <b>警告：</b>编码 <span style={{ color: 'var(--htsm-state-error)', fontWeight: 'bold' }}>{duplicateCode}</span> 已存在！
           </p>
           <p>确定要继续录入其他编码吗？</p>
           <p style={{ color: '#888' }}>点击"继续录入"清空当前输入并继续，点击"取消"保留当前输入。</p>

@@ -1,0 +1,1581 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数据备份与恢复 · 产品编码管理系统</title>
+    <style id="theme-vars">
+/* ============================================================
+   HTSM 产品编码管理系统 · 企业级重构品牌体系
+   前缀: htsm | 主色: 科技蓝 #1747E6 | 侧边栏: 深海军蓝 #0B1526
+   ============================================================ */
+
+/* ---------- Light Theme ---------- */
+:root {
+  /* 品牌主色（单一主色 + 浅深衍生） */
+  --htsm-primary: #1747E6;
+  --htsm-primary-hover: #0E3BC4;
+  --htsm-primary-active: #0A2E9E;
+  --htsm-primary-soft: #E8EEFD;
+  --htsm-primary-soft-2: #D6E1FA;
+  --htsm-primary-ink: #FFFFFF;
+
+  /* 中性表面 */
+  --htsm-bg: #F3F6FB;
+  --htsm-surface: #FFFFFF;
+  --htsm-surface-2: #F7F9FD;
+  --htsm-surface-3: #EFF3FA;
+
+  /* 文字 */
+  --htsm-ink: #12203A;
+  --htsm-ink-2: #5A6B85;
+  --htsm-ink-3: #8A98AE;
+
+  /* 边框 / 分隔 */
+  --htsm-line: #E1E8F2;
+  --htsm-line-strong: #C9D4E4;
+
+  /* 深色侧边栏（导航专用） */
+  --htsm-sidebar: #0B1526;
+  --htsm-sidebar-2: #0F1C33;
+  --htsm-sidebar-line: rgba(255, 255, 255, 0.07);
+  --htsm-sidebar-ink: #9FB0CC;
+  --htsm-sidebar-ink-2: #6C7E9C;
+  --htsm-sidebar-active: #1747E6;
+  --htsm-sidebar-active-ink: #FFFFFF;
+  --htsm-sidebar-hover: rgba(255, 255, 255, 0.06);
+  --htsm-brand-grad-to: #4F7DF5;
+
+  /* 状态色（仅用于状态语义） */
+  --htsm-state-success: #12A05C;
+  --htsm-state-success-soft: #E4F7EE;
+  --htsm-state-warning: #C98A13;
+  --htsm-state-warning-soft: #FBF3DF;
+  --htsm-state-error: #D93A3A;
+  --htsm-state-error-soft: #FCE9E9;
+  --htsm-state-info: #1747E6;
+  --htsm-state-info-soft: #E8EEFD;
+
+  /* 圆角（企业级：2/4/8/12） */
+  --htsm-r-xs: 2px;
+  --htsm-r-sm: 4px;
+  --htsm-r-md: 8px;
+  --htsm-r-lg: 12px;
+  --htsm-r-pill: 999px;
+
+  /* 阴影（静态卡片 alpha <= 0.05，浮层才用深阴影） */
+  --htsm-shadow-1: 0 1px 2px rgba(18, 32, 58, 0.04), 0 1px 1px rgba(18, 32, 58, 0.03);
+  --htsm-shadow-overlay: 0 8px 24px -8px rgba(18, 32, 58, 0.16);
+  --htsm-shadow-modal: 0 24px 60px -20px rgba(18, 32, 58, 0.28);
+
+  /* 字体 */
+  --htsm-font-primary: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  --htsm-font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* ---------- Dark Theme ---------- */
+.dark {
+  --htsm-primary: #3D6DF2;
+  --htsm-primary-hover: #5B84F5;
+  --htsm-primary-active: #2C55D6;
+  --htsm-primary-soft: rgba(61, 109, 242, 0.16);
+  --htsm-primary-soft-2: rgba(61, 109, 242, 0.24);
+  --htsm-primary-ink: #FFFFFF;
+
+  --htsm-bg: #0B0F18;
+  --htsm-surface: #121826;
+  --htsm-surface-2: #182032;
+  --htsm-surface-3: #1E2940;
+
+  --htsm-ink: #E7ECF6;
+  --htsm-ink-2: #9BA9C2;
+  --htsm-ink-3: #66748F;
+
+  --htsm-line: #232F45;
+  --htsm-line-strong: #31405C;
+
+  --htsm-sidebar: #0B0F18;
+  --htsm-sidebar-2: #101624;
+  --htsm-sidebar-line: rgba(255, 255, 255, 0.07);
+  --htsm-sidebar-ink: #9BA9C2;
+  --htsm-sidebar-ink-2: #66748F;
+  --htsm-sidebar-active: #3D6DF2;
+  --htsm-sidebar-active-ink: #FFFFFF;
+  --htsm-sidebar-hover: rgba(255, 255, 255, 0.06);
+  --htsm-brand-grad-to: #4F7DF5;
+
+  --htsm-state-success: #2FCB7E;
+  --htsm-state-success-soft: rgba(47, 203, 126, 0.14);
+  --htsm-state-warning: #E3A83A;
+  --htsm-state-warning-soft: rgba(227, 168, 58, 0.14);
+  --htsm-state-error: #F26D6D;
+  --htsm-state-error-soft: rgba(242, 109, 109, 0.14);
+  --htsm-state-info: #5B84F5;
+  --htsm-state-info-soft: rgba(61, 109, 242, 0.16);
+
+  --htsm-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 1px rgba(0, 0, 0, 0.24);
+  --htsm-shadow-overlay: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  --htsm-shadow-modal: 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- Tailwind v4 Semantic Bridge ---------- */
+@theme inline {
+  --color-background: var(--htsm-bg);
+  --color-foreground: var(--htsm-ink);
+  --color-card: var(--htsm-surface);
+  --color-card-foreground: var(--htsm-ink);
+  --color-primary: var(--htsm-primary);
+  --color-primary-foreground: var(--htsm-primary-ink);
+  --color-primary-hover: var(--htsm-primary-hover);
+  --color-primary-active: var(--htsm-primary-active);
+  --color-primary-soft: var(--htsm-primary-soft);
+  --color-border: var(--htsm-line);
+  --color-input: var(--htsm-line);
+  --color-ring: var(--htsm-primary);
+  --color-muted: var(--htsm-surface-2);
+  --color-muted-foreground: var(--htsm-ink-2);
+  --color-destructive: var(--htsm-state-error);
+  --color-destructive-foreground: #FFFFFF;
+  --color-success: var(--htsm-state-success);
+  --color-warning: var(--htsm-state-warning);
+  --color-error: var(--htsm-state-error);
+  --color-info: var(--htsm-state-info);
+  --color-sidebar: var(--htsm-sidebar);
+  --color-sidebar-2: var(--htsm-sidebar-2);
+  --color-sidebar-ink: var(--htsm-sidebar-ink);
+  --color-sidebar-active: var(--htsm-sidebar-active);
+  --color-sidebar-hover: var(--htsm-sidebar-hover);
+  --color-sidebar-active-ink: var(--htsm-sidebar-active-ink);
+  --color-surface-2: var(--htsm-surface-2);
+  --color-surface-3: var(--htsm-surface-3);
+  --color-ink: var(--htsm-ink);
+  --color-ink-2: var(--htsm-ink-2);
+  --color-ink-3: var(--htsm-ink-3);
+  --color-line: var(--htsm-line);
+  --color-line-strong: var(--htsm-line-strong);
+
+  --radius-sm: var(--htsm-r-sm);
+  --radius-md: var(--htsm-r-md);
+  --radius-lg: var(--htsm-r-lg);
+}
+
+/* ---------- Base ---------- */
+* {
+  border-color: var(--htsm-line);
+}
+
+html,
+body {
+  font-family: var(--htsm-font-primary);
+  background-color: var(--htsm-bg);
+  color: var(--htsm-ink);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+::selection {
+  background-color: var(--htsm-primary-soft-2);
+  color: var(--htsm-ink);
+}
+
+/* ---------- Typography Classes ---------- */
+.htsm-h1 {
+  font-size: clamp(22px, 2.2vw, 28px);
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--htsm-ink);
+  text-wrap: balance;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  margin: 0;
+}
+
+.htsm-h2 {
+  font-size: clamp(18px, 1.6vw, 20px);
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--htsm-ink);
+  text-wrap: balance;
+  word-break: keep-all;
+  margin: 0;
+}
+
+.htsm-h3 {
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--htsm-ink);
+  margin: 0;
+}
+
+.htsm-body {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--htsm-ink);
+}
+
+.htsm-body-2 {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--htsm-ink-2);
+}
+
+.htsm-caption {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--htsm-ink-2);
+  letter-spacing: 0.005em;
+}
+
+.htsm-mono {
+  font-family: var(--htsm-font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.htsm-num {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--htsm-font-mono);
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--htsm-line-strong);
+  border-radius: var(--htsm-r-pill);
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* ---------- Focus ---------- */
+:focus-visible {
+  outline: 2px solid var(--htsm-primary);
+  outline-offset: 2px;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--htsm-bg);
+    --color-foreground: var(--htsm-ink);
+    --color-card: var(--htsm-surface);
+    --color-card-foreground: var(--htsm-ink);
+    --color-primary: var(--htsm-primary);
+    --color-primary-foreground: var(--htsm-primary-ink);
+    --color-primary-hover: var(--htsm-primary-hover);
+    --color-primary-active: var(--htsm-primary-active);
+    --color-primary-soft: var(--htsm-primary-soft);
+    --color-border: var(--htsm-line);
+    --color-input: var(--htsm-line);
+    --color-ring: var(--htsm-primary);
+    --color-muted: var(--htsm-surface-2);
+    --color-muted-foreground: var(--htsm-ink-2);
+    --color-destructive: var(--htsm-state-error);
+    --color-destructive-foreground: #FFFFFF;
+    --color-success: var(--htsm-state-success);
+    --color-warning: var(--htsm-state-warning);
+    --color-error: var(--htsm-state-error);
+    --color-info: var(--htsm-state-info);
+    --color-sidebar: var(--htsm-sidebar);
+    --color-sidebar-2: var(--htsm-sidebar-2);
+    --color-sidebar-ink: var(--htsm-sidebar-ink);
+    --color-sidebar-active: var(--htsm-sidebar-active);
+    --color-sidebar-hover: var(--htsm-sidebar-hover);
+    --color-sidebar-active-ink: var(--htsm-sidebar-active-ink);
+    --color-surface-2: var(--htsm-surface-2);
+    --color-surface-3: var(--htsm-surface-3);
+    --color-ink: var(--htsm-ink);
+    --color-ink-2: var(--htsm-ink-2);
+    --color-ink-3: var(--htsm-ink-3);
+    --color-line: var(--htsm-line);
+    --color-line-strong: var(--htsm-line-strong);
+    --radius-sm: var(--htsm-r-sm);
+    --radius-md: var(--htsm-r-md);
+    --radius-lg: var(--htsm-r-lg);
+  }
+  @layer base {
+    body { background: var(--htsm-bg); color: var(--htsm-ink); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--htsm-bg); }
+      .text-background { color: var(--htsm-bg); }
+      .border-background { border-color: var(--htsm-bg); }
+      .ring-background { --tw-ring-color: var(--htsm-bg); }
+      .bg-foreground { background-color: var(--htsm-ink); }
+      .text-foreground { color: var(--htsm-ink); }
+      .border-foreground { border-color: var(--htsm-ink); }
+      .ring-foreground { --tw-ring-color: var(--htsm-ink); }
+      .bg-card { background-color: var(--htsm-surface); }
+      .text-card { color: var(--htsm-surface); }
+      .border-card { border-color: var(--htsm-surface); }
+      .ring-card { --tw-ring-color: var(--htsm-surface); }
+      .bg-card-foreground { background-color: var(--htsm-ink); }
+      .text-card-foreground { color: var(--htsm-ink); }
+      .border-card-foreground { border-color: var(--htsm-ink); }
+      .ring-card-foreground { --tw-ring-color: var(--htsm-ink); }
+      .bg-primary { background-color: var(--htsm-primary); }
+      .text-primary { color: var(--htsm-primary); }
+      .border-primary { border-color: var(--htsm-primary); }
+      .ring-primary { --tw-ring-color: var(--htsm-primary); }
+      .bg-primary-foreground { background-color: var(--htsm-primary-ink); }
+      .text-primary-foreground { color: var(--htsm-primary-ink); }
+      .border-primary-foreground { border-color: var(--htsm-primary-ink); }
+      .ring-primary-foreground { --tw-ring-color: var(--htsm-primary-ink); }
+      .bg-primary-hover { background-color: var(--htsm-primary-hover); }
+      .text-primary-hover { color: var(--htsm-primary-hover); }
+      .border-primary-hover { border-color: var(--htsm-primary-hover); }
+      .ring-primary-hover { --tw-ring-color: var(--htsm-primary-hover); }
+      .bg-primary-active { background-color: var(--htsm-primary-active); }
+      .text-primary-active { color: var(--htsm-primary-active); }
+      .border-primary-active { border-color: var(--htsm-primary-active); }
+      .ring-primary-active { --tw-ring-color: var(--htsm-primary-active); }
+      .bg-primary-soft { background-color: var(--htsm-primary-soft); }
+      .text-primary-soft { color: var(--htsm-primary-soft); }
+      .border-primary-soft { border-color: var(--htsm-primary-soft); }
+      .ring-primary-soft { --tw-ring-color: var(--htsm-primary-soft); }
+      .bg-border { background-color: var(--htsm-line); }
+      .text-border { color: var(--htsm-line); }
+      .border-border { border-color: var(--htsm-line); }
+      .ring-border { --tw-ring-color: var(--htsm-line); }
+      .bg-input { background-color: var(--htsm-line); }
+      .text-input { color: var(--htsm-line); }
+      .border-input { border-color: var(--htsm-line); }
+      .ring-input { --tw-ring-color: var(--htsm-line); }
+      .bg-ring { background-color: var(--htsm-primary); }
+      .text-ring { color: var(--htsm-primary); }
+      .border-ring { border-color: var(--htsm-primary); }
+      .ring-ring { --tw-ring-color: var(--htsm-primary); }
+      .bg-muted { background-color: var(--htsm-surface-2); }
+      .text-muted { color: var(--htsm-surface-2); }
+      .border-muted { border-color: var(--htsm-surface-2); }
+      .ring-muted { --tw-ring-color: var(--htsm-surface-2); }
+      .bg-muted-foreground { background-color: var(--htsm-ink-2); }
+      .text-muted-foreground { color: var(--htsm-ink-2); }
+      .border-muted-foreground { border-color: var(--htsm-ink-2); }
+      .ring-muted-foreground { --tw-ring-color: var(--htsm-ink-2); }
+      .bg-destructive { background-color: var(--htsm-state-error); }
+      .text-destructive { color: var(--htsm-state-error); }
+      .border-destructive { border-color: var(--htsm-state-error); }
+      .ring-destructive { --tw-ring-color: var(--htsm-state-error); }
+      .bg-success { background-color: var(--htsm-state-success); }
+      .text-success { color: var(--htsm-state-success); }
+      .border-success { border-color: var(--htsm-state-success); }
+      .ring-success { --tw-ring-color: var(--htsm-state-success); }
+      .bg-warning { background-color: var(--htsm-state-warning); }
+      .text-warning { color: var(--htsm-state-warning); }
+      .border-warning { border-color: var(--htsm-state-warning); }
+      .ring-warning { --tw-ring-color: var(--htsm-state-warning); }
+      .bg-error { background-color: var(--htsm-state-error); }
+      .text-error { color: var(--htsm-state-error); }
+      .border-error { border-color: var(--htsm-state-error); }
+      .ring-error { --tw-ring-color: var(--htsm-state-error); }
+      .bg-info { background-color: var(--htsm-state-info); }
+      .text-info { color: var(--htsm-state-info); }
+      .border-info { border-color: var(--htsm-state-info); }
+      .ring-info { --tw-ring-color: var(--htsm-state-info); }
+      .bg-sidebar { background-color: var(--htsm-sidebar); }
+      .text-sidebar { color: var(--htsm-sidebar); }
+      .border-sidebar { border-color: var(--htsm-sidebar); }
+      .ring-sidebar { --tw-ring-color: var(--htsm-sidebar); }
+      .bg-sidebar-2 { background-color: var(--htsm-sidebar-2); }
+      .text-sidebar-2 { color: var(--htsm-sidebar-2); }
+      .border-sidebar-2 { border-color: var(--htsm-sidebar-2); }
+      .ring-sidebar-2 { --tw-ring-color: var(--htsm-sidebar-2); }
+      .bg-sidebar-ink { background-color: var(--htsm-sidebar-ink); }
+      .text-sidebar-ink { color: var(--htsm-sidebar-ink); }
+      .border-sidebar-ink { border-color: var(--htsm-sidebar-ink); }
+      .ring-sidebar-ink { --tw-ring-color: var(--htsm-sidebar-ink); }
+      .bg-sidebar-active { background-color: var(--htsm-sidebar-active); }
+      .text-sidebar-active { color: var(--htsm-sidebar-active); }
+      .border-sidebar-active { border-color: var(--htsm-sidebar-active); }
+      .ring-sidebar-active { --tw-ring-color: var(--htsm-sidebar-active); }
+      .bg-sidebar-hover { background-color: var(--htsm-sidebar-hover); }
+      .text-sidebar-hover { color: var(--htsm-sidebar-hover); }
+      .border-sidebar-hover { border-color: var(--htsm-sidebar-hover); }
+      .ring-sidebar-hover { --tw-ring-color: var(--htsm-sidebar-hover); }
+      .bg-sidebar-active-ink { background-color: var(--htsm-sidebar-active-ink); }
+      .text-sidebar-active-ink { color: var(--htsm-sidebar-active-ink); }
+      .border-sidebar-active-ink { border-color: var(--htsm-sidebar-active-ink); }
+      .ring-sidebar-active-ink { --tw-ring-color: var(--htsm-sidebar-active-ink); }
+      .bg-surface-2 { background-color: var(--htsm-surface-2); }
+      .text-surface-2 { color: var(--htsm-surface-2); }
+      .border-surface-2 { border-color: var(--htsm-surface-2); }
+      .ring-surface-2 { --tw-ring-color: var(--htsm-surface-2); }
+      .bg-surface-3 { background-color: var(--htsm-surface-3); }
+      .text-surface-3 { color: var(--htsm-surface-3); }
+      .border-surface-3 { border-color: var(--htsm-surface-3); }
+      .ring-surface-3 { --tw-ring-color: var(--htsm-surface-3); }
+      .bg-ink { background-color: var(--htsm-ink); }
+      .text-ink { color: var(--htsm-ink); }
+      .border-ink { border-color: var(--htsm-ink); }
+      .ring-ink { --tw-ring-color: var(--htsm-ink); }
+      .bg-ink-2 { background-color: var(--htsm-ink-2); }
+      .text-ink-2 { color: var(--htsm-ink-2); }
+      .border-ink-2 { border-color: var(--htsm-ink-2); }
+      .ring-ink-2 { --tw-ring-color: var(--htsm-ink-2); }
+      .bg-ink-3 { background-color: var(--htsm-ink-3); }
+      .text-ink-3 { color: var(--htsm-ink-3); }
+      .border-ink-3 { border-color: var(--htsm-ink-3); }
+      .ring-ink-3 { --tw-ring-color: var(--htsm-ink-3); }
+      .bg-line { background-color: var(--htsm-line); }
+      .text-line { color: var(--htsm-line); }
+      .border-line { border-color: var(--htsm-line); }
+      .ring-line { --tw-ring-color: var(--htsm-line); }
+      .bg-line-strong { background-color: var(--htsm-line-strong); }
+      .text-line-strong { color: var(--htsm-line-strong); }
+      .border-line-strong { border-color: var(--htsm-line-strong); }
+      .ring-line-strong { --tw-ring-color: var(--htsm-line-strong); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body>
+<!-- ============================================================
+     HTSM 产品编码管理系统 · 共享应用框架（Project Shell）
+     使用方式：叶子页面将本片段嵌入 <body>，并替换两个 SLOT：
+       <!-- SLOT: pageTitle -->     页面标题
+       <!-- SLOT: mainContent -->   页面主体内容
+     图标：Lucide <i data-lucide="...">（leaf 页面已引入 lucide 脚本）
+     颜色体系：colors_and_type.css（CSS 变量前缀 htsm）
+     ============================================================ -->
+
+<style id="critical-layout">
+  /* ---------- 基础盒模型（无 Tailwind 编译亦可稳定渲染） ---------- */
+  .app-shell *,
+  .app-shell *::before,
+  .app-shell *::after {
+    box-sizing: border-box;
+  }
+
+  /* ---------- 应用框架骨架 ---------- */
+  .app-shell { display: flex; min-height: 100vh; background: var(--htsm-bg); }
+  .app-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--htsm-sidebar);
+    color: var(--htsm-sidebar-ink);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .app-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .app-topbar {
+    height: 64px;
+    flex-shrink: 0;
+    background: var(--htsm-surface);
+    border-bottom: 1px solid var(--htsm-line);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+  .app-content { flex: 1; padding: 24px; }
+  /* ---------- 侧边栏 · 品牌区 ---------- */
+  .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 20px 18px 16px; }
+  .sidebar-brand-logo {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--htsm-r-md);
+    background: linear-gradient(135deg, var(--htsm-primary), var(--htsm-brand-grad-to));
+    color: var(--htsm-primary-ink);
+  }
+  .sidebar-brand-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .sidebar-brand-title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    color: var(--htsm-sidebar-active-ink);
+    white-space: nowrap;
+  }
+  .sidebar-brand-sub {
+    font-size: 11px;
+    line-height: 1.3;
+    letter-spacing: 0.08em;
+    color: var(--htsm-sidebar-ink-2);
+    white-space: nowrap;
+  }
+
+  /* ---------- 侧边栏 · 导航分组 ---------- */
+  .sidebar-nav { flex: 1; overflow-y: auto; padding: 4px 10px 12px; }
+  .sidebar-nav-group-label {
+    font-size: 11px;
+    line-height: 1.3;
+    letter-spacing: 0.06em;
+    color: var(--htsm-sidebar-ink-2);
+    padding: 12px 14px 6px;
+  }
+  .sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--htsm-r-md);
+    color: var(--htsm-sidebar-ink);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color .15s, color .15s;
+  }
+  .sidebar-nav-item:hover { background: var(--htsm-sidebar-hover); color: var(--htsm-sidebar-active-ink); }
+  [data-active="true"] { background: var(--htsm-primary); color: var(--htsm-sidebar-active-ink); }
+
+  /* ---------- 侧边栏 · 底部用户区 ---------- */
+  .sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--htsm-sidebar-line);
+  }
+  .sidebar-user-avatar {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--htsm-r-pill);
+    background: var(--htsm-primary);
+    color: var(--htsm-primary-ink);
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .sidebar-user-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .sidebar-user-name {
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--htsm-sidebar-active-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sidebar-user-role {
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--htsm-sidebar-ink-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ---------- Lucide 图标尺寸 ---------- */
+  .htsm-icon { width: 16px; height: 16px; flex-shrink: 0; }
+  .sidebar-brand-logo .htsm-icon { width: 18px; height: 18px; }
+  .sidebar-nav-item .htsm-icon { width: 18px; height: 18px; }
+
+  /* ---------- 顶栏 ---------- */
+  .topbar-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .topbar-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 220px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface-2);
+    color: var(--htsm-ink-3);
+  }
+  .topbar-search input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--htsm-ink);
+  }
+  .topbar-search input::placeholder { color: var(--htsm-ink-3); }
+  .topbar-icon-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: var(--htsm-r-md);
+    background: transparent;
+    color: var(--htsm-ink-2);
+    cursor: pointer;
+    transition: background-color .15s, color .15s;
+  }
+  .topbar-icon-btn:hover { background: var(--htsm-surface-2); color: var(--htsm-ink); }
+  .topbar-badge {
+    position: absolute;
+    top: 6px;
+    right: 7px;
+    width: 7px;
+    height: 7px;
+    border-radius: var(--htsm-r-pill);
+    background: var(--htsm-state-error);
+    border: 1.5px solid var(--htsm-surface);
+  }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-primary);
+    color: var(--htsm-primary-ink);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color .15s;
+  }
+  .btn-primary:hover { background: var(--htsm-primary-hover); }
+
+  /* ---------- 响应式：icon-only 折叠 ---------- */
+  @media (max-width: 768px) {
+    .app-sidebar { width: 64px; }
+    .sidebar-brand { justify-content: center; padding: 20px 10px 16px; }
+    .sidebar-brand-text,
+    .sidebar-nav-group-label,
+    .sidebar-nav-item > span,
+    .sidebar-user-info { display: none; }
+    .sidebar-nav { padding: 4px 8px 12px; }
+    .sidebar-nav-item { justify-content: center; padding: 10px; }
+    .sidebar-user { justify-content: center; padding: 12px 8px; }
+    .app-content { padding: 16px; }
+  }
+</style>
+
+<div class="app-shell">
+
+  <!-- ============ 侧边栏 ============ -->
+  <aside class="app-sidebar">
+
+    <!-- 品牌区 -->
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-logo">
+        <i data-lucide="scan-barcode" class="htsm-icon"></i>
+      </div>
+      <div class="sidebar-brand-text">
+        <span class="sidebar-brand-title">产品编码</span>
+        <span class="sidebar-brand-sub">管理系统</span>
+      </div>
+    </div>
+
+    <!-- 导航区 -->
+    <nav class="sidebar-nav" aria-label="主导航">
+      <div class="sidebar-nav-group-label">主导航</div>
+
+      <a href="#" data-nav-key="products" data-dom-id="nav-products" class="sidebar-nav-item">
+        <i data-lucide="package" class="htsm-icon"></i>
+        <span class="whitespace-nowrap">产品管理</span>
+      </a>
+
+      <a href="#" data-nav-key="search" data-dom-id="nav-search" class="sidebar-nav-item">
+        <i data-lucide="search" class="htsm-icon"></i>
+        <span class="whitespace-nowrap">高级搜索</span>
+      </a>
+
+      <a href="#" data-nav-key="backup" data-dom-id="nav-backup" class="sidebar-nav-item" data-active="true">
+        <i data-lucide="database-backup" class="htsm-icon"></i>
+        <span class="whitespace-nowrap">数据备份</span>
+      </a>
+    </nav>
+
+    <!-- 底部用户区 -->
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar" aria-hidden="true">张</div>
+      <div class="sidebar-user-info">
+        <span class="sidebar-user-name">管理员 · 张工</span>
+        <span class="sidebar-user-role">系统管理员</span>
+      </div>
+      <i data-lucide="log-out" class="htsm-icon" style="color: var(--htsm-sidebar-ink-2); cursor: pointer;" aria-hidden="true"></i>
+    </div>
+  </aside>
+
+  <!-- ============ 主区 ============ -->
+  <div class="app-main">
+
+    <!-- 顶栏 -->
+    <header class="app-topbar">
+      <div class="topbar-title htsm-h2" id="pageTitle">数据备份与恢复</div>
+
+      <div class="topbar-actions">
+        <div class="topbar-search">
+          <i data-lucide="search" class="htsm-icon"></i>
+          <input type="search" placeholder="搜索产品 / 编码…" aria-label="全局搜索" />
+        </div>
+
+        <button type="button" class="topbar-icon-btn" aria-label="通知">
+          <i data-lucide="bell" class="htsm-icon"></i>
+          <span class="topbar-badge" aria-hidden="true"></span>
+        </button>
+
+        <button type="button" class="btn-primary">
+          <i data-lucide="plus" class="htsm-icon"></i>
+          新建产品
+        </button>
+      </div>
+    </header>
+
+    <!-- 内容区（叶子页面填充） -->
+    <main class="app-content" id="main-content">
+    <div class="backup-page">
+
+      <!-- ============ 高危操作警告 ============ -->
+      <section class="danger-alert" role="alert" aria-label="高危操作警告">
+        <i data-lucide="alert-triangle" class="htsm-icon"></i>
+        <div class="danger-alert-body">
+          <span class="danger-alert-title">高危操作</span>
+          <p class="danger-alert-text">恢复备份或删除备份记录将不可撤销，请确认当前数据已妥善备份。</p>
+        </div>
+      </section>
+
+      <!-- ============ 主区：左 400 / 右 600 ============ -->
+      <div class="backup-layout">
+
+        <!-- 左列 -->
+        <div class="backup-left">
+
+          <!-- 手动备份与恢复 -->
+          <section class="backup-card" aria-label="手动备份与恢复">
+            <div class="card-head">
+              <i data-lucide="database-backup" class="htsm-icon card-head-icon"></i>
+              <h3 class="card-title">手动备份与恢复</h3>
+            </div>
+            <p class="card-desc">将当前全部产品与编码数据导出为 JSON 备份文件</p>
+
+            <div class="manual-actions">
+              <button type="button" class="btn-primary" data-toast="全量备份文件已导出">
+                <i data-lucide="download" class="htsm-icon"></i>
+                导出全量备份
+              </button>
+              <div class="restore-wrap">
+                <button type="button" class="btn-restore" data-open-modal="modal-restore-file">
+                  <i data-lucide="upload" class="htsm-icon"></i>
+                  从本地文件恢复
+                </button>
+                <span class="restore-hint">恢复将覆盖当前数据库</span>
+              </div>
+            </div>
+
+            <div class="last-backup">
+              <i data-lucide="file-json" class="htsm-icon"></i>
+              <span>上次手动备份 <span class="htsm-mono">2024-08-12 15:30</span> · <span class="htsm-mono">1.8 MB</span></span>
+            </div>
+          </section>
+
+          <!-- 自动备份设置 -->
+          <section class="backup-card" aria-label="自动备份设置">
+            <div class="card-head">
+              <i data-lucide="settings" class="htsm-icon card-head-icon"></i>
+              <h3 class="card-title">自动备份设置</h3>
+            </div>
+
+            <div class="switch-row">
+              <span class="switch-label">启用自动备份</span>
+              <span class="switch" role="switch" aria-checked="true" tabindex="0" aria-label="启用自动备份">
+                <span class="switch-thumb"></span>
+              </span>
+            </div>
+
+            <div class="cron-row">
+              <div class="cron-input-wrap">
+                <i data-lucide="clock" class="htsm-icon"></i>
+                <input type="text" class="cron-input htsm-mono" value="0 2 * * *" aria-label="Cron 表达式" spellcheck="false" />
+              </div>
+              <span class="cron-desc">每天 02:00 执行一次</span>
+            </div>
+
+            <div class="keep-row">
+              <span class="keep-label">保留备份份数</span>
+              <input type="number" class="keep-input htsm-mono" value="30" min="1" max="999" aria-label="保留备份份数" />
+              <span class="keep-hint">份（超出自动清理）</span>
+            </div>
+
+            <div class="save-row">
+              <button type="button" class="btn-primary" data-toast="备份配置已保存">
+                <i data-lucide="save" class="htsm-icon"></i>
+                保存配置
+              </button>
+            </div>
+          </section>
+        </div>
+
+        <!-- 右列 · 服务器自动备份记录 -->
+        <section class="backup-card backup-records" aria-label="服务器自动备份记录">
+          <div class="card-head">
+            <div class="card-head-title-group">
+              <i data-lucide="hard-drive" class="htsm-icon card-head-icon"></i>
+              <h3 class="card-title">服务器自动备份记录</h3>
+            </div>
+            <button type="button" class="btn-outline" data-toast="备份记录已刷新">
+              <i data-lucide="refresh-cw" class="htsm-icon"></i>
+              刷新
+            </button>
+          </div>
+
+          <div class="table-wrap">
+            <table class="backup-table">
+              <thead>
+                <tr>
+                  <th scope="col">文件名</th>
+                  <th scope="col">大小</th>
+                  <th scope="col">创建时间</th>
+                  <th scope="col">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="cell-file htsm-mono">backup_20240813_020000.json</td>
+                  <td class="cell-size htsm-mono">128 MB</td>
+                  <td class="cell-time">2024-08-13 02:00</td>
+                  <td>
+                    <div class="row-actions">
+                      <button type="button" class="row-action row-action-default" aria-label="下载 backup_20240813_020000.json"><i data-lucide="download" class="htsm-icon"></i>下载</button>
+                      <button type="button" class="row-action row-action-default" aria-label="恢复 backup_20240813_020000.json"><i data-lucide="rotate-ccw" class="htsm-icon"></i>恢复</button>
+                      <button type="button" class="row-action row-action-delete" aria-label="删除 backup_20240813_020000.json"><i data-lucide="trash-2" class="htsm-icon"></i>删除</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="cell-file htsm-mono">backup_20240812_020000.json</td>
+                  <td class="cell-size htsm-mono">126 MB</td>
+                  <td class="cell-time">2024-08-12 02:00</td>
+                  <td>
+                    <div class="row-actions">
+                      <button type="button" class="row-action row-action-default" aria-label="下载 backup_20240812_020000.json"><i data-lucide="download" class="htsm-icon"></i>下载</button>
+                      <button type="button" class="row-action row-action-default" aria-label="恢复 backup_20240812_020000.json"><i data-lucide="rotate-ccw" class="htsm-icon"></i>恢复</button>
+                      <button type="button" class="row-action row-action-delete" aria-label="删除 backup_20240812_020000.json"><i data-lucide="trash-2" class="htsm-icon"></i>删除</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="cell-file htsm-mono">backup_20240811_020000.json</td>
+                  <td class="cell-size htsm-mono">125 MB</td>
+                  <td class="cell-time">2024-08-11 02:00</td>
+                  <td>
+                    <div class="row-actions">
+                      <button type="button" class="row-action row-action-default" aria-label="下载 backup_20240811_020000.json"><i data-lucide="download" class="htsm-icon"></i>下载</button>
+                      <button type="button" class="row-action row-action-default" aria-label="恢复 backup_20240811_020000.json"><i data-lucide="rotate-ccw" class="htsm-icon"></i>恢复</button>
+                      <button type="button" class="row-action row-action-delete" aria-label="删除 backup_20240811_020000.json"><i data-lucide="trash-2" class="htsm-icon"></i>删除</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="cell-file htsm-mono">backup_20240810_020000.json</td>
+                  <td class="cell-size htsm-mono">127 MB</td>
+                  <td class="cell-time">2024-08-10 02:00</td>
+                  <td>
+                    <div class="row-actions">
+                      <button type="button" class="row-action row-action-default" aria-label="下载 backup_20240810_020000.json"><i data-lucide="download" class="htsm-icon"></i>下载</button>
+                      <button type="button" class="row-action row-action-default" aria-label="恢复 backup_20240810_020000.json"><i data-lucide="rotate-ccw" class="htsm-icon"></i>恢复</button>
+                      <button type="button" class="row-action row-action-delete" aria-label="删除 backup_20240810_020000.json"><i data-lucide="trash-2" class="htsm-icon"></i>删除</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="cell-file htsm-mono">backup_20240809_020000.json</td>
+                  <td class="cell-size htsm-mono">121 MB</td>
+                  <td class="cell-time">2024-08-09 02:00</td>
+                  <td>
+                    <div class="row-actions">
+                      <button type="button" class="row-action row-action-default" aria-label="下载 backup_20240809_020000.json"><i data-lucide="download" class="htsm-icon"></i>下载</button>
+                      <button type="button" class="row-action row-action-default" aria-label="恢复 backup_20240809_020000.json"><i data-lucide="rotate-ccw" class="htsm-icon"></i>恢复</button>
+                      <button type="button" class="row-action row-action-delete" aria-label="删除 backup_20240809_020000.json"><i data-lucide="trash-2" class="htsm-icon"></i>删除</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="pagination-bar">
+            <span class="page-info">共 <span class="htsm-mono">118</span> 条 · 每页 <span class="htsm-mono">10</span> 条</span>
+            <nav class="pagination" aria-label="分页">
+              <button type="button" class="page-btn" aria-label="上一页" data-page="prev">«</button>
+              <button type="button" class="page-btn page-btn-active" aria-label="第 1 页" data-page="1">1</button>
+              <button type="button" class="page-btn" aria-label="第 2 页" data-page="2">2</button>
+              <button type="button" class="page-btn" aria-label="第 3 页" data-page="3">3</button>
+              <span class="page-ellipsis" aria-hidden="true">…</span>
+              <button type="button" class="page-btn" aria-label="第 24 页" data-page="24">24</button>
+              <button type="button" class="page-btn" aria-label="下一页" data-page="next">»</button>
+            </nav>
+          </div>
+        </section>
+      </div>
+    </div>
+    </main>
+  </div>
+</div>
+<style id="page-backup">
+  /* ============================================================
+     数据备份与恢复 · 页面级样式
+     ============================================================ */
+
+  /* ---------- 页面容器 ---------- */
+  .backup-page {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  /* ---------- 高危操作警告 ---------- */
+  .danger-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--htsm-state-warning-soft);
+    border-left: 3px solid var(--htsm-state-warning);
+    border-radius: var(--htsm-r-md);
+  }
+  .danger-alert .htsm-icon {
+    width: 18px;
+    height: 18px;
+    margin-top: 1px;
+    color: var(--htsm-state-warning);
+  }
+  .danger-alert-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .danger-alert-title {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--htsm-ink);
+  }
+  .danger-alert-text {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--htsm-ink-2);
+  }
+
+  /* ---------- 主区布局：左 1 / 右 2 ---------- */
+  .backup-layout {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    min-width: 0;
+  }
+  .backup-left {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+  .backup-records { flex: 2; min-width: 0; }
+
+  @media (max-width: 1024px) {
+    .backup-layout { flex-direction: column; }
+  }
+
+  /* ---------- 卡片 ---------- */
+  .backup-card {
+    background: var(--htsm-surface);
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-lg);
+    box-shadow: var(--htsm-shadow-1);
+    padding: 20px;
+    min-width: 0;
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-head-icon { color: var(--htsm-primary); }
+  .card-title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--htsm-ink);
+  }
+  .card-head-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  /* ---------- 按钮 ---------- */
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--htsm-line-strong);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface);
+    color: var(--htsm-ink-2);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color .15s, border-color .15s, color .15s;
+  }
+  .btn-outline:hover {
+    border-color: var(--htsm-primary);
+    background: var(--htsm-primary-soft);
+    color: var(--htsm-primary);
+  }
+
+  .btn-restore {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--htsm-state-warning);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface);
+    color: var(--htsm-state-warning);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color .15s;
+  }
+  .btn-restore:hover { background: var(--htsm-state-warning-soft); }
+
+  /* ---------- 手动备份与恢复 ---------- */
+  .card-desc {
+    margin: 10px 0 0;
+    font-size: 12.5px;
+    line-height: 1.6;
+    color: var(--htsm-ink-2);
+  }
+
+  .manual-actions {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  .restore-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .restore-hint {
+    font-size: 11.5px;
+    line-height: 1.4;
+    color: var(--htsm-ink-3);
+  }
+
+  .last-backup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--htsm-line);
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--htsm-ink-2);
+  }
+  .last-backup .htsm-icon {
+    width: 15px;
+    height: 15px;
+    color: var(--htsm-ink-3);
+  }
+
+  /* ---------- 自动备份设置 ---------- */
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+  }
+  .switch-label {
+    font-size: 13.5px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--htsm-ink);
+  }
+  .switch {
+    position: relative;
+    display: inline-flex;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+    border-radius: var(--htsm-r-pill);
+    background: var(--htsm-primary);
+    cursor: pointer;
+    transition: background-color .15s;
+  }
+  .switch-thumb {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--htsm-primary-ink);
+  }
+
+  .cron-row { margin-top: 14px; }
+  .cron-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface-2);
+    color: var(--htsm-ink-3);
+    transition: border-color .15s, background-color .15s;
+  }
+  .cron-input-wrap:focus-within {
+    border-color: var(--htsm-primary);
+    background: var(--htsm-surface);
+  }
+  .cron-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: var(--htsm-font-mono);
+    font-size: 13px;
+    color: var(--htsm-ink);
+  }
+  .cron-desc {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--htsm-state-success);
+  }
+
+  .keep-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .keep-label {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--htsm-ink-2);
+  }
+  .keep-input {
+    width: 72px;
+    height: 32px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface-2);
+    font-family: var(--htsm-font-mono);
+    font-size: 13px;
+    color: var(--htsm-ink);
+    text-align: center;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .keep-input:focus { border-color: var(--htsm-primary); }
+  .keep-hint {
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--htsm-ink-3);
+  }
+
+  .save-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--htsm-line);
+  }
+
+  /* ---------- 服务器自动备份记录 · 表格 ---------- */
+  .table-wrap {
+    margin-top: 14px;
+    overflow-x: auto;
+  }
+  .backup-table {
+    width: 100%;
+    min-width: 640px;
+    border-collapse: collapse;
+  }
+  .backup-table th {
+    padding: 10px 12px;
+    background: var(--htsm-surface-2);
+    border-bottom: 1px solid var(--htsm-line);
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.5;
+    text-align: left;
+    color: var(--htsm-ink-2);
+    white-space: nowrap;
+  }
+  .backup-table td {
+    height: 52px;
+    padding: 0 12px;
+    border-bottom: 1px solid var(--htsm-line);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--htsm-ink);
+    white-space: nowrap;
+  }
+  .backup-table tbody tr { transition: background-color .12s; }
+  .backup-table tbody tr:hover { background: var(--htsm-surface-2); }
+  .backup-table tbody tr:last-child td { border-bottom: none; }
+  .cell-file { font-size: 12.5px; color: var(--htsm-ink-2); }
+  .cell-size { font-size: 12.5px; color: var(--htsm-ink-2); }
+  .cell-time { color: var(--htsm-ink-2); }
+
+  .row-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .row-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 8px;
+    border: none;
+    border-radius: var(--htsm-r-sm);
+    background: transparent;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color .12s, color .12s;
+  }
+  .row-action .htsm-icon { width: 13px; height: 13px; }
+  .row-action-default { color: var(--htsm-ink-2); }
+  .row-action-default:hover { background: var(--htsm-surface-3); color: var(--htsm-ink); }
+  .row-action-delete { color: var(--htsm-state-error); }
+  .row-action-delete:hover { background: var(--htsm-state-error-soft); color: var(--htsm-state-error); }
+
+  /* ---------- 分页 ---------- */
+  .pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--htsm-line);
+  }
+  .page-info {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--htsm-ink-3);
+    white-space: nowrap;
+  }
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .page-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface);
+    color: var(--htsm-ink-2);
+    font-family: var(--htsm-font-mono);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color .12s, color .12s, border-color .12s;
+  }
+  .page-btn:hover {
+    background: var(--htsm-surface-3);
+    border-color: var(--htsm-line-strong);
+    color: var(--htsm-ink);
+  }
+  .page-btn-active,
+  .page-btn-active:hover {
+    background: var(--htsm-primary);
+    border-color: var(--htsm-primary);
+    color: var(--htsm-primary-ink);
+  }
+  .page-ellipsis {
+    padding: 0 2px;
+    font-size: 13px;
+    color: var(--htsm-ink-3);
+  }
+
+  /* ---------- 弹窗 / 恢复确认 / toast ---------- */
+  .pp-modal-mask {
+    position: fixed; inset: 0; z-index: 1000;
+    display: none; align-items: center; justify-content: center;
+    padding: 24px; background: rgba(18, 32, 58, .45);
+  }
+  .pp-modal-mask.pp-show { display: flex; }
+  .pp-modal {
+    width: 100%; max-height: 86vh; overflow-y: auto;
+    background: var(--htsm-surface); border-radius: var(--htsm-r-lg);
+    box-shadow: 0 24px 64px rgba(18, 32, 58, .24);
+  }
+  .pp-modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--htsm-line);
+  }
+  .pp-modal-title {
+    display: flex; align-items: center; gap: 8px;
+    margin: 0; font-size: 15px; font-weight: 600; color: var(--htsm-ink);
+  }
+  .pp-modal-icon { width: 18px; height: 18px; color: var(--htsm-primary); }
+  .pp-modal-icon-danger { color: var(--htsm-state-error); }
+  .pp-modal-close {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border: none; border-radius: var(--htsm-r-sm);
+    background: transparent; color: var(--htsm-ink-3); cursor: pointer;
+  }
+  .pp-modal-close:hover { background: var(--htsm-surface-3); color: var(--htsm-ink); }
+  .pp-modal-body { padding: 18px 20px; }
+  .pp-modal-desc { margin: 0 0 14px; font-size: 13px; color: var(--htsm-ink-2); line-height: 1.6; }
+  .pp-modal-desc .htsm-mono { color: var(--htsm-ink); }
+  .pp-modal-foot {
+    display: flex; justify-content: flex-end; gap: 10px;
+    padding: 14px 20px; border-top: 1px solid var(--htsm-line);
+  }
+  .btn-danger-solid {
+    height: 36px; padding: 0 16px; border: none; border-radius: var(--htsm-r-md);
+    background: var(--htsm-state-error); color: var(--htsm-primary-ink);
+    font-size: 13px; cursor: pointer;
+  }
+  .btn-danger-solid:hover { background: var(--htsm-state-error); opacity: .9; }
+
+  /* 拖放区 */
+  .pp-dropzone {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px; padding: 28px 16px; margin-bottom: 14px;
+    border: 1.5px dashed var(--htsm-line-strong); border-radius: var(--htsm-r-lg);
+    background: var(--htsm-surface-2); cursor: pointer;
+  }
+  .pp-dropzone:hover { border-color: var(--htsm-primary); }
+  .pp-drop-icon { width: 30px; height: 30px; color: var(--htsm-ink-3); margin-bottom: 4px; }
+  .pp-drop-title { margin: 0; font-size: 13px; font-weight: 500; color: var(--htsm-ink); }
+  .pp-drop-hint { margin: 0; font-size: 11.5px; color: var(--htsm-ink-3); }
+
+  /* 高危警示条 */
+  .pp-alert-danger {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 10px 12px; border-radius: var(--htsm-r-md);
+    background: var(--htsm-state-error-soft); color: var(--htsm-state-error);
+    font-size: 12.5px; line-height: 1.5;
+  }
+  .pp-alert-danger .htsm-icon { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+  .pp-alert-danger strong { font-weight: 600; }
+
+  .pp-toast {
+    position: fixed; right: 24px; bottom: 24px; z-index: 2000;
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 18px; border-radius: var(--htsm-r-lg);
+    background: var(--htsm-surface); box-shadow: var(--htsm-shadow-1);
+    font-size: 13px; color: var(--htsm-ink);
+    opacity: 0; transform: translateY(12px); transition: all .25s;
+  }
+  .pp-toast .htsm-icon { width: 18px; height: 18px; color: var(--htsm-state-success); }
+  .pp-toast.pp-toast-show { opacity: 1; transform: translateY(0); }
+</style>
+<script>lucide.createIcons();</script>
+
+<!-- 本地文件恢复弹窗 -->
+<div class="pp-modal-mask" id="modal-restore-file" role="dialog" aria-modal="true" aria-label="从本地文件恢复">
+  <div class="pp-modal" style="max-width: 480px;">
+    <div class="pp-modal-head">
+      <h3 class="pp-modal-title"><i data-lucide="upload" class="htsm-icon pp-modal-icon" aria-hidden="true"></i>从本地文件恢复</h3>
+      <button type="button" class="pp-modal-close" data-close-modal aria-label="关闭"><i data-lucide="x" class="htsm-icon" aria-hidden="true"></i></button>
+    </div>
+    <div class="pp-modal-body">
+      <div class="pp-dropzone" tabindex="0">
+        <i data-lucide="file-json" class="htsm-icon pp-drop-icon" aria-hidden="true"></i>
+        <p class="pp-drop-title">点击选择或拖入备份文件</p>
+        <p class="pp-drop-hint">支持 .json 备份文件，最大 200 MB</p>
+      </div>
+      <div class="pp-alert-danger">
+        <i data-lucide="alert-triangle" class="htsm-icon" aria-hidden="true"></i>
+        <span>恢复将<strong>覆盖</strong>当前数据库，请确认已妥善备份现有数据。</span>
+      </div>
+    </div>
+    <div class="pp-modal-foot">
+      <button type="button" class="btn-outline" data-close-modal>取消</button>
+      <button type="button" class="btn-danger-solid" data-close-modal data-toast="已开始恢复，完成后将自动刷新">确认恢复</button>
+    </div>
+  </div>
+</div>
+
+<!-- 备份记录恢复确认弹窗 -->
+<div class="pp-modal-mask" id="modal-restore-confirm" role="dialog" aria-modal="true" aria-label="恢复备份确认">
+  <div class="pp-modal" style="max-width: 440px;">
+    <div class="pp-modal-head">
+      <h3 class="pp-modal-title"><i data-lucide="rotate-ccw" class="htsm-icon pp-modal-icon" aria-hidden="true"></i>恢复备份</h3>
+      <button type="button" class="pp-modal-close" data-close-modal aria-label="关闭"><i data-lucide="x" class="htsm-icon" aria-hidden="true"></i></button>
+    </div>
+    <div class="pp-modal-body">
+      <p class="pp-modal-desc">确认使用 <span class="htsm-mono" id="restore-file-name">backup_20240813_020000.json</span> 恢复数据？</p>
+      <div class="pp-alert-danger">
+        <i data-lucide="alert-triangle" class="htsm-icon" aria-hidden="true"></i>
+        <span>当前数据库将被覆盖，此操作<strong>不可撤销</strong>。</span>
+      </div>
+    </div>
+    <div class="pp-modal-foot">
+      <button type="button" class="btn-outline" data-close-modal>取消</button>
+      <button type="button" class="btn-danger-solid" data-close-modal data-toast="已开始恢复，完成后将自动刷新">确认恢复</button>
+    </div>
+  </div>
+</div>
+
+<!-- 删除备份记录确认弹窗 -->
+<div class="pp-modal-mask" id="modal-delete-confirm" role="dialog" aria-modal="true" aria-label="删除备份记录确认">
+  <div class="pp-modal" style="max-width: 440px;">
+    <div class="pp-modal-head">
+      <h3 class="pp-modal-title"><i data-lucide="trash-2" class="htsm-icon pp-modal-icon pp-modal-icon-danger" aria-hidden="true"></i>删除备份记录</h3>
+      <button type="button" class="pp-modal-close" data-close-modal aria-label="关闭"><i data-lucide="x" class="htsm-icon" aria-hidden="true"></i></button>
+    </div>
+    <div class="pp-modal-body">
+      <p class="pp-modal-desc">确认永久删除备份文件 <span class="htsm-mono" id="delete-file-name">backup_20240813_020000.json</span>？</p>
+      <div class="pp-alert-danger">
+        <i data-lucide="alert-triangle" class="htsm-icon" aria-hidden="true"></i>
+        <span>删除后无法恢复，请谨慎操作。</span>
+      </div>
+    </div>
+    <div class="pp-modal-foot">
+      <button type="button" class="btn-outline" data-close-modal>取消</button>
+      <button type="button" class="btn-danger-solid" data-close-modal data-toast="备份记录已删除">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- toast 提示 -->
+<div class="pp-toast" id="pp-toast" role="status" aria-live="polite" hidden>
+  <i data-lucide="check-circle" class="htsm-icon" aria-hidden="true"></i>
+  <span id="pp-toast-text">操作成功</span>
+</div>
+
+<script id="page-interactions">
+  (function () {
+    // 弹窗开关
+    document.querySelectorAll('[data-open-modal]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var mask = document.getElementById(btn.getAttribute('data-open-modal'));
+        if (mask) mask.classList.add('pp-show');
+      });
+    });
+    document.querySelectorAll('[data-close-modal]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var mask = btn.closest('.pp-modal-mask');
+        if (mask) mask.classList.remove('pp-show');
+      });
+    });
+    document.querySelectorAll('.pp-modal-mask').forEach(function (mask) {
+      mask.addEventListener('click', function (e) { if (e.target === mask) mask.classList.remove('pp-show'); });
+    });
+
+    // toast
+    var toast = document.getElementById('pp-toast');
+    var toastText = document.getElementById('pp-toast-text');
+    var toastTimer = null;
+    function showToast(msg) {
+      if (!toast || !toastText) return;
+      toastText.textContent = msg;
+      toast.hidden = false;
+      toast.classList.add('pp-toast-show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () {
+        toast.classList.remove('pp-toast-show');
+        setTimeout(function () { toast.hidden = true; }, 250);
+      }, 2500);
+    }
+    document.querySelectorAll('[data-toast]').forEach(function (el) {
+      el.addEventListener('click', function () { showToast(el.getAttribute('data-toast')); });
+    });
+
+    // 备份记录行内操作：下载 / 恢复 / 删除（按行绑定）
+    document.querySelectorAll('tr').forEach(function (tr) {
+      var rowActions = tr.querySelectorAll('.row-act');
+      if (!rowActions.length) return;
+      rowActions.forEach(function (btn) {
+        var label = (btn.getAttribute('aria-label') || '').toLowerCase();
+        var fname = tr.querySelector('.fname');
+        var name = fname ? fname.textContent.trim() : '备份文件';
+        if (label.indexOf('下载') >= 0) {
+          btn.addEventListener('click', function () { showToast('开始下载 ' + name); });
+        } else if (label.indexOf('恢复') >= 0) {
+          btn.addEventListener('click', function () {
+            var t = document.getElementById('restore-file-name');
+            if (t) t.textContent = name;
+            document.getElementById('modal-restore-confirm').classList.add('pp-show');
+          });
+        } else if (label.indexOf('删除') >= 0) {
+          btn.addEventListener('click', function () {
+            var t = document.getElementById('delete-file-name');
+            if (t) t.textContent = name;
+            document.getElementById('modal-delete-confirm').classList.add('pp-show');
+          });
+        }
+      });
+    });
+
+    if (window.lucide) { lucide.createIcons(); }
+  })();
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Form, Input, InputNumber, Button, AutoComplete, Select, Row, Col, Modal, Spin, ConfigProvider } from 'antd';
+import { Form, Input, InputNumber, Button, AutoComplete, Select, Row, Col, Modal, Spin } from 'antd';
 import { MinusCircleOutlined, PlusOutlined, EditOutlined, NumberOutlined } from '@ant-design/icons';
 import PropTypes from 'prop-types';
 import { kgdAPI } from '../services/api';
@@ -22,15 +22,20 @@ const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialVal
   const isEdit = !!(initialValues && initialValues.id);
   const [manualName, setManualName] = useState(false); // 是否手动输入产品名称
   const [goodsOptions, setGoodsOptions] = useState([]);
+  const [goodsTotal, setGoodsTotal] = useState(0); // 搜索结果总数（用于提示截断）
   const [goodsLoading, setGoodsLoading] = useState(false);
   const goodsSearchTimer = useRef(null);
 
-  // 搜索快工单商品（防抖 300ms；仅有关键字时才搜索，避免一次拉取全部商品）
+  // 最多渲染的候选条数：宽泛关键字（如"石墨"）可能返回上千条，限制渲染避免下拉卡顿
+  const MAX_GOODS_OPTIONS = 50;
+
+  // 搜索快工单商品（防抖 200ms；仅有关键字时才搜索，避免一次拉取全部商品）
   const searchGoods = (keyword) => {
     if (goodsSearchTimer.current) clearTimeout(goodsSearchTimer.current);
     const kw = (keyword || '').trim();
     if (!kw) {
       setGoodsOptions([]);
+      setGoodsTotal(0);
       return;
     }
     goodsSearchTimer.current = setTimeout(async () => {
@@ -38,7 +43,8 @@ const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialVal
         setGoodsLoading(true);
         const res = await kgdAPI.getGoods(kw);
         const goods = res.data || [];
-        setGoodsOptions(goods.map(g => {
+        setGoodsTotal(goods.length);
+        setGoodsOptions(goods.slice(0, MAX_GOODS_OPTIONS).map(g => {
           const fullLabel = `${g.name}${g.standard ? `（${g.standard}）` : ''}${g.code ? ` [${g.code}]` : ''}`;
           return {
             key: g.id,
@@ -50,10 +56,11 @@ const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialVal
       } catch (err) {
         console.error('搜索快工单商品失败:', err);
         setGoodsOptions([]);
+        setGoodsTotal(0);
       } finally {
         setGoodsLoading(false);
       }
-    }, 300);
+    }, 200);
   };
 
   /** 由 HT 图号推导产品分类：取第一个 '-' 之前的前缀，去掉开头 G/g（如 G050-xxx → 050） */
@@ -216,23 +223,7 @@ const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialVal
   };
 
   return (
-    <ConfigProvider
-      theme={{
-        token: {
-          colorPrimary: '#007AFF',
-          colorLink: '#007AFF',
-          colorText: '#1d1d1f',
-          colorTextSecondary: '#6e6e73',
-          colorBorder: '#d1d1d6',
-          borderRadius: 10,
-          controlHeight: 40,
-          fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro SC', 'PingFang SC', 'Microsoft YaHei', sans-serif"
-        },
-        components: {
-          Form: { itemMarginBottom: 20 }
-        }
-      }}
-    >
+    <>
       <Form
         form={form}
         layout="vertical"
@@ -260,6 +251,16 @@ const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialVal
                 allowClear
                 popupClassName="long-text-select-popup"
                 notFoundContent={goodsLoading ? <Spin size="small" /> : '输入名称/编号/规格/HT图号搜索'}
+                dropdownRender={(menu) => (
+                  <>
+                    {menu}
+                    {goodsTotal > MAX_GOODS_OPTIONS && (
+                      <div style={{ padding: '8px 12px', color: '#999', fontSize: 12, borderTop: '1px solid #f0f0f0' }}>
+                        共 {goodsTotal} 条结果，仅显示前 {MAX_GOODS_OPTIONS} 条，请输入更精确的关键字
+                      </div>
+                    )}
+                  </>
+                )}
               />
               <Button icon={<EditOutlined />} onClick={handleManualName}>
                 手动添加
@@ -340,7 +341,7 @@ const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialVal
                         }} />
                       </Form.Item>
                     </Col>
-                    <Col span={1} style={{ textAlign: 'center', color: '#999', lineHeight: '32px' }}>
+                    <Col span={1} style={{ textAlign: 'center', color: 'var(--htsm-ink-3)', lineHeight: '32px' }}>
                       -
                     </Col>
                     <Col span={11}>
@@ -377,7 +378,7 @@ const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialVal
                     <Col span={1} style={{ textAlign: 'center', lineHeight: '32px' }}>
                       {fields.length > 1 && (
                         <MinusCircleOutlined 
-                          style={{ color: '#ff3b30', fontSize: '16px', cursor: 'pointer' }}
+                          style={{ color: 'var(--htsm-state-error)', fontSize: '16px', cursor: 'pointer' }}
                           onClick={() => { remove(name); setTimeout(handleRangeChange, 0); }} 
                         />
                       )}
@@ -403,7 +404,7 @@ const ProductForm = ({ onFinish, onSubmit, onCancel, categories = [], initialVal
           )}
         </Form.Item>
       </Form>
-    </ConfigProvider>
+    </>
   );
 };
 

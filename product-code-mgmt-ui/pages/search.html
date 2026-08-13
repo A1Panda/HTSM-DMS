@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级搜索 · 产品编码管理系统</title>
+    <style id="theme-vars">
+/* ============================================================
+   HTSM 产品编码管理系统 · 企业级重构品牌体系
+   前缀: htsm | 主色: 科技蓝 #1747E6 | 侧边栏: 深海军蓝 #0B1526
+   ============================================================ */
+
+/* ---------- Light Theme ---------- */
+:root {
+  /* 品牌主色（单一主色 + 浅深衍生） */
+  --htsm-primary: #1747E6;
+  --htsm-primary-hover: #0E3BC4;
+  --htsm-primary-active: #0A2E9E;
+  --htsm-primary-soft: #E8EEFD;
+  --htsm-primary-soft-2: #D6E1FA;
+  --htsm-primary-ink: #FFFFFF;
+
+  /* 中性表面 */
+  --htsm-bg: #F3F6FB;
+  --htsm-surface: #FFFFFF;
+  --htsm-surface-2: #F7F9FD;
+  --htsm-surface-3: #EFF3FA;
+
+  /* 文字 */
+  --htsm-ink: #12203A;
+  --htsm-ink-2: #5A6B85;
+  --htsm-ink-3: #8A98AE;
+
+  /* 边框 / 分隔 */
+  --htsm-line: #E1E8F2;
+  --htsm-line-strong: #C9D4E4;
+
+  /* 深色侧边栏（导航专用） */
+  --htsm-sidebar: #0B1526;
+  --htsm-sidebar-2: #0F1C33;
+  --htsm-sidebar-line: rgba(255, 255, 255, 0.07);
+  --htsm-sidebar-ink: #9FB0CC;
+  --htsm-sidebar-ink-2: #6C7E9C;
+  --htsm-sidebar-active: #1747E6;
+  --htsm-sidebar-active-ink: #FFFFFF;
+  --htsm-sidebar-hover: rgba(255, 255, 255, 0.06);
+  --htsm-brand-grad-to: #4F7DF5;
+
+  /* 状态色（仅用于状态语义） */
+  --htsm-state-success: #12A05C;
+  --htsm-state-success-soft: #E4F7EE;
+  --htsm-state-warning: #C98A13;
+  --htsm-state-warning-soft: #FBF3DF;
+  --htsm-state-error: #D93A3A;
+  --htsm-state-error-soft: #FCE9E9;
+  --htsm-state-info: #1747E6;
+  --htsm-state-info-soft: #E8EEFD;
+
+  /* 圆角（企业级：2/4/8/12） */
+  --htsm-r-xs: 2px;
+  --htsm-r-sm: 4px;
+  --htsm-r-md: 8px;
+  --htsm-r-lg: 12px;
+  --htsm-r-pill: 999px;
+
+  /* 阴影（静态卡片 alpha <= 0.05，浮层才用深阴影） */
+  --htsm-shadow-1: 0 1px 2px rgba(18, 32, 58, 0.04), 0 1px 1px rgba(18, 32, 58, 0.03);
+  --htsm-shadow-overlay: 0 8px 24px -8px rgba(18, 32, 58, 0.16);
+  --htsm-shadow-modal: 0 24px 60px -20px rgba(18, 32, 58, 0.28);
+
+  /* 字体 */
+  --htsm-font-primary: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  --htsm-font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* ---------- Dark Theme ---------- */
+.dark {
+  --htsm-primary: #3D6DF2;
+  --htsm-primary-hover: #5B84F5;
+  --htsm-primary-active: #2C55D6;
+  --htsm-primary-soft: rgba(61, 109, 242, 0.16);
+  --htsm-primary-soft-2: rgba(61, 109, 242, 0.24);
+  --htsm-primary-ink: #FFFFFF;
+
+  --htsm-bg: #0B0F18;
+  --htsm-surface: #121826;
+  --htsm-surface-2: #182032;
+  --htsm-surface-3: #1E2940;
+
+  --htsm-ink: #E7ECF6;
+  --htsm-ink-2: #9BA9C2;
+  --htsm-ink-3: #66748F;
+
+  --htsm-line: #232F45;
+  --htsm-line-strong: #31405C;
+
+  --htsm-sidebar: #0B0F18;
+  --htsm-sidebar-2: #101624;
+  --htsm-sidebar-line: rgba(255, 255, 255, 0.07);
+  --htsm-sidebar-ink: #9BA9C2;
+  --htsm-sidebar-ink-2: #66748F;
+  --htsm-sidebar-active: #3D6DF2;
+  --htsm-sidebar-active-ink: #FFFFFF;
+  --htsm-sidebar-hover: rgba(255, 255, 255, 0.06);
+  --htsm-brand-grad-to: #4F7DF5;
+
+  --htsm-state-success: #2FCB7E;
+  --htsm-state-success-soft: rgba(47, 203, 126, 0.14);
+  --htsm-state-warning: #E3A83A;
+  --htsm-state-warning-soft: rgba(227, 168, 58, 0.14);
+  --htsm-state-error: #F26D6D;
+  --htsm-state-error-soft: rgba(242, 109, 109, 0.14);
+  --htsm-state-info: #5B84F5;
+  --htsm-state-info-soft: rgba(61, 109, 242, 0.16);
+
+  --htsm-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 1px rgba(0, 0, 0, 0.24);
+  --htsm-shadow-overlay: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  --htsm-shadow-modal: 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- Tailwind v4 Semantic Bridge ---------- */
+@theme inline {
+  --color-background: var(--htsm-bg);
+  --color-foreground: var(--htsm-ink);
+  --color-card: var(--htsm-surface);
+  --color-card-foreground: var(--htsm-ink);
+  --color-primary: var(--htsm-primary);
+  --color-primary-foreground: var(--htsm-primary-ink);
+  --color-primary-hover: var(--htsm-primary-hover);
+  --color-primary-active: var(--htsm-primary-active);
+  --color-primary-soft: var(--htsm-primary-soft);
+  --color-border: var(--htsm-line);
+  --color-input: var(--htsm-line);
+  --color-ring: var(--htsm-primary);
+  --color-muted: var(--htsm-surface-2);
+  --color-muted-foreground: var(--htsm-ink-2);
+  --color-destructive: var(--htsm-state-error);
+  --color-destructive-foreground: #FFFFFF;
+  --color-success: var(--htsm-state-success);
+  --color-warning: var(--htsm-state-warning);
+  --color-error: var(--htsm-state-error);
+  --color-info: var(--htsm-state-info);
+  --color-sidebar: var(--htsm-sidebar);
+  --color-sidebar-2: var(--htsm-sidebar-2);
+  --color-sidebar-ink: var(--htsm-sidebar-ink);
+  --color-sidebar-active: var(--htsm-sidebar-active);
+  --color-sidebar-hover: var(--htsm-sidebar-hover);
+  --color-sidebar-active-ink: var(--htsm-sidebar-active-ink);
+  --color-surface-2: var(--htsm-surface-2);
+  --color-surface-3: var(--htsm-surface-3);
+  --color-ink: var(--htsm-ink);
+  --color-ink-2: var(--htsm-ink-2);
+  --color-ink-3: var(--htsm-ink-3);
+  --color-line: var(--htsm-line);
+  --color-line-strong: var(--htsm-line-strong);
+
+  --radius-sm: var(--htsm-r-sm);
+  --radius-md: var(--htsm-r-md);
+  --radius-lg: var(--htsm-r-lg);
+}
+
+/* ---------- Base ---------- */
+* {
+  border-color: var(--htsm-line);
+}
+
+html,
+body {
+  font-family: var(--htsm-font-primary);
+  background-color: var(--htsm-bg);
+  color: var(--htsm-ink);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+::selection {
+  background-color: var(--htsm-primary-soft-2);
+  color: var(--htsm-ink);
+}
+
+/* ---------- Typography Classes ---------- */
+.htsm-h1 {
+  font-size: clamp(22px, 2.2vw, 28px);
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--htsm-ink);
+  text-wrap: balance;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  margin: 0;
+}
+
+.htsm-h2 {
+  font-size: clamp(18px, 1.6vw, 20px);
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--htsm-ink);
+  text-wrap: balance;
+  word-break: keep-all;
+  margin: 0;
+}
+
+.htsm-h3 {
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--htsm-ink);
+  margin: 0;
+}
+
+.htsm-body {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--htsm-ink);
+}
+
+.htsm-body-2 {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--htsm-ink-2);
+}
+
+.htsm-caption {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--htsm-ink-2);
+  letter-spacing: 0.005em;
+}
+
+.htsm-mono {
+  font-family: var(--htsm-font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.htsm-num {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--htsm-font-mono);
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--htsm-line-strong);
+  border-radius: var(--htsm-r-pill);
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* ---------- Focus ---------- */
+:focus-visible {
+  outline: 2px solid var(--htsm-primary);
+  outline-offset: 2px;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--htsm-bg);
+    --color-foreground: var(--htsm-ink);
+    --color-card: var(--htsm-surface);
+    --color-card-foreground: var(--htsm-ink);
+    --color-primary: var(--htsm-primary);
+    --color-primary-foreground: var(--htsm-primary-ink);
+    --color-primary-hover: var(--htsm-primary-hover);
+    --color-primary-active: var(--htsm-primary-active);
+    --color-primary-soft: var(--htsm-primary-soft);
+    --color-border: var(--htsm-line);
+    --color-input: var(--htsm-line);
+    --color-ring: var(--htsm-primary);
+    --color-muted: var(--htsm-surface-2);
+    --color-muted-foreground: var(--htsm-ink-2);
+    --color-destructive: var(--htsm-state-error);
+    --color-destructive-foreground: #FFFFFF;
+    --color-success: var(--htsm-state-success);
+    --color-warning: var(--htsm-state-warning);
+    --color-error: var(--htsm-state-error);
+    --color-info: var(--htsm-state-info);
+    --color-sidebar: var(--htsm-sidebar);
+    --color-sidebar-2: var(--htsm-sidebar-2);
+    --color-sidebar-ink: var(--htsm-sidebar-ink);
+    --color-sidebar-active: var(--htsm-sidebar-active);
+    --color-sidebar-hover: var(--htsm-sidebar-hover);
+    --color-sidebar-active-ink: var(--htsm-sidebar-active-ink);
+    --color-surface-2: var(--htsm-surface-2);
+    --color-surface-3: var(--htsm-surface-3);
+    --color-ink: var(--htsm-ink);
+    --color-ink-2: var(--htsm-ink-2);
+    --color-ink-3: var(--htsm-ink-3);
+    --color-line: var(--htsm-line);
+    --color-line-strong: var(--htsm-line-strong);
+    --radius-sm: var(--htsm-r-sm);
+    --radius-md: var(--htsm-r-md);
+    --radius-lg: var(--htsm-r-lg);
+  }
+  @layer base {
+    body { background: var(--htsm-bg); color: var(--htsm-ink); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--htsm-bg); }
+      .text-background { color: var(--htsm-bg); }
+      .border-background { border-color: var(--htsm-bg); }
+      .ring-background { --tw-ring-color: var(--htsm-bg); }
+      .bg-foreground { background-color: var(--htsm-ink); }
+      .text-foreground { color: var(--htsm-ink); }
+      .border-foreground { border-color: var(--htsm-ink); }
+      .ring-foreground { --tw-ring-color: var(--htsm-ink); }
+      .bg-card { background-color: var(--htsm-surface); }
+      .text-card { color: var(--htsm-surface); }
+      .border-card { border-color: var(--htsm-surface); }
+      .ring-card { --tw-ring-color: var(--htsm-surface); }
+      .bg-card-foreground { background-color: var(--htsm-ink); }
+      .text-card-foreground { color: var(--htsm-ink); }
+      .border-card-foreground { border-color: var(--htsm-ink); }
+      .ring-card-foreground { --tw-ring-color: var(--htsm-ink); }
+      .bg-primary { background-color: var(--htsm-primary); }
+      .text-primary { color: var(--htsm-primary); }
+      .border-primary { border-color: var(--htsm-primary); }
+      .ring-primary { --tw-ring-color: var(--htsm-primary); }
+      .bg-primary-foreground { background-color: var(--htsm-primary-ink); }
+      .text-primary-foreground { color: var(--htsm-primary-ink); }
+      .border-primary-foreground { border-color: var(--htsm-primary-ink); }
+      .ring-primary-foreground { --tw-ring-color: var(--htsm-primary-ink); }
+      .bg-primary-hover { background-color: var(--htsm-primary-hover); }
+      .text-primary-hover { color: var(--htsm-primary-hover); }
+      .border-primary-hover { border-color: var(--htsm-primary-hover); }
+      .ring-primary-hover { --tw-ring-color: var(--htsm-primary-hover); }
+      .bg-primary-active { background-color: var(--htsm-primary-active); }
+      .text-primary-active { color: var(--htsm-primary-active); }
+      .border-primary-active { border-color: var(--htsm-primary-active); }
+      .ring-primary-active { --tw-ring-color: var(--htsm-primary-active); }
+      .bg-primary-soft { background-color: var(--htsm-primary-soft); }
+      .text-primary-soft { color: var(--htsm-primary-soft); }
+      .border-primary-soft { border-color: var(--htsm-primary-soft); }
+      .ring-primary-soft { --tw-ring-color: var(--htsm-primary-soft); }
+      .bg-border { background-color: var(--htsm-line); }
+      .text-border { color: var(--htsm-line); }
+      .border-border { border-color: var(--htsm-line); }
+      .ring-border { --tw-ring-color: var(--htsm-line); }
+      .bg-input { background-color: var(--htsm-line); }
+      .text-input { color: var(--htsm-line); }
+      .border-input { border-color: var(--htsm-line); }
+      .ring-input { --tw-ring-color: var(--htsm-line); }
+      .bg-ring { background-color: var(--htsm-primary); }
+      .text-ring { color: var(--htsm-primary); }
+      .border-ring { border-color: var(--htsm-primary); }
+      .ring-ring { --tw-ring-color: var(--htsm-primary); }
+      .bg-muted { background-color: var(--htsm-surface-2); }
+      .text-muted { color: var(--htsm-surface-2); }
+      .border-muted { border-color: var(--htsm-surface-2); }
+      .ring-muted { --tw-ring-color: var(--htsm-surface-2); }
+      .bg-muted-foreground { background-color: var(--htsm-ink-2); }
+      .text-muted-foreground { color: var(--htsm-ink-2); }
+      .border-muted-foreground { border-color: var(--htsm-ink-2); }
+      .ring-muted-foreground { --tw-ring-color: var(--htsm-ink-2); }
+      .bg-destructive { background-color: var(--htsm-state-error); }
+      .text-destructive { color: var(--htsm-state-error); }
+      .border-destructive { border-color: var(--htsm-state-error); }
+      .ring-destructive { --tw-ring-color: var(--htsm-state-error); }
+      .bg-success { background-color: var(--htsm-state-success); }
+      .text-success { color: var(--htsm-state-success); }
+      .border-success { border-color: var(--htsm-state-success); }
+      .ring-success { --tw-ring-color: var(--htsm-state-success); }
+      .bg-warning { background-color: var(--htsm-state-warning); }
+      .text-warning { color: var(--htsm-state-warning); }
+      .border-warning { border-color: var(--htsm-state-warning); }
+      .ring-warning { --tw-ring-color: var(--htsm-state-warning); }
+      .bg-error { background-color: var(--htsm-state-error); }
+      .text-error { color: var(--htsm-state-error); }
+      .border-error { border-color: var(--htsm-state-error); }
+      .ring-error { --tw-ring-color: var(--htsm-state-error); }
+      .bg-info { background-color: var(--htsm-state-info); }
+      .text-info { color: var(--htsm-state-info); }
+      .border-info { border-color: var(--htsm-state-info); }
+      .ring-info { --tw-ring-color: var(--htsm-state-info); }
+      .bg-sidebar { background-color: var(--htsm-sidebar); }
+      .text-sidebar { color: var(--htsm-sidebar); }
+      .border-sidebar { border-color: var(--htsm-sidebar); }
+      .ring-sidebar { --tw-ring-color: var(--htsm-sidebar); }
+      .bg-sidebar-2 { background-color: var(--htsm-sidebar-2); }
+      .text-sidebar-2 { color: var(--htsm-sidebar-2); }
+      .border-sidebar-2 { border-color: var(--htsm-sidebar-2); }
+      .ring-sidebar-2 { --tw-ring-color: var(--htsm-sidebar-2); }
+      .bg-sidebar-ink { background-color: var(--htsm-sidebar-ink); }
+      .text-sidebar-ink { color: var(--htsm-sidebar-ink); }
+      .border-sidebar-ink { border-color: var(--htsm-sidebar-ink); }
+      .ring-sidebar-ink { --tw-ring-color: var(--htsm-sidebar-ink); }
+      .bg-sidebar-active { background-color: var(--htsm-sidebar-active); }
+      .text-sidebar-active { color: var(--htsm-sidebar-active); }
+      .border-sidebar-active { border-color: var(--htsm-sidebar-active); }
+      .ring-sidebar-active { --tw-ring-color: var(--htsm-sidebar-active); }
+      .bg-sidebar-hover { background-color: var(--htsm-sidebar-hover); }
+      .text-sidebar-hover { color: var(--htsm-sidebar-hover); }
+      .border-sidebar-hover { border-color: var(--htsm-sidebar-hover); }
+      .ring-sidebar-hover { --tw-ring-color: var(--htsm-sidebar-hover); }
+      .bg-sidebar-active-ink { background-color: var(--htsm-sidebar-active-ink); }
+      .text-sidebar-active-ink { color: var(--htsm-sidebar-active-ink); }
+      .border-sidebar-active-ink { border-color: var(--htsm-sidebar-active-ink); }
+      .ring-sidebar-active-ink { --tw-ring-color: var(--htsm-sidebar-active-ink); }
+      .bg-surface-2 { background-color: var(--htsm-surface-2); }
+      .text-surface-2 { color: var(--htsm-surface-2); }
+      .border-surface-2 { border-color: var(--htsm-surface-2); }
+      .ring-surface-2 { --tw-ring-color: var(--htsm-surface-2); }
+      .bg-surface-3 { background-color: var(--htsm-surface-3); }
+      .text-surface-3 { color: var(--htsm-surface-3); }
+      .border-surface-3 { border-color: var(--htsm-surface-3); }
+      .ring-surface-3 { --tw-ring-color: var(--htsm-surface-3); }
+      .bg-ink { background-color: var(--htsm-ink); }
+      .text-ink { color: var(--htsm-ink); }
+      .border-ink { border-color: var(--htsm-ink); }
+      .ring-ink { --tw-ring-color: var(--htsm-ink); }
+      .bg-ink-2 { background-color: var(--htsm-ink-2); }
+      .text-ink-2 { color: var(--htsm-ink-2); }
+      .border-ink-2 { border-color: var(--htsm-ink-2); }
+      .ring-ink-2 { --tw-ring-color: var(--htsm-ink-2); }
+      .bg-ink-3 { background-color: var(--htsm-ink-3); }
+      .text-ink-3 { color: var(--htsm-ink-3); }
+      .border-ink-3 { border-color: var(--htsm-ink-3); }
+      .ring-ink-3 { --tw-ring-color: var(--htsm-ink-3); }
+      .bg-line { background-color: var(--htsm-line); }
+      .text-line { color: var(--htsm-line); }
+      .border-line { border-color: var(--htsm-line); }
+      .ring-line { --tw-ring-color: var(--htsm-line); }
+      .bg-line-strong { background-color: var(--htsm-line-strong); }
+      .text-line-strong { color: var(--htsm-line-strong); }
+      .border-line-strong { border-color: var(--htsm-line-strong); }
+      .ring-line-strong { --tw-ring-color: var(--htsm-line-strong); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body>
+<!-- ============================================================
+     HTSM 产品编码管理系统 · 共享应用框架（Project Shell）
+     ============================================================ -->
+
+<style id="critical-layout">
+  /* ---------- 基础盒模型（无 Tailwind 编译亦可稳定渲染） ---------- */
+  .app-shell *,
+  .app-shell *::before,
+  .app-shell *::after {
+    box-sizing: border-box;
+  }
+
+  /* ---------- 应用框架骨架 ---------- */
+  .app-shell { display: flex; min-height: 100vh; background: var(--htsm-bg); }
+  .app-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--htsm-sidebar);
+    color: var(--htsm-sidebar-ink);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .app-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .app-topbar {
+    height: 64px;
+    flex-shrink: 0;
+    background: var(--htsm-surface);
+    border-bottom: 1px solid var(--htsm-line);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+  .app-content { flex: 1; padding: 24px; }
+
+  /* ---------- 侧边栏 · 品牌区 ---------- */
+  .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 20px 18px 16px; }
+  .sidebar-brand-logo {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--htsm-r-md);
+    background: linear-gradient(135deg, var(--htsm-primary), var(--htsm-brand-grad-to));
+    color: var(--htsm-primary-ink);
+  }
+  .sidebar-brand-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .sidebar-brand-title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    color: var(--htsm-sidebar-active-ink);
+    white-space: nowrap;
+  }
+  .sidebar-brand-sub {
+    font-size: 11px;
+    line-height: 1.3;
+    letter-spacing: 0.08em;
+    color: var(--htsm-sidebar-ink-2);
+    white-space: nowrap;
+  }
+
+  /* ---------- 侧边栏 · 导航分组 ---------- */
+  .sidebar-nav { flex: 1; overflow-y: auto; padding: 4px 10px 12px; }
+  .sidebar-nav-group-label {
+    font-size: 11px;
+    line-height: 1.3;
+    letter-spacing: 0.06em;
+    color: var(--htsm-sidebar-ink-2);
+    padding: 12px 14px 6px;
+  }
+  .sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--htsm-r-md);
+    color: var(--htsm-sidebar-ink);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color .15s, color .15s;
+  }
+  .sidebar-nav-item:hover { background: var(--htsm-sidebar-hover); color: var(--htsm-sidebar-active-ink); }
+  [data-active="true"] { background: var(--htsm-primary); color: var(--htsm-sidebar-active-ink); }
+
+  /* ---------- 侧边栏 · 底部用户区 ---------- */
+  .sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--htsm-sidebar-line);
+  }
+  .sidebar-user-avatar {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--htsm-r-pill);
+    background: var(--htsm-primary);
+    color: var(--htsm-primary-ink);
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .sidebar-user-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .sidebar-user-name {
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--htsm-sidebar-active-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sidebar-user-role {
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--htsm-sidebar-ink-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ---------- Lucide 图标尺寸 ---------- */
+  .htsm-icon { width: 16px; height: 16px; flex-shrink: 0; }
+  .sidebar-brand-logo .htsm-icon { width: 18px; height: 18px; }
+  .sidebar-nav-item .htsm-icon { width: 18px; height: 18px; }
+
+  /* ---------- 顶栏 ---------- */
+  .topbar-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .topbar-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 220px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface-2);
+    color: var(--htsm-ink-3);
+  }
+  .topbar-search input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--htsm-ink);
+  }
+  .topbar-search input::placeholder { color: var(--htsm-ink-3); }
+  .topbar-icon-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: var(--htsm-r-md);
+    background: transparent;
+    color: var(--htsm-ink-2);
+    cursor: pointer;
+    transition: background-color .15s, color .15s;
+  }
+  .topbar-icon-btn:hover { background: var(--htsm-surface-2); color: var(--htsm-ink); }
+  .topbar-badge {
+    position: absolute;
+    top: 6px;
+    right: 7px;
+    width: 7px;
+    height: 7px;
+    border-radius: var(--htsm-r-pill);
+    background: var(--htsm-state-error);
+    border: 1.5px solid var(--htsm-surface);
+  }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-primary);
+    color: var(--htsm-primary-ink);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color .15s;
+  }
+  .btn-primary:hover { background: var(--htsm-primary-hover); }
+
+  /* ---------- 响应式：icon-only 折叠 ---------- */
+  @media (max-width: 768px) {
+    .app-sidebar { width: 64px; }
+    .sidebar-brand { justify-content: center; padding: 20px 10px 16px; }
+    .sidebar-brand-text,
+    .sidebar-nav-group-label,
+    .sidebar-nav-item > span,
+    .sidebar-user-info { display: none; }
+    .sidebar-nav { padding: 4px 8px 12px; }
+    .sidebar-nav-item { justify-content: center; padding: 10px; }
+    .sidebar-user { justify-content: center; padding: 12px 8px; }
+    .app-content { padding: 16px; }
+  }
+</style>
+
+<div class="app-shell">
+
+  <!-- ============ 侧边栏 ============ -->
+  <aside class="app-sidebar">
+
+    <!-- 品牌区 -->
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-logo">
+        <i data-lucide="scan-barcode" class="htsm-icon"></i>
+      </div>
+      <div class="sidebar-brand-text">
+        <span class="sidebar-brand-title">产品编码</span>
+        <span class="sidebar-brand-sub">管理系统</span>
+      </div>
+    </div>
+
+    <!-- 导航区 -->
+    <nav class="sidebar-nav" aria-label="主导航">
+      <div class="sidebar-nav-group-label">主导航</div>
+
+      <a href="#" data-nav-key="products" data-dom-id="nav-products" class="sidebar-nav-item">
+        <i data-lucide="package" class="htsm-icon"></i>
+        <span class="whitespace-nowrap">产品管理</span>
+      </a>
+
+      <a href="#" data-nav-key="search" data-dom-id="nav-search" class="sidebar-nav-item" data-active="true">
+        <i data-lucide="search" class="htsm-icon"></i>
+        <span class="whitespace-nowrap">高级搜索</span>
+      </a>
+
+      <a href="#" data-nav-key="backup" data-dom-id="nav-backup" class="sidebar-nav-item">
+        <i data-lucide="database-backup" class="htsm-icon"></i>
+        <span class="whitespace-nowrap">数据备份</span>
+      </a>
+    </nav>
+
+    <!-- 底部用户区 -->
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar" aria-hidden="true">张</div>
+      <div class="sidebar-user-info">
+        <span class="sidebar-user-name">管理员 · 张工</span>
+        <span class="sidebar-user-role">系统管理员</span>
+      </div>
+      <i data-lucide="log-out" class="htsm-icon" style="color: var(--htsm-sidebar-ink-2); cursor: pointer;" aria-hidden="true"></i>
+    </div>
+  </aside>
+
+  <!-- ============ 主区 ============ -->
+  <div class="app-main">
+
+    <!-- 顶栏 -->
+    <header class="app-topbar">
+      <div class="topbar-title htsm-h2" id="pageTitle">高级搜索</div>
+
+      <div class="topbar-actions">
+        <div class="topbar-search">
+          <i data-lucide="search" class="htsm-icon"></i>
+          <input type="search" placeholder="搜索产品 / 编码…" aria-label="全局搜索" />
+        </div>
+
+        <button type="button" class="topbar-icon-btn" aria-label="通知">
+          <i data-lucide="bell" class="htsm-icon"></i>
+          <span class="topbar-badge" aria-hidden="true"></span>
+        </button>
+
+        <button type="button" class="btn-primary">
+          <i data-lucide="plus" class="htsm-icon"></i>
+          新建产品
+        </button>
+      </div>
+    </header>
+
+    <!-- 内容区（叶子页面填充） -->
+    <main class="app-content" id="main-content">
+    <div class="search-page">
+
+      <div class="search-layout">
+
+        <!-- ============ 左列 · 主区 ============ -->
+        <div class="search-main">
+
+          <!-- 搜索条件卡 -->
+          <section class="search-card" aria-label="搜索条件">
+            <div class="search-card-head">
+              <h2 class="search-card-title">搜索条件</h2>
+              <p class="search-card-desc">按编码 / 产品 / 时间组合检索</p>
+            </div>
+
+            <form class="search-form" onsubmit="return false;">
+              <!-- 所属产品 -->
+              <div class="form-field">
+                <label class="form-label" for="f-product">所属产品</label>
+                <div class="select-wrap">
+                  <select id="f-product" class="form-select" aria-label="所属产品">
+                    <option value="all">全部产品</option>
+                    <option value="g050-120">石墨电极 G050-120</option>
+                    <option value="g050-121">石墨电极 G050-121</option>
+                    <option value="f120-08">碳素制品 F120-08</option>
+                    <option value="m080-66">机械密封 M080-66</option>
+                  </select>
+                  <i data-lucide="chevron-down" class="select-chevron" aria-hidden="true"></i>
+                </div>
+              </div>
+
+              <!-- 编码范围 -->
+              <div class="form-field">
+                <span class="form-label">编码范围</span>
+                <div class="range-inputs">
+                  <input type="number" class="form-input form-input-mono" placeholder="168000" aria-label="起始编码" />
+                  <span class="range-dash" aria-hidden="true">-</span>
+                  <input type="number" class="form-input form-input-mono" placeholder="168050" aria-label="结束编码" />
+                </div>
+              </div>
+
+              <!-- 录入时间 -->
+              <div class="form-field">
+                <span class="form-label">录入时间</span>
+                <div class="range-inputs">
+                  <input type="date" class="form-input" aria-label="起始日期" />
+                  <span class="range-dash" aria-hidden="true">至</span>
+                  <input type="date" class="form-input" aria-label="结束日期" />
+                </div>
+              </div>
+
+              <!-- 关键字 -->
+              <div class="form-field">
+                <label class="form-label" for="f-keyword">关键字</label>
+                <input id="f-keyword" type="text" class="form-input" placeholder="编码或描述关键字" />
+              </div>
+
+              <!-- 选项行：包含已删除 + 重置 -->
+              <div class="form-options">
+                <label class="check-item" aria-label="包含已删除（回收站）">
+                  <input type="checkbox" />
+                  <span class="check-box"><i data-lucide="check" class="htsm-icon" aria-hidden="true"></i></span>
+                  <span class="check-text">包含已删除（回收站）</span>
+                </label>
+                <button type="button" class="btn-reset">重置</button>
+              </div>
+
+              <!-- 操作行 -->
+              <div class="form-actions">
+                <button type="button" class="btn-primary btn-search">
+                  <i data-lucide="search" class="htsm-icon"></i>
+                  搜索
+                </button>
+                <button type="button" class="btn-outline" data-open-modal="modal-save-condition">
+                  <i data-lucide="bookmark" class="htsm-icon"></i>
+                  保存条件
+                </button>
+              </div>
+            </form>
+
+            <!-- 结果统计行 -->
+            <div class="result-stats">
+              <span class="result-count">共找到 <span class="result-num htsm-mono">42</span> 条结果</span>
+              <div class="per-page">
+                <span class="per-page-label">每页</span>
+                <div class="select-wrap select-wrap-sm">
+                  <select class="form-select" aria-label="每页条数">
+                    <option selected>10 条</option>
+                    <option>20 条</option>
+                    <option>50 条</option>
+                  </select>
+                  <i data-lucide="chevron-down" class="select-chevron" aria-hidden="true"></i>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 结果列表卡 -->
+          <section class="search-card result-card" aria-label="搜索结果列表">
+
+            <!-- 批量操作条（出现态） -->
+            <div class="batch-bar" data-batch-mode="on">
+              <div class="batch-left">
+                <label class="check-item check-item-compact" aria-label="全选结果">
+                  <input type="checkbox" />
+                  <span class="check-box"><i data-lucide="check" class="htsm-icon" aria-hidden="true"></i></span>
+                  <span class="check-text">全选</span>
+                </label>
+                <span class="batch-count">已选 <span class="htsm-mono">2</span> 项</span>
+                <button type="button" class="batch-cancel" data-toast="已取消选择">取消选择</button>
+              </div>
+              <div class="batch-right">
+                <button type="button" class="batch-delete" data-toast="已删除选中编码（移入回收站）">
+                  <i data-lucide="trash-2" class="htsm-icon"></i>
+                  删除选中
+                </button>
+                <button type="button" class="batch-restore" data-toast="已恢复选中编码">
+                  <i data-lucide="rotate-ccw" class="htsm-icon"></i>
+                  恢复选中
+                </button>
+              </div>
+            </div>
+
+            <!-- 结果行 -->
+            <ul class="result-list">
+              <li class="result-row" data-code="168049">
+                <label class="row-checkbox" aria-label="选择 168049">
+                  <input type="checkbox" checked />
+                  <span class="check-box"><i data-lucide="check" class="htsm-icon" aria-hidden="true"></i></span>
+                </label>
+                <span class="row-code htsm-mono">168049</span>
+                <span class="row-product">石墨电极 G050-120</span>
+                <span class="row-date">2024-08-13</span>
+                <span class="row-desc">批次 B0813-A</span>
+                <span class="row-time">09:24</span>
+                <div class="row-actions">
+                  <button type="button" class="icon-btn" aria-label="编辑 168049"><i data-lucide="pencil" class="htsm-icon"></i></button>
+                  <button type="button" class="icon-btn icon-btn-danger" aria-label="删除 168049"><i data-lucide="trash-2" class="htsm-icon"></i></button>
+                </div>
+              </li>
+
+              <li class="result-row" data-code="168048">
+                <label class="row-checkbox" aria-label="选择 168048">
+                  <input type="checkbox" checked />
+                  <span class="check-box"><i data-lucide="check" class="htsm-icon" aria-hidden="true"></i></span>
+                </label>
+                <span class="row-code htsm-mono">168048</span>
+                <span class="row-product">石墨电极 G050-120</span>
+                <span class="row-date">2024-08-13</span>
+                <span class="row-desc">批次 B0813-A</span>
+                <span class="row-time">09:21</span>
+                <div class="row-actions">
+                  <button type="button" class="icon-btn" aria-label="编辑 168048"><i data-lucide="pencil" class="htsm-icon"></i></button>
+                  <button type="button" class="icon-btn icon-btn-danger" aria-label="删除 168048"><i data-lucide="trash-2" class="htsm-icon"></i></button>
+                </div>
+              </li>
+
+              <li class="result-row" data-code="168023">
+                <label class="row-checkbox" aria-label="选择 168023">
+                  <input type="checkbox" />
+                  <span class="check-box"><i data-lucide="check" class="htsm-icon" aria-hidden="true"></i></span>
+                </label>
+                <span class="row-code htsm-mono">168023</span>
+                <span class="row-product">石墨电极 G050-120</span>
+                <span class="row-date">2024-08-12</span>
+                <span class="row-desc">批次 B0812-A</span>
+                <span class="row-time">14:02</span>
+                <div class="row-actions">
+                  <button type="button" class="icon-btn" aria-label="编辑 168023"><i data-lucide="pencil" class="htsm-icon"></i></button>
+                  <button type="button" class="icon-btn icon-btn-danger" aria-label="删除 168023"><i data-lucide="trash-2" class="htsm-icon"></i></button>
+                </div>
+              </li>
+
+              <li class="result-row" data-code="169060">
+                <label class="row-checkbox" aria-label="选择 169060">
+                  <input type="checkbox" />
+                  <span class="check-box"><i data-lucide="check" class="htsm-icon" aria-hidden="true"></i></span>
+                </label>
+                <span class="row-code htsm-mono">169060</span>
+                <span class="row-product">碳素制品 F120-08</span>
+                <span class="row-date">2024-08-12</span>
+                <span class="row-desc">批次 B0812-C</span>
+                <span class="row-time">11:30</span>
+                <div class="row-actions">
+                  <button type="button" class="icon-btn" aria-label="编辑 169060"><i data-lucide="pencil" class="htsm-icon"></i></button>
+                  <button type="button" class="icon-btn icon-btn-danger" aria-label="删除 169060"><i data-lucide="trash-2" class="htsm-icon"></i></button>
+                </div>
+              </li>
+
+              <li class="result-row" data-code="167999">
+                <label class="row-checkbox" aria-label="选择 167999">
+                  <input type="checkbox" />
+                  <span class="check-box"><i data-lucide="check" class="htsm-icon" aria-hidden="true"></i></span>
+                </label>
+                <span class="row-code htsm-mono">167999</span>
+                <span class="row-product">石墨电极 G050-121</span>
+                <span class="row-date">2024-08-09</span>
+                <span class="row-desc">待核对</span>
+                <span class="row-time">16:40</span>
+                <div class="row-actions">
+                  <button type="button" class="icon-btn" aria-label="编辑 167999"><i data-lucide="pencil" class="htsm-icon"></i></button>
+                  <button type="button" class="icon-btn icon-btn-danger" aria-label="删除 167999"><i data-lucide="trash-2" class="htsm-icon"></i></button>
+                </div>
+              </li>
+            </ul>
+
+            <!-- 分页 -->
+            <div class="pagination-bar">
+              <span class="page-info">共 <span class="htsm-mono">42</span> 条 · 每页 <span class="htsm-mono">10</span> 条</span>
+
+              <nav class="pagination" aria-label="分页">
+                <button type="button" class="page-btn" aria-label="上一页" data-page="prev">«</button>
+                <button type="button" class="page-btn page-btn-active" aria-label="第 1 页" data-page="1">1</button>
+                <button type="button" class="page-btn" aria-label="第 2 页" data-page="2">2</button>
+                <button type="button" class="page-btn" aria-label="第 3 页" data-page="3">3</button>
+                <span class="page-ellipsis" aria-hidden="true">…</span>
+                <button type="button" class="page-btn" aria-label="第 9 页" data-page="9">9</button>
+                <button type="button" class="page-btn" aria-label="下一页" data-page="next">»</button>
+              </nav>
+            </div>
+          </section>
+        </div>
+
+        <!-- ============ 右列 · 侧栏 ============ -->
+        <aside class="search-side">
+
+          <!-- 已保存搜索 -->
+          <section class="search-card side-card" aria-label="已保存搜索">
+            <h3 class="side-title">已保存搜索</h3>
+            <ul class="saved-list">
+              <li class="saved-item">
+                <div class="saved-info">
+                  <span class="saved-name">石墨电极录入核对</span>
+                  <span class="saved-summary">G050-120 · 范围 168000-168050</span>
+                </div>
+                <div class="saved-actions">
+                  <button type="button" class="side-icon-btn side-icon-play" aria-label="应用搜索"><i data-lucide="play" class="htsm-icon"></i></button>
+                  <button type="button" class="side-icon-btn side-icon-x" aria-label="删除搜索"><i data-lucide="x" class="htsm-icon"></i></button>
+                </div>
+              </li>
+
+              <li class="saved-item">
+                <div class="saved-info">
+                  <span class="saved-name">本月新增编码</span>
+                  <span class="saved-summary">时间 本月 · 全部产品</span>
+                </div>
+                <div class="saved-actions">
+                  <button type="button" class="side-icon-btn side-icon-play" aria-label="应用搜索"><i data-lucide="play" class="htsm-icon"></i></button>
+                  <button type="button" class="side-icon-btn side-icon-x" aria-label="删除搜索"><i data-lucide="x" class="htsm-icon"></i></button>
+                </div>
+              </li>
+
+              <li class="saved-item">
+                <div class="saved-info">
+                  <span class="saved-name">回收站核对</span>
+                  <span class="saved-summary">包含已删除 · 全部产品</span>
+                </div>
+                <div class="saved-actions">
+                  <button type="button" class="side-icon-btn side-icon-play" aria-label="应用搜索"><i data-lucide="play" class="htsm-icon"></i></button>
+                  <button type="button" class="side-icon-btn side-icon-x" aria-label="删除搜索"><i data-lucide="x" class="htsm-icon"></i></button>
+                </div>
+              </li>
+            </ul>
+          </section>
+
+          <!-- 搜索历史 -->
+          <section class="search-card side-card" aria-label="搜索历史">
+            <div class="side-title-row">
+              <h3 class="side-title">搜索历史</h3>
+              <button type="button" class="side-clear" data-toast="搜索历史已清空">清空</button>
+            </div>
+            <ul class="history-list">
+              <li class="history-item" role="button" tabindex="0">
+                <span class="history-text">编码 <span class="history-mono htsm-mono">168023</span></span>
+                <span class="history-time">10 分钟前</span>
+              </li>
+              <li class="history-item" role="button" tabindex="0">
+                <span class="history-text">产品 石墨电极</span>
+                <span class="history-time">1 小时前</span>
+              </li>
+              <li class="history-item" role="button" tabindex="0">
+                <span class="history-text">范围 <span class="history-mono htsm-mono">168000-169000</span></span>
+                <span class="history-time">昨天</span>
+              </li>
+              <li class="history-item" role="button" tabindex="0">
+                <span class="history-text">关键字 批次 B0812</span>
+                <span class="history-time">昨天</span>
+              </li>
+            </ul>
+          </section>
+        </aside>
+      </div>
+    </div>
+    </main>
+  </div>
+</div>
+<style id="page-search">
+  /* ============================================================
+     高级搜索 · 3:1 布局（条件表单 + 结果列表 / 已保存 + 历史）
+     ============================================================ */
+
+  /* ---------- 页面容器 ---------- */
+  .search-page {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .search-layout {
+    display: grid;
+    grid-template-columns: 3fr 1fr;
+    gap: 16px;
+    align-items: start;
+    min-width: 0;
+  }
+
+  .search-main,
+  .search-side {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: 0;
+  }
+
+  @media (max-width: 1024px) {
+    .search-layout { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- 通用卡片 ---------- */
+  .search-card {
+    background: var(--htsm-surface);
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-lg);
+    box-shadow: var(--htsm-shadow-1);
+    min-width: 0;
+  }
+
+  .search-card-head { padding: 18px 20px 0; }
+
+  .search-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: -0.005em;
+    color: var(--htsm-ink);
+    margin: 0;
+  }
+
+  .search-card-desc {
+    margin: 4px 0 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--htsm-ink-2);
+  }
+
+  /* ---------- 搜索表单 ---------- */
+  .search-form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    padding: 16px 20px 0;
+  }
+
+  @media (max-width: 768px) {
+    .search-form { grid-template-columns: 1fr; }
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+
+  .form-label {
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--htsm-ink-2);
+  }
+
+  .form-input {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface);
+    color: var(--htsm-ink);
+    font-family: inherit;
+    font-size: 13.5px;
+    min-width: 0;
+    transition: border-color .15s, box-shadow .15s;
+  }
+
+  .form-input::placeholder { color: var(--htsm-ink-3); }
+
+  .form-input:hover { border-color: var(--htsm-line-strong); }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--htsm-primary);
+    box-shadow: 0 0 0 3px var(--htsm-primary-soft);
+  }
+
+  .form-input-mono {
+    font-family: var(--htsm-font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .form-input[type="number"]::-webkit-outer-spin-button,
+  .form-input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  .form-input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  /* ---------- 下拉 ---------- */
+  .select-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .form-select {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    height: 38px;
+    padding: 0 34px 0 12px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface);
+    color: var(--htsm-ink-2);
+    font-family: inherit;
+    font-size: 13.5px;
+    min-width: 0;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+
+  .form-select:hover { border-color: var(--htsm-line-strong); }
+
+  .form-select:focus {
+    outline: none;
+    border-color: var(--htsm-primary);
+    box-shadow: 0 0 0 3px var(--htsm-primary-soft);
+  }
+
+  .select-chevron {
+    position: absolute;
+    right: 10px;
+    width: 14px;
+    height: 14px;
+    color: var(--htsm-ink-3);
+    pointer-events: none;
+  }
+
+  .select-wrap-sm .form-select { height: 32px; padding: 0 30px 0 10px; font-size: 12.5px; }
+  .select-wrap-sm .select-chevron { right: 8px; }
+
+  /* ---------- 范围输入 ---------- */
+  .range-inputs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .range-inputs .form-input { flex: 1; min-width: 0; }
+
+  .range-dash {
+    flex-shrink: 0;
+    font-size: 13px;
+    line-height: 1;
+    color: var(--htsm-ink-3);
+  }
+
+  /* ---------- 选项行：包含已删除 + 重置 ---------- */
+  .form-options {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    min-width: 0;
+    padding-top: 2px;
+  }
+
+  .check-item {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  .check-item input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+  }
+
+  .check-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    border: 1.5px solid var(--htsm-line-strong);
+    border-radius: var(--htsm-r-sm);
+    background: var(--htsm-surface);
+    flex-shrink: 0;
+    transition: background-color .12s, border-color .12s;
+  }
+
+  .check-box .htsm-icon {
+    width: 12px;
+    height: 12px;
+    color: var(--htsm-primary-ink);
+    opacity: 0;
+    transition: opacity .12s;
+  }
+
+  .check-item:hover .check-box { border-color: var(--htsm-primary); }
+
+  .check-item input:checked + .check-box {
+    background: var(--htsm-primary);
+    border-color: var(--htsm-primary);
+  }
+
+  .check-item input:checked + .check-box .htsm-icon { opacity: 1; }
+
+  .check-text {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--htsm-ink-2);
+    white-space: nowrap;
+  }
+
+  .btn-reset {
+    padding: 6px 10px;
+    border: none;
+    border-radius: var(--htsm-r-md);
+    background: transparent;
+    color: var(--htsm-ink-2);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color .15s, color .15s;
+  }
+
+  .btn-reset:hover { background: var(--htsm-surface-3); color: var(--htsm-ink); }
+
+  /* ---------- 操作行 ---------- */
+  .form-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 18px;
+  }
+
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--htsm-line-strong);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface);
+    color: var(--htsm-ink-2);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color .15s, border-color .15s, color .15s;
+  }
+
+  .btn-outline:hover {
+    border-color: var(--htsm-primary);
+    background: var(--htsm-primary-soft);
+    color: var(--htsm-primary);
+  }
+
+  /* ---------- 结果统计行 ---------- */
+  .result-stats {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 14px 20px;
+    border-top: 1px solid var(--htsm-line);
+  }
+
+  .result-count {
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--htsm-ink-2);
+  }
+
+  .result-num {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--htsm-ink);
+  }
+
+  .per-page {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .per-page-label {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--htsm-ink-3);
+    white-space: nowrap;
+  }
+
+  /* ---------- 批量操作条 ---------- */
+  .batch-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 16px 20px 0;
+    padding: 10px 14px;
+    background: var(--htsm-primary-soft);
+    border-radius: var(--htsm-r-md);
+  }
+
+  .batch-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .batch-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--htsm-ink);
+    white-space: nowrap;
+  }
+
+  .batch-cancel {
+    padding: 4px 8px;
+    border: none;
+    border-radius: var(--htsm-r-sm);
+    background: transparent;
+    color: var(--htsm-primary);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color .15s;
+  }
+
+  .batch-cancel:hover { background: var(--htsm-surface); }
+
+  .batch-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .batch-delete,
+  .batch-restore {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: none;
+    border-radius: var(--htsm-r-md);
+    background: transparent;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background-color .15s;
+  }
+
+  .batch-delete { color: var(--htsm-state-error); }
+  .batch-delete:hover { background: var(--htsm-state-error-soft); }
+
+  .batch-restore { color: var(--htsm-primary); }
+  .batch-restore:hover { background: var(--htsm-surface); }
+
+  /* ---------- 结果列表 ---------- */
+  .result-list {
+    list-style: none;
+    margin: 8px 20px 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .result-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: var(--htsm-r-md);
+    min-width: 0;
+    transition: background-color .12s;
+  }
+
+  .result-row:hover { background: var(--htsm-surface-2); }
+
+  .row-checkbox {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  .row-checkbox input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+  }
+
+  .row-checkbox:hover .check-box { border-color: var(--htsm-primary); }
+
+  .row-checkbox input:checked + .check-box {
+    background: var(--htsm-primary);
+    border-color: var(--htsm-primary);
+  }
+
+  .row-checkbox input:checked + .check-box .htsm-icon { opacity: 1; }
+
+  .row-code {
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--htsm-primary);
+    min-width: 72px;
+    white-space: nowrap;
+  }
+
+  .row-product {
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--htsm-ink);
+    white-space: nowrap;
+  }
+
+  .row-date {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 9px;
+    border-radius: var(--htsm-r-pill);
+    background: var(--htsm-surface-3);
+    color: var(--htsm-ink-2);
+    font-family: var(--htsm-font-mono);
+    font-size: 11.5px;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .row-desc {
+    flex: 1;
+    min-width: 0;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--htsm-ink-2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .row-time {
+    font-family: var(--htsm-font-mono);
+    font-size: 12px;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+    color: var(--htsm-ink-3);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .row-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: var(--htsm-r-md);
+    background: transparent;
+    color: var(--htsm-ink-2);
+    cursor: pointer;
+    transition: background-color .12s, color .12s;
+  }
+
+  .icon-btn:hover { background: var(--htsm-surface-3); color: var(--htsm-ink); }
+
+  .icon-btn-danger { color: var(--htsm-state-error); }
+  .icon-btn-danger:hover { background: var(--htsm-state-error-soft); color: var(--htsm-state-error); }
+
+  /* ---------- 分页 ---------- */
+  .pagination-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    padding: 12px 20px 14px;
+    border-top: 1px solid var(--htsm-line);
+  }
+
+  .page-info {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--htsm-ink-3);
+    white-space: nowrap;
+  }
+
+  .pagination {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .page-btn {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface);
+    color: var(--htsm-ink-2);
+    font-family: var(--htsm-font-mono);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background-color .12s, color .12s, border-color .12s;
+  }
+
+  .page-btn:hover {
+    background: var(--htsm-surface-3);
+    border-color: var(--htsm-line-strong);
+    color: var(--htsm-ink);
+  }
+
+  .page-btn-active,
+  .page-btn-active:hover {
+    background: var(--htsm-primary);
+    border-color: var(--htsm-primary);
+    color: var(--htsm-primary-ink);
+  }
+
+  .page-ellipsis {
+    padding: 0 2px;
+    font-size: 13px;
+    color: var(--htsm-ink-3);
+  }
+
+  /* ---------- 侧栏卡片 ---------- */
+  .side-card { padding: 16px 18px; }
+
+  .side-title {
+    margin: 0 0 12px;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--htsm-ink);
+  }
+
+  .saved-list,
+  .history-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .saved-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: var(--htsm-r-md);
+    min-width: 0;
+    transition: background-color .12s;
+  }
+
+  .saved-item:hover { background: var(--htsm-surface-2); }
+
+  .saved-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .saved-name {
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--htsm-ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .saved-summary {
+    font-size: 11.5px;
+    line-height: 1.5;
+    color: var(--htsm-ink-3);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .saved-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+  }
+
+  .side-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    border: none;
+    border-radius: var(--htsm-r-md);
+    background: transparent;
+    color: var(--htsm-ink-3);
+    cursor: pointer;
+    transition: background-color .12s, color .12s;
+  }
+
+  .side-icon-play:hover { background: var(--htsm-primary-soft); color: var(--htsm-primary); }
+  .side-icon-x:hover { background: var(--htsm-state-error-soft); color: var(--htsm-state-error); }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--htsm-r-md);
+    min-width: 0;
+    cursor: pointer;
+    transition: background-color .12s;
+  }
+
+  .history-item:hover { background: var(--htsm-surface-2); }
+
+  .history-text {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--htsm-ink-2);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .history-mono {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--htsm-ink);
+  }
+
+  .history-time {
+    flex-shrink: 0;
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--htsm-ink-3);
+    white-space: nowrap;
+  }
+
+  /* ---------- 窄屏：结果行换行 ---------- */
+  @media (max-width: 768px) {
+    .result-row { flex-wrap: wrap; row-gap: 8px; }
+    .row-desc { flex-basis: 100%; order: 10; }
+  }
+
+  /* ---------- 侧栏标题行与清空 ---------- */
+  .side-title-row { display: flex; align-items: center; justify-content: space-between; }
+  .side-clear {
+    border: none; background: none; padding: 2px 4px;
+    font-size: 11.5px; color: var(--htsm-ink-3); cursor: pointer;
+  }
+  .side-clear:hover { color: var(--htsm-state-error); }
+  .check-item-compact { gap: 6px; }
+
+  /* ---------- 弹窗与 toast（保存条件） ---------- */
+  .pp-modal-mask {
+    position: fixed; inset: 0; z-index: 1000;
+    display: none; align-items: center; justify-content: center;
+    padding: 24px; background: rgba(18, 32, 58, .45);
+  }
+  .pp-modal-mask.pp-show { display: flex; }
+  .pp-modal {
+    width: 100%; max-height: 86vh; overflow-y: auto;
+    background: var(--htsm-surface); border-radius: var(--htsm-r-lg);
+    box-shadow: 0 24px 64px rgba(18, 32, 58, .24);
+  }
+  .pp-modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; border-bottom: 1px solid var(--htsm-line);
+  }
+  .pp-modal-title {
+    display: flex; align-items: center; gap: 8px;
+    margin: 0; font-size: 15px; font-weight: 600; color: var(--htsm-ink);
+  }
+  .pp-modal-icon { width: 18px; height: 18px; color: var(--htsm-primary); }
+  .pp-modal-close {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border: none; border-radius: var(--htsm-r-sm);
+    background: transparent; color: var(--htsm-ink-3); cursor: pointer;
+  }
+  .pp-modal-close:hover { background: var(--htsm-surface-3); color: var(--htsm-ink); }
+  .pp-modal-body { padding: 18px 20px; }
+  .pp-modal-desc { margin: 0 0 14px; font-size: 13px; color: var(--htsm-ink-2); }
+  .pp-modal-foot {
+    display: flex; justify-content: flex-end; gap: 10px;
+    padding: 14px 20px; border-top: 1px solid var(--htsm-line);
+  }
+  .pp-field { display: block; }
+  .pp-label {
+    display: block; margin-bottom: 6px;
+    font-size: 12px; font-weight: 600; color: var(--htsm-ink-2);
+  }
+  .pp-input {
+    width: 100%; height: 38px; padding: 0 12px;
+    border: 1px solid var(--htsm-line); border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface); color: var(--htsm-ink); font-size: 13px;
+  }
+  .pp-input:focus { outline: none; border-color: var(--htsm-primary); box-shadow: 0 0 0 3px var(--htsm-primary-soft); }
+
+  .pp-toast {
+    position: fixed; right: 24px; bottom: 24px; z-index: 2000;
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 18px; border-radius: var(--htsm-r-lg);
+    background: var(--htsm-surface); box-shadow: var(--htsm-shadow-1);
+    font-size: 13px; color: var(--htsm-ink);
+    opacity: 0; transform: translateY(12px); transition: all .25s;
+  }
+  .pp-toast .htsm-icon { width: 18px; height: 18px; color: var(--htsm-state-success); }
+  .pp-toast.pp-toast-show { opacity: 1; transform: translateY(0); }
+</style>
+<script>lucide.createIcons();</script>
+
+<!-- 保存条件弹窗 -->
+<div class="pp-modal-mask" id="modal-save-condition" role="dialog" aria-modal="true" aria-label="保存搜索条件">
+  <div class="pp-modal" style="max-width: 460px;">
+    <div class="pp-modal-head">
+      <h3 class="pp-modal-title"><i data-lucide="bookmark" class="htsm-icon pp-modal-icon" aria-hidden="true"></i>保存搜索条件</h3>
+      <button type="button" class="pp-modal-close" data-close-modal aria-label="关闭"><i data-lucide="x" class="htsm-icon" aria-hidden="true"></i></button>
+    </div>
+    <div class="pp-modal-body">
+      <p class="pp-modal-desc">为当前搜索条件命名，保存后可在「已保存搜索」中快速调用。</p>
+      <label class="pp-field">
+        <span class="pp-label">条件名称</span>
+        <input type="text" class="pp-input" placeholder="如 石墨电极录入核对" value="石墨电极录入核对" />
+      </label>
+    </div>
+    <div class="pp-modal-foot">
+      <button type="button" class="btn-outline" data-close-modal>取消</button>
+      <button type="button" class="btn-primary" data-close-modal data-toast="条件已保存">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- toast 提示 -->
+<div class="pp-toast" id="pp-toast" role="status" aria-live="polite" hidden>
+  <i data-lucide="check-circle" class="htsm-icon" aria-hidden="true"></i>
+  <span id="pp-toast-text">操作成功</span>
+</div>
+
+<script id="page-interactions">
+  (function () {
+    // 弹窗开关
+    document.querySelectorAll('[data-open-modal]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var mask = document.getElementById(btn.getAttribute('data-open-modal'));
+        if (mask) mask.classList.add('pp-show');
+      });
+    });
+    document.querySelectorAll('[data-close-modal]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var mask = btn.closest('.pp-modal-mask');
+        if (mask) mask.classList.remove('pp-show');
+      });
+    });
+    document.querySelectorAll('.pp-modal-mask').forEach(function (mask) {
+      mask.addEventListener('click', function (e) { if (e.target === mask) mask.classList.remove('pp-show'); });
+    });
+
+    // toast
+    var toast = document.getElementById('pp-toast');
+    var toastText = document.getElementById('pp-toast-text');
+    var toastTimer = null;
+    function showToast(msg) {
+      if (!toast || !toastText) return;
+      toastText.textContent = msg;
+      toast.hidden = false;
+      toast.classList.add('pp-toast-show');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () {
+        toast.classList.remove('pp-toast-show');
+        setTimeout(function () { toast.hidden = true; }, 250);
+      }, 2500);
+    }
+    document.querySelectorAll('[data-toast]').forEach(function (el) {
+      el.addEventListener('click', function () { showToast(el.getAttribute('data-toast')); });
+    });
+
+    if (window.lucide) { lucide.createIcons(); }
+  })();
+</script>
+</body>
+</html>

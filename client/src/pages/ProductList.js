@@ -661,7 +661,7 @@ const ProductList = () => {
           </Select>
 
           <Space>
-            <span style={{ color: '#666', fontSize: 14 }}>排序:</span>
+            <span style={{ color: 'var(--htsm-ink-2)', fontSize: 14 }}>排序:</span>
             <Button
               size="small"
               icon={sortField === 'createdAt' ? (sortOrder === 'asc' ? <SortAscendingOutlined /> : <SortDescendingOutlined />) : null}
@@ -816,10 +816,10 @@ const ProductList = () => {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, maxHeight: '400px', overflowY: 'auto', padding: '4px' }}>
           {codesModalList && codesModalList.length > 0 ? (
             codesModalList.slice((modalCurrentPage - 1) * modalPageSize, modalCurrentPage * modalPageSize).map((c) => (
-              <div key={c} style={{ padding: '6px 8px', background: '#fafafa', borderRadius: 4 }}>{c}</div>
+              <div key={c} style={{ padding: '6px 8px', background: 'var(--htsm-surface-2)', borderRadius: 'var(--htsm-r-sm)' }}>{c}</div>
             ))
           ) : (
-            <div style={{ gridColumn: 'span 4', color: '#999', textAlign: 'center', padding: '20px' }}>暂无数据</div>
+            <div style={{ gridColumn: 'span 4', color: 'var(--htsm-ink-3)', textAlign: 'center', padding: '20px' }}>暂无数据</div>
           )}
         </div>
         {codesModalList && codesModalList.length > 0 && (
@@ -847,8 +847,8 @@ const ProductList = () => {
       >
         {duplicateCheckResult && (
           <div>
-            <div style={{ marginBottom: 16, padding: '12px 16px', background: '#f6ffed', border: '1px solid #b7eb8f', borderRadius: 4 }}>
-              <span style={{ color: '#52c41a' }}>
+            <div style={{ marginBottom: 16, padding: '12px 16px', background: 'var(--htsm-state-success-soft)', border: '1px solid color-mix(in srgb, var(--htsm-state-success) 35%, transparent)', borderRadius: 'var(--htsm-r-md)' }}>
+              <span style={{ color: 'var(--htsm-state-success)' }}>
                 共检查了 <strong>{duplicateCheckResult.totalChecked}</strong> 个编码，
                 发现 <strong>{duplicateCheckResult.duplicateCount}</strong> 个重复编码
               </span>
@@ -858,15 +858,15 @@ const ProductList = () => {
               <div style={{ maxHeight: '500px', overflowY: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead>
-                    <tr style={{ background: '#fafafa' }}>
-                      <th style={{ padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid #f0f0f0', fontWeight: 600 }}>重复编码</th>
-                      <th style={{ padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid #f0f0f0', fontWeight: 600 }}>所在产品</th>
+                    <tr style={{ background: 'var(--htsm-surface-2)' }}>
+                      <th style={{ padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid var(--htsm-line)', fontWeight: 600 }}>重复编码</th>
+                      <th style={{ padding: '12px 16px', textAlign: 'left', borderBottom: '1px solid var(--htsm-line)', fontWeight: 600 }}>所在产品</th>
                     </tr>
                   </thead>
                   <tbody>
                     {duplicateCheckResult.duplicates.map((item, index) => (
-                      <tr key={item.code} style={{ borderBottom: '1px solid #f0f0f0' }}>
-                        <td style={{ padding: '12px 16px', fontFamily: 'monospace', fontSize: 14, color: '#cf1322', fontWeight: 500 }}>
+                      <tr key={item.code} style={{ borderBottom: '1px solid var(--htsm-line)' }}>
+                        <td style={{ padding: '12px 16px', fontFamily: 'var(--htsm-font-mono)', fontSize: 14, color: 'var(--htsm-state-error)', fontWeight: 500 }}>
                           {item.code}
                         </td>
                         <td style={{ padding: '12px 16px' }}>
@@ -876,11 +876,11 @@ const ProductList = () => {
                                 key={product.id}
                                 style={{
                                   padding: '4px 8px',
-                                  background: '#fff2f0',
-                                  border: '1px solid #ffccc7',
-                                  borderRadius: 4,
+                                  background: 'var(--htsm-state-error-soft)',
+                                  border: '1px solid color-mix(in srgb, var(--htsm-state-error) 30%, transparent)',
+                                  borderRadius: 'var(--htsm-r-sm)',
                                   fontSize: 12,
-                                  color: '#cf1322'
+                                  color: 'var(--htsm-state-error)'
                                 }}
                               >
                                 {product.name}
@@ -896,8 +896,8 @@ const ProductList = () => {
             ) : (
               <div style={{ textAlign: 'center', padding: '40px 20px' }}>
                 <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
-                <div style={{ fontSize: 16, color: '#52c41a', fontWeight: 500 }}>未发现重复编码</div>
-                <div style={{ fontSize: 14, color: '#999', marginTop: 8 }}>选中的产品之间没有重复的编码</div>
+                <div style={{ fontSize: 16, color: 'var(--htsm-state-success)', fontWeight: 500 }}>未发现重复编码</div>
+                <div style={{ fontSize: 14, color: 'var(--htsm-ink-3)', marginTop: 8 }}>选中的产品之间没有重复的编码</div>
               </div>
             )}
           </div>

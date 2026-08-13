@@ -1,216 +1,177 @@
-.App {
-  text-align: center;
+/* ==========================================================================
+   产品编码管理系统 · 品牌布局与组件覆盖
+   对齐 .design 原型：深色侧边栏 + 浅灰内容区 + 科技蓝主色
+   ========================================================================== */
+
+/* ===== 整体布局 ===== */
+.brand-layout {
+  background: var(--htsm-bg);
+}
+
+.brand-body {
+  background: var(--htsm-bg);
+  min-width: 0;
+}
+
+/* ===== 侧边栏 ===== */
+.brand-sider {
+  position: relative !important;
+  background: var(--htsm-sidebar-bg) !important;
+  box-shadow: 1px 0 0 rgba(255, 255, 255, 0.04);
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 64px;
+  padding: 0 16px;
+  overflow: hidden;
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.brand-logo-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.brand-logo-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--htsm-sidebar-text-active);
+  letter-spacing: 0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 侧边栏菜单内边距 */
+.brand-sider .ant-menu {
+  padding: 8px;
+}
+
+.brand-sider .ant-menu-item {
+  margin-block: 2px !important;
+  width: calc(100% - 16px);
+}
+
+/* 侧边栏底部折叠按钮 */
+.brand-sider-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12px 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.brand-sider-collapse {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 36px;
+  border: none;
+  border-radius: var(--htsm-r-md);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--htsm-sidebar-text);
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.brand-sider-collapse:hover {
+  background: var(--htsm-sidebar-bg-hover);
+  color: var(--htsm-sidebar-text-active);
+}
+
+.brand-sider .ant-menu-inline-collapsed {
+  width: 100%;
+}
+
+.brand-sider.ant-layout-sider-collapsed .brand-logo {
+  padding: 0;
+  justify-content: center;
+}
+
+/* ===== 内容区 ===== */
+.brand-content {
+  min-width: 0;
+}
+
+.brand-content-inner {
+  min-height: calc(100vh - 96px);
+  padding: 20px 24px 8px;
+  background: var(--htsm-bg);
 }
 
 .site-layout-content {
   min-height: 280px;
   padding: 24px;
-  background: #fff;
-  border-radius: 2px;
+  background: var(--htsm-surface);
+  border-radius: var(--htsm-r-lg);
+  box-shadow: var(--htsm-shadow-1);
 }
 
+/* ===== 页脚 ===== */
+.brand-layout .ant-layout-footer {
+  padding: 12px 24px;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--htsm-ink-3);
+  background: var(--htsm-bg);
+}
+
+/* ===== 统计卡 ===== */
 .ant-statistic-title {
-  font-size: 16px;
+  font-size: 13px;
 }
 
-.dashboard-card {
-  border-radius: 8px;
+/* ===== 通用卡片 ===== */
+.dashboard-card,
+.product-card {
+  border-radius: var(--htsm-r-lg);
   overflow: hidden;
-  box-shadow: 0 1px 2px -2px rgba(0, 0, 0, 0.16),
-              0 3px 6px 0 rgba(0, 0, 0, 0.12),
-              0 5px 12px 4px rgba(0, 0, 0, 0.09);
+  box-shadow: var(--htsm-shadow-1);
   margin-bottom: 24px;
   transition: all 0.3s ease;
 }
 
-.dashboard-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+.dashboard-card:hover,
+.product-card:hover {
+  box-shadow: var(--htsm-shadow-2);
   transform: translateY(-2px);
 }
 
-/* 仪表盘容器样式 */
-.dashboard-container {
-  width: 100%;
-}
-
-.dashboard-container .ant-typography {
-  margin-bottom: 0;
-}
-
-/* 产品列表容器样式 */
-.product-list-container {
-  width: 100%;
-}
-
-/* 响应式优化 */
-@media (max-width: 768px) {
-  .dashboard-card {
-    margin-bottom: 16px;
-  }
-  
-  .dashboard-container .ant-row {
-    margin-left: -8px !important;
-    margin-right: -8px !important;
-  }
-  
-  .dashboard-container .ant-col {
-    padding-left: 8px !important;
-    padding-right: 8px !important;
-  }
-
-  .product-list-container .ant-card {
-    margin-bottom: 16px;
-  }
-
-  .product-list-container .ant-space {
-    width: 100%;
-    flex-wrap: wrap;
-  }
-
-  .product-list-container .ant-input-search {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
+.dashboard-card .ant-card-head,
+.product-card .ant-card-head {
+  border-bottom: 1px solid var(--htsm-line);
 }
 
 .product-card {
   margin-bottom: 16px;
-  border-radius: 8px;
-  overflow: hidden;
+  border-radius: var(--htsm-r-lg);
   height: 100%;
-  transition: all 0.3s ease;
-}
-
-.product-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .product-card .ant-card-meta-title {
   white-space: normal;
 }
 
-/* 商品选择下拉选项：超长文本省略号截断 */
-.goods-option-label {
-  display: inline-block;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: bottom;
+.product-card .ant-card-actions {
+  background: var(--htsm-surface-2);
+  border-top: 1px solid var(--htsm-line);
 }
 
-/* 超长文本下拉面板：限制宽度并截断选项 */
-.long-text-select-popup {
-  max-width: 480px;
+.product-card .ant-card-actions li {
+  margin: 12px 0;
 }
 
-.long-text-select-popup .ant-select-item-option-content {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* ===== 添加/编辑产品弹窗 - 苹果风格 ===== */
-.apple-modal .ant-modal-content {
-  border-radius: 16px;
-  padding: 28px 32px 24px;
-  box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.12), 0 8px 16px -8px rgba(0, 0, 0, 0.06);
-}
-
-.apple-modal .ant-modal-header {
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #f2f2f7;
-}
-
-.apple-modal .ant-modal-title {
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  color: #1d1d1f;
-}
-
-.apple-modal .ant-modal-close {
-  top: 20px;
-  inset-inline-end: 24px;
-}
-
-.apple-modal .ant-modal-close:hover {
-  background: #f2f2f7;
-}
-
-/* 表单 label 强化 */
-.apple-product-form .ant-form-item-label > label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #1d1d1f;
-}
-
-/* 产品名称选择区：Select 与按钮高度统一、间距舒适 */
-.apple-product-form .ant-form-item-control-input-content > div[style*="flex"] {
-  align-items: center;
-}
-
-/* 编码范围分组卡片 */
-.code-range-section {
-  background: #f5f5f7;
-  border: 1px solid #e8e8ed;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 4px;
-}
-
-.code-range-section-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #1d1d1f;
-  margin-bottom: 14px;
-}
-
-.code-range-section-title .anticon {
-  color: #007aff;
-  font-size: 15px;
-}
-
-.code-range-section-sub {
-  font-size: 12px;
-  font-weight: 400;
-  color: #8e8e93;
-  margin-left: auto;
-}
-
-.code-range-section .ant-input-group-addon {
-  background: #f2f2f7;
-  color: #6e6e73;
-  font-size: 13px;
-}
-
-.code-range-section .ant-btn-dashed {
-  border-color: #d1d1d6;
-  color: #48484a;
-  background: #fff;
-  border-radius: 10px;
-}
-
-.code-range-section .ant-btn-dashed:hover {
-  color: #007aff;
-  border-color: #007aff;
-}
-
-/* 表单操作区：右对齐、间距舒适 */
-.apple-form-actions {
-  margin-top: 24px;
-  margin-bottom: 0 !important;
-  text-align: right;
-}
-
-.apple-form-actions .ant-btn {
-  min-width: 88px;
-  border-radius: 999px;
+.product-card .ant-card-actions li:not(:last-child) {
+  border-right: 1px solid var(--htsm-line);
 }
 
 /* 产品卡片名称：最多两行，超出省略 */
@@ -223,29 +184,152 @@
   word-break: break-all;
 }
 
-.product-card .ant-card-actions {
-  background: #fafafa;
-  border-top: 1px solid #f0f0f0;
+/* ===== 仪表盘容器 ===== */
+.dashboard-container {
+  width: 100%;
 }
 
-.product-card .ant-card-actions li {
-  margin: 12px 0;
+.dashboard-container .ant-typography {
+  margin-bottom: 0;
 }
 
-.product-card .ant-card-actions li:not(:last-child) {
-  border-right: 1px solid #f0f0f0;
+/* ===== 产品列表容器 ===== */
+.product-list-container {
+  width: 100%;
 }
 
+/* ===== 商品选择下拉选项 ===== */
+.goods-option-label {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
+.long-text-select-popup {
+  max-width: 480px;
+}
+
+.long-text-select-popup .ant-select-item-option-content {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ===== 添加/编辑产品弹窗（苹果风格，对齐品牌圆角） ===== */
+.apple-modal .ant-modal-content {
+  border-radius: var(--htsm-r-lg);
+  padding: 28px 32px 24px;
+  box-shadow: var(--htsm-shadow-2);
+}
+
+.apple-modal .ant-modal-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--htsm-line);
+}
+
+.apple-modal .ant-modal-title {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--htsm-ink);
+}
+
+.apple-modal .ant-modal-close {
+  top: 20px;
+  inset-inline-end: 24px;
+}
+
+.apple-modal .ant-modal-close:hover {
+  background: var(--htsm-surface-3);
+}
+
+/* 表单 label 强化 */
+.apple-product-form .ant-form-item-label > label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--htsm-ink);
+}
+
+.apple-product-form .ant-form-item-control-input-content > div[style*="flex"] {
+  align-items: center;
+}
+
+/* 编码范围分组卡片 */
+.code-range-section {
+  background: var(--htsm-surface-2);
+  border: 1px solid var(--htsm-line);
+  border-radius: var(--htsm-r-lg);
+  padding: 16px;
+  margin-bottom: 4px;
+}
+
+.code-range-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--htsm-ink);
+  margin-bottom: 14px;
+}
+
+.code-range-section-title .anticon {
+  color: var(--htsm-primary);
+  font-size: 15px;
+}
+
+.code-range-section-sub {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--htsm-ink-3);
+  margin-left: auto;
+}
+
+.code-range-section .ant-input-group-addon {
+  background: var(--htsm-surface-3);
+  color: var(--htsm-ink-2);
+  font-size: 13px;
+}
+
+.code-range-section .ant-btn-dashed {
+  border-color: var(--htsm-line-strong);
+  color: var(--htsm-ink-2);
+  background: var(--htsm-surface);
+  border-radius: var(--htsm-r-md);
+}
+
+.code-range-section .ant-btn-dashed:hover {
+  color: var(--htsm-primary);
+  border-color: var(--htsm-primary);
+}
+
+/* 表单操作区 */
+.apple-form-actions {
+  margin-top: 24px;
+  margin-bottom: 0 !important;
+  text-align: right;
+}
+
+.apple-form-actions .ant-btn {
+  min-width: 88px;
+  border-radius: var(--htsm-r-pill);
+}
+
+/* ===== 编码列表 ===== */
 .code-list-item {
   padding: 12px;
-  border-radius: 4px;
+  border-radius: var(--htsm-r-md);
   margin-bottom: 8px;
-  background: #f9f9f9;
-  border: 1px solid #e8e8e8;
+  background: var(--htsm-surface-2);
+  border: 1px solid var(--htsm-line);
 }
 
 .code-list-item:hover {
-  background: #f0f0f0;
+  background: var(--htsm-surface-3);
 }
 
 .code-tag {
@@ -254,13 +338,14 @@
 }
 
 .missing-code {
-  color: #ff4d4f;
+  color: var(--htsm-state-error);
 }
 
 .extra-code {
-  color: #52c41a;
+  color: var(--htsm-state-success);
 }
 
+/* ===== 扫码 ===== */
 .scanner-container {
   position: relative;
   width: 100%;
@@ -280,7 +365,7 @@
 }
 
 .scanner-frame {
-  border: 2px solid #1890ff;
+  border: 2px solid var(--htsm-primary);
   width: 80%;
   height: 80%;
   box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5);
@@ -289,17 +374,17 @@
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.7);
+    box-shadow: 0 0 0 0 rgba(23, 71, 230, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(24, 144, 255, 0);
+    box-shadow: 0 0 0 10px rgba(23, 71, 230, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(24, 144, 255, 0);
+    box-shadow: 0 0 0 0 rgba(23, 71, 230, 0);
   }
 }
 
-/* 数据质量面板样式 */
+/* ===== 数据质量面板 ===== */
 .quality-panel .ant-row {
   display: flex;
   flex-wrap: wrap;
@@ -323,7 +408,7 @@
 
 .quality-panel .ant-statistic-title {
   font-size: 13px;
-  color: #666;
+  color: var(--htsm-ink-2);
   margin-bottom: 8px;
 }
 
@@ -333,20 +418,19 @@
   line-height: 1.2;
 }
 
-/* 确保质量面板中的卡片高度一致 */
 .quality-panel .ant-card-body {
   display: flex;
   flex-direction: column;
 }
 
-/* 活动流样式 */
+/* ===== 活动流 ===== */
 .activity-stream {
   height: 100%;
 }
 
 .activity-stream .ant-list-item {
   padding: 8px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid var(--htsm-line);
 }
 
 .activity-stream .ant-list-item:last-child {
@@ -364,10 +448,10 @@
 
 .activity-stream .ant-list-item-meta-description {
   font-size: 12px;
-  color: #999;
+  color: var(--htsm-ink-3);
 }
 
-/* 确保Row中的Col高度一致 */
+/* Row 内 Col 高度一致 */
 .dashboard-container .ant-row {
   display: flex;
   flex-wrap: wrap;
@@ -384,13 +468,139 @@
   flex-direction: column;
 }
 
-/* 响应式优化 */
+/* ===== 等宽数字 / 编码文本（原型对齐） ===== */
+.htsm-mono,
+.htsm-num {
+  font-family: 'SF Mono', 'JetBrains Mono', Consolas, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ===== 分类 pill（原型对齐） ===== */
+.htsm-cat-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--htsm-r-pill, 999px);
+  background: var(--htsm-surface-3, #EFF3FA);
+  color: var(--htsm-ink-2, #5A6B85);
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* ===== 录入进度文本（原型对齐） ===== */
+.htsm-entry-text {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--htsm-ink-2, #5A6B85);
+}
+
+.htsm-entry-pct {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--htsm-ink-2, #5A6B85);
+}
+
+/* ===== 状态徽标（Tag 品牌化） ===== */
+.ant-tag-success,
+.ant-tag-green {
+  background: var(--htsm-state-success-soft);
+  border-color: transparent;
+  color: var(--htsm-state-success);
+}
+
+.ant-tag-warning,
+.ant-tag-orange {
+  background: var(--htsm-state-warning-soft);
+  border-color: transparent;
+  color: var(--htsm-state-warning);
+}
+
+.ant-tag-error,
+.ant-tag-red {
+  background: var(--htsm-state-error-soft);
+  border-color: transparent;
+  color: var(--htsm-state-error);
+}
+
+.ant-tag-blue,
+.ant-tag-processing {
+  background: var(--htsm-primary-soft);
+  border-color: transparent;
+  color: var(--htsm-primary);
+}
+
+/* ===== 分页器 ===== */
+.full-width-pagination.ant-pagination {
+  display: flex !important;
+  width: 100% !important;
+  justify-content: center;
+}
+
+.full-width-pagination .ant-pagination-total-text {
+  margin-right: auto;
+}
+
+.full-width-pagination .ant-pagination-options {
+  margin-left: auto;
+}
+
+/* 页码数字对比度保障（对齐原型：深色数字 + 激活蓝底白字） */
+.ant-pagination .ant-pagination-item a {
+  color: var(--htsm-ink, #12203A);
+  font-family: 'SF Mono', 'JetBrains Mono', Consolas, Menlo, monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.ant-pagination .ant-pagination-item:hover a {
+  color: var(--htsm-primary, #1747E6);
+}
+
+.ant-pagination .ant-pagination-item-active a,
+.ant-pagination .ant-pagination-item-active:hover a {
+  color: #FFFFFF;
+}
+
+/* ===== 响应式 ===== */
 @media (max-width: 768px) {
+  .dashboard-card {
+    margin-bottom: 16px;
+  }
+
+  .dashboard-container .ant-row {
+    margin-left: -8px !important;
+    margin-right: -8px !important;
+  }
+
+  .dashboard-container .ant-col {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .product-list-container .ant-card {
+    margin-bottom: 16px;
+  }
+
+  .product-list-container .ant-space {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .product-list-container .ant-input-search {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
   .quality-panel .ant-col {
     margin-bottom: 16px;
   }
-  
+
   .activity-stream .ant-statistic {
     text-align: center;
+  }
+
+  .brand-content-inner {
+    padding: 16px 12px 4px;
   }
 }

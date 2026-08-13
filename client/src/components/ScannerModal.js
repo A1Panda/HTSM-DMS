@@ -514,7 +514,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
       footer={
         <Space style={{ width: '100%', justifyContent: 'space-between' }}>
           <Space>
-            <span style={{ fontSize: 12, color: '#666' }}>启用反色帧识别:</span>
+            <span style={{ fontSize: 12, color: 'var(--htsm-ink-2)' }}>启用反色帧识别:</span>
             <Switch 
               checked={enableInvertedApi}
               onChange={setEnableInvertedApi}
@@ -587,7 +587,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
           }}>
             {qrPreview && (
               <div>
-                <p style={{ marginBottom: 4, fontSize: 12, color: '#666' }}>原始帧</p>
+                <p style={{ marginBottom: 4, fontSize: 12, color: 'var(--htsm-ink-2)' }}>原始帧</p>
                 <img 
                   src={qrPreview} 
                   alt="原始二维码快照" 
@@ -597,7 +597,7 @@ const ScannerModal = ({ visible, onCancel, onScan, continuous = true }) => {
             )}
             {qrPreviewInverted && (
               <div>
-                <p style={{ marginBottom: 4, fontSize: 12, color: '#666' }}>反色帧</p>
+                <p style={{ marginBottom: 4, fontSize: 12, color: 'var(--htsm-ink-2)' }}>反色帧</p>
                 <img 
                   src={qrPreviewInverted} 
                   alt="反色二维码快照" 

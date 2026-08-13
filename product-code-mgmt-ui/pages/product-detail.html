@@ -1,0 +1,2719 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产品详情 · 产品编码管理系统</title>
+    <style id="theme-vars">
+/* ============================================================
+   HTSM 产品编码管理系统 · 企业级重构品牌体系
+   前缀: htsm | 主色: 科技蓝 #1747E6 | 侧边栏: 深海军蓝 #0B1526
+   ============================================================ */
+
+/* ---------- Light Theme ---------- */
+:root {
+  /* 品牌主色（单一主色 + 浅深衍生） */
+  --htsm-primary: #1747E6;
+  --htsm-primary-hover: #0E3BC4;
+  --htsm-primary-active: #0A2E9E;
+  --htsm-primary-soft: #E8EEFD;
+  --htsm-primary-soft-2: #D6E1FA;
+  --htsm-primary-ink: #FFFFFF;
+
+  /* 中性表面 */
+  --htsm-bg: #F3F6FB;
+  --htsm-surface: #FFFFFF;
+  --htsm-surface-2: #F7F9FD;
+  --htsm-surface-3: #EFF3FA;
+
+  /* 文字 */
+  --htsm-ink: #12203A;
+  --htsm-ink-2: #5A6B85;
+  --htsm-ink-3: #8A98AE;
+
+  /* 边框 / 分隔 */
+  --htsm-line: #E1E8F2;
+  --htsm-line-strong: #C9D4E4;
+
+  /* 深色侧边栏（导航专用） */
+  --htsm-sidebar: #0B1526;
+  --htsm-sidebar-2: #0F1C33;
+  --htsm-sidebar-line: rgba(255, 255, 255, 0.07);
+  --htsm-sidebar-ink: #9FB0CC;
+  --htsm-sidebar-ink-2: #6C7E9C;
+  --htsm-sidebar-active: #1747E6;
+  --htsm-sidebar-active-ink: #FFFFFF;
+  --htsm-sidebar-hover: rgba(255, 255, 255, 0.06);
+  --htsm-brand-grad-to: #4F7DF5;
+
+  /* 状态色（仅用于状态语义） */
+  --htsm-state-success: #12A05C;
+  --htsm-state-success-soft: #E4F7EE;
+  --htsm-state-warning: #C98A13;
+  --htsm-state-warning-soft: #FBF3DF;
+  --htsm-state-error: #D93A3A;
+  --htsm-state-error-soft: #FCE9E9;
+  --htsm-state-info: #1747E6;
+  --htsm-state-info-soft: #E8EEFD;
+
+  /* 圆角（企业级：2/4/8/12） */
+  --htsm-r-xs: 2px;
+  --htsm-r-sm: 4px;
+  --htsm-r-md: 8px;
+  --htsm-r-lg: 12px;
+  --htsm-r-pill: 999px;
+
+  /* 阴影（静态卡片 alpha <= 0.05，浮层才用深阴影） */
+  --htsm-shadow-1: 0 1px 2px rgba(18, 32, 58, 0.04), 0 1px 1px rgba(18, 32, 58, 0.03);
+  --htsm-shadow-overlay: 0 8px 24px -8px rgba(18, 32, 58, 0.16);
+  --htsm-shadow-modal: 0 24px 60px -20px rgba(18, 32, 58, 0.28);
+
+  /* 字体 */
+  --htsm-font-primary: "Inter", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, -apple-system, sans-serif;
+  --htsm-font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+/* ---------- Dark Theme ---------- */
+.dark {
+  --htsm-primary: #3D6DF2;
+  --htsm-primary-hover: #5B84F5;
+  --htsm-primary-active: #2C55D6;
+  --htsm-primary-soft: rgba(61, 109, 242, 0.16);
+  --htsm-primary-soft-2: rgba(61, 109, 242, 0.24);
+  --htsm-primary-ink: #FFFFFF;
+
+  --htsm-bg: #0B0F18;
+  --htsm-surface: #121826;
+  --htsm-surface-2: #182032;
+  --htsm-surface-3: #1E2940;
+
+  --htsm-ink: #E7ECF6;
+  --htsm-ink-2: #9BA9C2;
+  --htsm-ink-3: #66748F;
+
+  --htsm-line: #232F45;
+  --htsm-line-strong: #31405C;
+
+  --htsm-sidebar: #0B0F18;
+  --htsm-sidebar-2: #101624;
+  --htsm-sidebar-line: rgba(255, 255, 255, 0.07);
+  --htsm-sidebar-ink: #9BA9C2;
+  --htsm-sidebar-ink-2: #66748F;
+  --htsm-sidebar-active: #3D6DF2;
+  --htsm-sidebar-active-ink: #FFFFFF;
+  --htsm-sidebar-hover: rgba(255, 255, 255, 0.06);
+  --htsm-brand-grad-to: #4F7DF5;
+
+  --htsm-state-success: #2FCB7E;
+  --htsm-state-success-soft: rgba(47, 203, 126, 0.14);
+  --htsm-state-warning: #E3A83A;
+  --htsm-state-warning-soft: rgba(227, 168, 58, 0.14);
+  --htsm-state-error: #F26D6D;
+  --htsm-state-error-soft: rgba(242, 109, 109, 0.14);
+  --htsm-state-info: #5B84F5;
+  --htsm-state-info-soft: rgba(61, 109, 242, 0.16);
+
+  --htsm-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 1px rgba(0, 0, 0, 0.24);
+  --htsm-shadow-overlay: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  --htsm-shadow-modal: 0 24px 60px -20px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------- Tailwind v4 Semantic Bridge ---------- */
+@theme inline {
+  --color-background: var(--htsm-bg);
+  --color-foreground: var(--htsm-ink);
+  --color-card: var(--htsm-surface);
+  --color-card-foreground: var(--htsm-ink);
+  --color-primary: var(--htsm-primary);
+  --color-primary-foreground: var(--htsm-primary-ink);
+  --color-primary-hover: var(--htsm-primary-hover);
+  --color-primary-active: var(--htsm-primary-active);
+  --color-primary-soft: var(--htsm-primary-soft);
+  --color-border: var(--htsm-line);
+  --color-input: var(--htsm-line);
+  --color-ring: var(--htsm-primary);
+  --color-muted: var(--htsm-surface-2);
+  --color-muted-foreground: var(--htsm-ink-2);
+  --color-destructive: var(--htsm-state-error);
+  --color-destructive-foreground: #FFFFFF;
+  --color-success: var(--htsm-state-success);
+  --color-warning: var(--htsm-state-warning);
+  --color-error: var(--htsm-state-error);
+  --color-info: var(--htsm-state-info);
+  --color-sidebar: var(--htsm-sidebar);
+  --color-sidebar-2: var(--htsm-sidebar-2);
+  --color-sidebar-ink: var(--htsm-sidebar-ink);
+  --color-sidebar-active: var(--htsm-sidebar-active);
+  --color-sidebar-hover: var(--htsm-sidebar-hover);
+  --color-sidebar-active-ink: var(--htsm-sidebar-active-ink);
+  --color-surface-2: var(--htsm-surface-2);
+  --color-surface-3: var(--htsm-surface-3);
+  --color-ink: var(--htsm-ink);
+  --color-ink-2: var(--htsm-ink-2);
+  --color-ink-3: var(--htsm-ink-3);
+  --color-line: var(--htsm-line);
+  --color-line-strong: var(--htsm-line-strong);
+
+  --radius-sm: var(--htsm-r-sm);
+  --radius-md: var(--htsm-r-md);
+  --radius-lg: var(--htsm-r-lg);
+}
+
+/* ---------- Base ---------- */
+* {
+  border-color: var(--htsm-line);
+}
+
+html,
+body {
+  font-family: var(--htsm-font-primary);
+  background-color: var(--htsm-bg);
+  color: var(--htsm-ink);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+::selection {
+  background-color: var(--htsm-primary-soft-2);
+  color: var(--htsm-ink);
+}
+
+/* ---------- Typography Classes ---------- */
+.htsm-h1 {
+  font-size: clamp(22px, 2.2vw, 28px);
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--htsm-ink);
+  text-wrap: balance;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  margin: 0;
+}
+
+.htsm-h2 {
+  font-size: clamp(18px, 1.6vw, 20px);
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--htsm-ink);
+  text-wrap: balance;
+  word-break: keep-all;
+  margin: 0;
+}
+
+.htsm-h3 {
+  font-size: 16px;
+  line-height: 1.35;
+  font-weight: 600;
+  color: var(--htsm-ink);
+  margin: 0;
+}
+
+.htsm-body {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--htsm-ink);
+}
+
+.htsm-body-2 {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--htsm-ink-2);
+}
+
+.htsm-caption {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--htsm-ink-2);
+  letter-spacing: 0.005em;
+}
+
+.htsm-mono {
+  font-family: var(--htsm-font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+
+.htsm-num {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--htsm-font-mono);
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--htsm-line-strong);
+  border-radius: var(--htsm-r-pill);
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+/* ---------- Focus ---------- */
+:focus-visible {
+  outline: 2px solid var(--htsm-primary);
+  outline-offset: 2px;
+}
+
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.3.1/dist/index.global.js"></script>
+    <script src="https://unpkg.com/lucide@1.8.0/dist/umd/lucide.min.js"></script>
+    <style type="text/tailwindcss">
+  @theme inline {
+    --color-background: var(--htsm-bg);
+    --color-foreground: var(--htsm-ink);
+    --color-card: var(--htsm-surface);
+    --color-card-foreground: var(--htsm-ink);
+    --color-primary: var(--htsm-primary);
+    --color-primary-foreground: var(--htsm-primary-ink);
+    --color-primary-hover: var(--htsm-primary-hover);
+    --color-primary-active: var(--htsm-primary-active);
+    --color-primary-soft: var(--htsm-primary-soft);
+    --color-border: var(--htsm-line);
+    --color-input: var(--htsm-line);
+    --color-ring: var(--htsm-primary);
+    --color-muted: var(--htsm-surface-2);
+    --color-muted-foreground: var(--htsm-ink-2);
+    --color-destructive: var(--htsm-state-error);
+    --color-success: var(--htsm-state-success);
+    --color-warning: var(--htsm-state-warning);
+    --color-error: var(--htsm-state-error);
+    --color-info: var(--htsm-state-info);
+    --color-sidebar: var(--htsm-sidebar);
+    --color-sidebar-2: var(--htsm-sidebar-2);
+    --color-sidebar-ink: var(--htsm-sidebar-ink);
+    --color-sidebar-active: var(--htsm-sidebar-active);
+    --color-sidebar-hover: var(--htsm-sidebar-hover);
+    --color-sidebar-active-ink: var(--htsm-sidebar-active-ink);
+    --color-surface-2: var(--htsm-surface-2);
+    --color-surface-3: var(--htsm-surface-3);
+    --color-ink: var(--htsm-ink);
+    --color-ink-2: var(--htsm-ink-2);
+    --color-ink-3: var(--htsm-ink-3);
+    --color-line: var(--htsm-line);
+    --color-line-strong: var(--htsm-line-strong);
+    --radius-sm: var(--htsm-r-sm);
+    --radius-md: var(--htsm-r-md);
+    --radius-lg: var(--htsm-r-lg);
+  }
+  @layer base {
+    body { background: var(--htsm-bg); color: var(--htsm-ink); }
+    td, th { @apply break-words; word-break: break-all; word-break: auto-phrase; }
+    th { @apply whitespace-nowrap; }
+  }
+    </style>
+    <style id="semantic-token-fallback">
+      .bg-background { background-color: var(--htsm-bg); }
+      .text-background { color: var(--htsm-bg); }
+      .border-background { border-color: var(--htsm-bg); }
+      .ring-background { --tw-ring-color: var(--htsm-bg); }
+      .bg-foreground { background-color: var(--htsm-ink); }
+      .text-foreground { color: var(--htsm-ink); }
+      .border-foreground { border-color: var(--htsm-ink); }
+      .ring-foreground { --tw-ring-color: var(--htsm-ink); }
+      .bg-card { background-color: var(--htsm-surface); }
+      .text-card { color: var(--htsm-surface); }
+      .border-card { border-color: var(--htsm-surface); }
+      .ring-card { --tw-ring-color: var(--htsm-surface); }
+      .bg-card-foreground { background-color: var(--htsm-ink); }
+      .text-card-foreground { color: var(--htsm-ink); }
+      .border-card-foreground { border-color: var(--htsm-ink); }
+      .ring-card-foreground { --tw-ring-color: var(--htsm-ink); }
+      .bg-primary { background-color: var(--htsm-primary); }
+      .text-primary { color: var(--htsm-primary); }
+      .border-primary { border-color: var(--htsm-primary); }
+      .ring-primary { --tw-ring-color: var(--htsm-primary); }
+      .bg-primary-foreground { background-color: var(--htsm-primary-ink); }
+      .text-primary-foreground { color: var(--htsm-primary-ink); }
+      .border-primary-foreground { border-color: var(--htsm-primary-ink); }
+      .ring-primary-foreground { --tw-ring-color: var(--htsm-primary-ink); }
+      .bg-primary-hover { background-color: var(--htsm-primary-hover); }
+      .text-primary-hover { color: var(--htsm-primary-hover); }
+      .border-primary-hover { border-color: var(--htsm-primary-hover); }
+      .ring-primary-hover { --tw-ring-color: var(--htsm-primary-hover); }
+      .bg-primary-active { background-color: var(--htsm-primary-active); }
+      .text-primary-active { color: var(--htsm-primary-active); }
+      .border-primary-active { border-color: var(--htsm-primary-active); }
+      .ring-primary-active { --tw-ring-color: var(--htsm-primary-active); }
+      .bg-primary-soft { background-color: var(--htsm-primary-soft); }
+      .text-primary-soft { color: var(--htsm-primary-soft); }
+      .border-primary-soft { border-color: var(--htsm-primary-soft); }
+      .ring-primary-soft { --tw-ring-color: var(--htsm-primary-soft); }
+      .bg-border { background-color: var(--htsm-line); }
+      .text-border { color: var(--htsm-line); }
+      .border-border { border-color: var(--htsm-line); }
+      .ring-border { --tw-ring-color: var(--htsm-line); }
+      .bg-input { background-color: var(--htsm-line); }
+      .text-input { color: var(--htsm-line); }
+      .border-input { border-color: var(--htsm-line); }
+      .ring-input { --tw-ring-color: var(--htsm-line); }
+      .bg-ring { background-color: var(--htsm-primary); }
+      .text-ring { color: var(--htsm-primary); }
+      .border-ring { border-color: var(--htsm-primary); }
+      .ring-ring { --tw-ring-color: var(--htsm-primary); }
+      .bg-muted { background-color: var(--htsm-surface-2); }
+      .text-muted { color: var(--htsm-surface-2); }
+      .border-muted { border-color: var(--htsm-surface-2); }
+      .ring-muted { --tw-ring-color: var(--htsm-surface-2); }
+      .bg-muted-foreground { background-color: var(--htsm-ink-2); }
+      .text-muted-foreground { color: var(--htsm-ink-2); }
+      .border-muted-foreground { border-color: var(--htsm-ink-2); }
+      .ring-muted-foreground { --tw-ring-color: var(--htsm-ink-2); }
+      .bg-destructive { background-color: var(--htsm-state-error); }
+      .text-destructive { color: var(--htsm-state-error); }
+      .border-destructive { border-color: var(--htsm-state-error); }
+      .ring-destructive { --tw-ring-color: var(--htsm-state-error); }
+      .bg-success { background-color: var(--htsm-state-success); }
+      .text-success { color: var(--htsm-state-success); }
+      .border-success { border-color: var(--htsm-state-success); }
+      .ring-success { --tw-ring-color: var(--htsm-state-success); }
+      .bg-warning { background-color: var(--htsm-state-warning); }
+      .text-warning { color: var(--htsm-state-warning); }
+      .border-warning { border-color: var(--htsm-state-warning); }
+      .ring-warning { --tw-ring-color: var(--htsm-state-warning); }
+      .bg-error { background-color: var(--htsm-state-error); }
+      .text-error { color: var(--htsm-state-error); }
+      .border-error { border-color: var(--htsm-state-error); }
+      .ring-error { --tw-ring-color: var(--htsm-state-error); }
+      .bg-info { background-color: var(--htsm-state-info); }
+      .text-info { color: var(--htsm-state-info); }
+      .border-info { border-color: var(--htsm-state-info); }
+      .ring-info { --tw-ring-color: var(--htsm-state-info); }
+      .bg-sidebar { background-color: var(--htsm-sidebar); }
+      .text-sidebar { color: var(--htsm-sidebar); }
+      .border-sidebar { border-color: var(--htsm-sidebar); }
+      .ring-sidebar { --tw-ring-color: var(--htsm-sidebar); }
+      .bg-sidebar-2 { background-color: var(--htsm-sidebar-2); }
+      .text-sidebar-2 { color: var(--htsm-sidebar-2); }
+      .border-sidebar-2 { border-color: var(--htsm-sidebar-2); }
+      .ring-sidebar-2 { --tw-ring-color: var(--htsm-sidebar-2); }
+      .bg-sidebar-ink { background-color: var(--htsm-sidebar-ink); }
+      .text-sidebar-ink { color: var(--htsm-sidebar-ink); }
+      .border-sidebar-ink { border-color: var(--htsm-sidebar-ink); }
+      .ring-sidebar-ink { --tw-ring-color: var(--htsm-sidebar-ink); }
+      .bg-sidebar-active { background-color: var(--htsm-sidebar-active); }
+      .text-sidebar-active { color: var(--htsm-sidebar-active); }
+      .border-sidebar-active { border-color: var(--htsm-sidebar-active); }
+      .ring-sidebar-active { --tw-ring-color: var(--htsm-sidebar-active); }
+      .bg-sidebar-hover { background-color: var(--htsm-sidebar-hover); }
+      .text-sidebar-hover { color: var(--htsm-sidebar-hover); }
+      .border-sidebar-hover { border-color: var(--htsm-sidebar-hover); }
+      .ring-sidebar-hover { --tw-ring-color: var(--htsm-sidebar-hover); }
+      .bg-sidebar-active-ink { background-color: var(--htsm-sidebar-active-ink); }
+      .text-sidebar-active-ink { color: var(--htsm-sidebar-active-ink); }
+      .border-sidebar-active-ink { border-color: var(--htsm-sidebar-active-ink); }
+      .ring-sidebar-active-ink { --tw-ring-color: var(--htsm-sidebar-active-ink); }
+      .bg-surface-2 { background-color: var(--htsm-surface-2); }
+      .text-surface-2 { color: var(--htsm-surface-2); }
+      .border-surface-2 { border-color: var(--htsm-surface-2); }
+      .ring-surface-2 { --tw-ring-color: var(--htsm-surface-2); }
+      .bg-surface-3 { background-color: var(--htsm-surface-3); }
+      .text-surface-3 { color: var(--htsm-surface-3); }
+      .border-surface-3 { border-color: var(--htsm-surface-3); }
+      .ring-surface-3 { --tw-ring-color: var(--htsm-surface-3); }
+      .bg-ink { background-color: var(--htsm-ink); }
+      .text-ink { color: var(--htsm-ink); }
+      .border-ink { border-color: var(--htsm-ink); }
+      .ring-ink { --tw-ring-color: var(--htsm-ink); }
+      .bg-ink-2 { background-color: var(--htsm-ink-2); }
+      .text-ink-2 { color: var(--htsm-ink-2); }
+      .border-ink-2 { border-color: var(--htsm-ink-2); }
+      .ring-ink-2 { --tw-ring-color: var(--htsm-ink-2); }
+      .bg-ink-3 { background-color: var(--htsm-ink-3); }
+      .text-ink-3 { color: var(--htsm-ink-3); }
+      .border-ink-3 { border-color: var(--htsm-ink-3); }
+      .ring-ink-3 { --tw-ring-color: var(--htsm-ink-3); }
+      .bg-line { background-color: var(--htsm-line); }
+      .text-line { color: var(--htsm-line); }
+      .border-line { border-color: var(--htsm-line); }
+      .ring-line { --tw-ring-color: var(--htsm-line); }
+      .bg-line-strong { background-color: var(--htsm-line-strong); }
+      .text-line-strong { color: var(--htsm-line-strong); }
+      .border-line-strong { border-color: var(--htsm-line-strong); }
+      .ring-line-strong { --tw-ring-color: var(--htsm-line-strong); }
+    </style>
+    <style>
+      .no-scrollbar::-webkit-scrollbar { display: none; }
+      .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      [data-icon] {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        -webkit-mask-size: contain;
+        mask-size: contain;
+        -webkit-mask-repeat: no-repeat;
+        mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        mask-position: center;
+        background-color: currentColor;
+      }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================
+     HTSM 产品编码管理系统 · 共享应用框架（Project Shell）
+     使用方式：叶子页面将本片段嵌入 <body>，并替换两个 SLOT：
+       <!-- SLOT: pageTitle -->     页面标题
+       <!-- SLOT: mainContent -->   页面主体内容
+     图标：Lucide <i data-lucide="...">（leaf 页面已引入 lucide 脚本）
+     颜色体系：colors_and_type.css（CSS 变量前缀 htsm）
+     ============================================================ -->
+
+<style id="critical-layout">
+  /* ---------- 基础盒模型（无 Tailwind 编译亦可稳定渲染） ---------- */
+  .app-shell *,
+  .app-shell *::before,
+  .app-shell *::after {
+    box-sizing: border-box;
+  }
+
+  /* ---------- 应用框架骨架 ---------- */
+  .app-shell { display: flex; min-height: 100vh; background: var(--htsm-bg); }
+  .app-sidebar {
+    width: 240px;
+    flex-shrink: 0;
+    background: var(--htsm-sidebar);
+    color: var(--htsm-sidebar-ink);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+  }
+  .app-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .app-topbar {
+    height: 64px;
+    flex-shrink: 0;
+    background: var(--htsm-surface);
+    border-bottom: 1px solid var(--htsm-line);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 40;
+  }
+  .app-content { flex: 1; padding: 24px; }
+
+  /* ---------- 侧边栏 · 品牌区 ---------- */
+  .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 20px 18px 16px; }
+  .sidebar-brand-logo {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--htsm-r-md);
+    background: linear-gradient(135deg, var(--htsm-primary), var(--htsm-brand-grad-to));
+    color: var(--htsm-primary-ink);
+  }
+  .sidebar-brand-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .sidebar-brand-title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: 0.02em;
+    color: var(--htsm-sidebar-active-ink);
+    white-space: nowrap;
+  }
+  .sidebar-brand-sub {
+    font-size: 11px;
+    line-height: 1.3;
+    letter-spacing: 0.08em;
+    color: var(--htsm-sidebar-ink-2);
+    white-space: nowrap;
+  }
+
+  /* ---------- 侧边栏 · 导航分组 ---------- */
+  .sidebar-nav { flex: 1; overflow-y: auto; padding: 4px 10px 12px; }
+  .sidebar-nav-group-label {
+    font-size: 11px;
+    line-height: 1.3;
+    letter-spacing: 0.06em;
+    color: var(--htsm-sidebar-ink-2);
+    padding: 12px 14px 6px;
+  }
+  .sidebar-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: var(--htsm-r-md);
+    color: var(--htsm-sidebar-ink);
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color .15s, color .15s;
+  }
+  .sidebar-nav-item:hover { background: var(--htsm-sidebar-hover); color: var(--htsm-sidebar-active-ink); }
+  [data-active="true"] { background: var(--htsm-primary); color: var(--htsm-sidebar-active-ink); }
+
+  /* ---------- 侧边栏 · 底部用户区 ---------- */
+  .sidebar-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    border-top: 1px solid var(--htsm-sidebar-line);
+  }
+  .sidebar-user-avatar {
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--htsm-r-pill);
+    background: var(--htsm-primary);
+    color: var(--htsm-primary-ink);
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .sidebar-user-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+  .sidebar-user-name {
+    font-size: 12.5px;
+    font-weight: 500;
+    line-height: 1.3;
+    color: var(--htsm-sidebar-active-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sidebar-user-role {
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--htsm-sidebar-ink-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ---------- Lucide 图标尺寸 ---------- */
+  .htsm-icon { width: 16px; height: 16px; flex-shrink: 0; }
+  .sidebar-brand-logo .htsm-icon { width: 18px; height: 18px; }
+  .sidebar-nav-item .htsm-icon { width: 18px; height: 18px; }
+
+  /* ---------- 顶栏 ---------- */
+  .topbar-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .topbar-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 220px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface-2);
+    color: var(--htsm-ink-3);
+  }
+  .topbar-search input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--htsm-ink);
+  }
+  .topbar-search input::placeholder { color: var(--htsm-ink-3); }
+  .topbar-icon-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: var(--htsm-r-md);
+    background: transparent;
+    color: var(--htsm-ink-2);
+    cursor: pointer;
+    transition: background-color .15s, color .15s;
+  }
+  .topbar-icon-btn:hover { background: var(--htsm-surface-2); color: var(--htsm-ink); }
+  .topbar-badge {
+    position: absolute;
+    top: 6px;
+    right: 7px;
+    width: 7px;
+    height: 7px;
+    border-radius: var(--htsm-r-pill);
+    background: var(--htsm-state-error);
+    border: 1.5px solid var(--htsm-surface);
+  }
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-primary);
+    color: var(--htsm-primary-ink);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color .15s;
+  }
+  .btn-primary:hover { background: var(--htsm-primary-hover); }
+
+  /* ---------- 响应式：icon-only 折叠 ---------- */
+  @media (max-width: 768px) {
+    .app-sidebar { width: 64px; }
+    .sidebar-brand { justify-content: center; padding: 20px 10px 16px; }
+    .sidebar-brand-text,
+    .sidebar-nav-group-label,
+    .sidebar-nav-item > span,
+    .sidebar-user-info { display: none; }
+    .sidebar-nav { padding: 4px 8px 12px; }
+    .sidebar-nav-item { justify-content: center; padding: 10px; }
+    .sidebar-user { justify-content: center; padding: 12px 8px; }
+    .app-content { padding: 16px; }
+  }
+</style>
+
+<div class="app-shell">
+
+  <!-- ============ 侧边栏 ============ -->
+  <aside class="app-sidebar">
+
+    <!-- 品牌区 -->
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-logo">
+        <i data-lucide="scan-barcode" class="htsm-icon"></i>
+      </div>
+      <div class="sidebar-brand-text">
+        <span class="sidebar-brand-title">产品编码</span>
+        <span class="sidebar-brand-sub">管理系统</span>
+      </div>
+    </div>
+
+    <!-- 导航区 -->
+    <nav class="sidebar-nav" aria-label="主导航">
+      <div class="sidebar-nav-group-label">主导航</div>
+
+      <a href="#" data-nav-key="products" data-dom-id="nav-products" class="sidebar-nav-item" data-active="true">
+        <i data-lucide="package" class="htsm-icon"></i>
+        <span class="whitespace-nowrap">产品管理</span>
+      </a>
+
+      <a href="#" data-nav-key="search" data-dom-id="nav-search" class="sidebar-nav-item">
+        <i data-lucide="search" class="htsm-icon"></i>
+        <span class="whitespace-nowrap">高级搜索</span>
+      </a>
+
+      <a href="#" data-nav-key="backup" data-dom-id="nav-backup" class="sidebar-nav-item">
+        <i data-lucide="database-backup" class="htsm-icon"></i>
+        <span class="whitespace-nowrap">数据备份</span>
+      </a>
+    </nav>
+
+    <!-- 底部用户区 -->
+    <div class="sidebar-user">
+      <div class="sidebar-user-avatar" aria-hidden="true">张</div>
+      <div class="sidebar-user-info">
+        <span class="sidebar-user-name">管理员 · 张工</span>
+        <span class="sidebar-user-role">系统管理员</span>
+      </div>
+      <i data-lucide="log-out" class="htsm-icon" style="color: var(--htsm-sidebar-ink-2); cursor: pointer;" aria-hidden="true"></i>
+    </div>
+  </aside>
+
+  <!-- ============ 主区 ============ -->
+  <div class="app-main">
+
+    <!-- 顶栏 -->
+    <header class="app-topbar">
+      <div class="topbar-title htsm-h2" id="pageTitle">产品详情</div>
+
+      <div class="topbar-actions">
+        <div class="topbar-search">
+          <i data-lucide="search" class="htsm-icon"></i>
+          <input type="search" placeholder="搜索产品 / 编码…" aria-label="全局搜索" />
+        </div>
+
+        <button type="button" class="topbar-icon-btn" aria-label="通知">
+          <i data-lucide="bell" class="htsm-icon"></i>
+          <span class="topbar-badge" aria-hidden="true"></span>
+        </button>
+
+        <button type="button" class="btn-primary">
+          <i data-lucide="plus" class="htsm-icon"></i>
+          新建产品
+        </button>
+      </div>
+    </header>
+
+    <!-- 内容区（叶子页面填充） -->
+    <main class="app-content" id="main-content">
+      <div class="pd-page">
+
+        <!-- 面包屑 -->
+        <nav class="pd-breadcrumb" aria-label="面包屑">
+          <span>产品管理</span>
+          <span class="pd-sep" aria-hidden="true">&gt;</span>
+          <span>石墨电极</span>
+          <span class="pd-sep" aria-hidden="true">&gt;</span>
+          <span class="pd-current">G050-120</span>
+        </nav>
+
+        <!-- 顶部产品信息卡（全宽） -->
+        <section class="pd-card pd-info-card">
+          <div class="pd-hero">
+            <div class="pd-hero-title">
+              <h2 class="htsm-h2 pd-hero-name">石墨电极 G050-120</h2>
+              <span class="pd-pill pd-pill-cat">050 石墨电极</span>
+              <button type="button" class="pd-badge pd-badge-warn pd-badge-btn" data-open-modal="modal-missing">
+                <span class="pd-dot" aria-hidden="true"></span>缺失 9
+              </button>
+              <button type="button" class="pd-badge pd-badge-error pd-badge-btn" data-open-modal="modal-excess">
+                <span class="pd-dot" aria-hidden="true"></span>超出 3
+              </button>
+            </div>
+          </div>
+          <div class="pd-info-grid">
+            <div class="pd-meta-item">
+              <span class="pd-meta-label">产品编号</span>
+              <span class="htsm-mono pd-meta-value">G050-120</span>
+            </div>
+            <div class="pd-meta-item">
+              <span class="pd-meta-label">规格</span>
+              <span class="pd-meta-value">Φ100×1500mm</span>
+            </div>
+            <div class="pd-meta-item">
+              <span class="pd-meta-label">HT 图号</span>
+              <span class="htsm-mono pd-meta-value">HT-G050-120</span>
+            </div>
+            <div class="pd-meta-item">
+              <span class="pd-meta-label">创建时间</span>
+              <span class="pd-meta-value">2024-08-10 09:30</span>
+            </div>
+          </div>
+          <div class="pd-info-actions">
+            <button type="button" class="btn-outline">
+              <i data-lucide="pencil" class="htsm-icon" aria-hidden="true"></i>
+              编辑产品
+            </button>
+            <button type="button" class="btn-danger">
+              <i data-lucide="trash-2" class="htsm-icon" aria-hidden="true"></i>
+              删除产品
+            </button>
+          </div>
+        </section>
+
+        <!-- 核心录入区：左 1/3 号码段与需求 + 数据质量 | 右 2/3 快速录入 + 编码列表 -->
+        <div class="pd-core-grid">
+
+          <!-- 左列 -->
+          <div class="pd-col-left">
+
+          <!-- 左卡：号码段与需求 -->
+          <section class="pd-card pd-range-card">
+            <div class="pd-card-head">
+              <i data-lucide="list-ordered" class="htsm-icon pd-head-icon" aria-hidden="true"></i>
+              <h3 class="pd-card-title">号码段与需求</h3>
+            </div>
+
+            <ul class="pd-range-list">
+              <li class="pd-range-row">
+                <span class="htsm-mono pd-range-code">168000 - 168050</span>
+                <span class="pd-range-len">段长 51</span>
+              </li>
+              <li class="pd-range-row">
+                <span class="htsm-mono pd-range-code">169100 - 169120</span>
+                <span class="pd-range-len">段长 21</span>
+              </li>
+              <li class="pd-range-row">
+                <span class="htsm-mono pd-range-code">170010 - 170030</span>
+                <span class="pd-range-len">段长 21</span>
+              </li>
+            </ul>
+            <button type="button" class="pd-add-range">
+              <i data-lucide="plus" class="htsm-icon" aria-hidden="true"></i>
+              添加号码段
+            </button>
+
+            <div class="pd-need">
+              <span class="pd-need-num">93</span>
+              <span class="pd-need-label">需求数量（自动计算）</span>
+            </div>
+
+            <div class="pd-progress">
+              <div class="pd-progress-head">
+                <span>已录入 <span class="htsm-num">74</span> / <span class="htsm-num">93</span></span>
+                <span class="pd-progress-pct">79.6%</span>
+              </div>
+              <div class="pd-progress-track">
+                <div class="pd-progress-fill" style="width: 79.6%;" aria-hidden="true"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- 左列下方：数据质量 -->
+          <section class="pd-card pd-quality-card">
+            <div class="pd-card-head">
+              <i data-lucide="shield-check" class="htsm-icon pd-head-icon" aria-hidden="true"></i>
+              <h3 class="pd-card-title">数据质量</h3>
+            </div>
+            <div class="pd-quality-grid">
+              <div class="pd-quality-block pd-quality-error">
+                <span class="pd-quality-num">9</span>
+                <span class="pd-quality-label">缺失编码</span>
+              </div>
+              <div class="pd-quality-block pd-quality-warn">
+                <span class="pd-quality-num">3</span>
+                <span class="pd-quality-label">超出范围</span>
+              </div>
+              <div class="pd-quality-block pd-quality-info">
+                <span class="pd-quality-ring" aria-hidden="true"><span>82%</span></span>
+                <span class="pd-quality-label">完整度</span>
+              </div>
+            </div>
+            <p class="pd-quality-note">缺失指号码段内未录入的编码；超出指号码段外的编码</p>
+          </section>
+
+          </div>
+          <!-- /左列 -->
+
+          <!-- 右列 -->
+          <div class="pd-col-right">
+
+            <!-- 右卡：快速录入 -->
+            <section class="pd-card pd-quick-card">
+              <div class="pd-card-head pd-quick-head">
+                <i data-lucide="zap" class="htsm-icon pd-head-icon" aria-hidden="true"></i>
+                <h3 class="pd-card-title">快速录入</h3>
+                <span class="pd-card-desc">支持扫码枪/手动输入，自动提取末尾数字</span>
+                <div class="pd-quick-actions">
+                  <button type="button" class="btn-outline" data-open-modal="modal-scan-add">
+                    <i data-lucide="camera" class="htsm-icon" aria-hidden="true"></i>
+                    摄像头扫码
+                  </button>
+                  <button type="button" class="btn-outline">
+                    <i data-lucide="scan-line" class="htsm-icon" aria-hidden="true"></i>
+                    铭牌 OCR
+                    <span class="pd-kbd-badge">F2</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="pd-quick-row">
+                <input type="text" class="pd-quick-input" placeholder="输入或扫描编码（支持自动提取末尾数字）…" aria-label="快速录入编码" autocomplete="off" spellcheck="false" />
+                <button type="button" class="btn-primary pd-quick-submit">
+                  <i data-lucide="check" class="htsm-icon" aria-hidden="true"></i>
+                  录入
+                </button>
+              </div>
+
+              <div class="pd-kbd-bar">
+                <span class="pd-kbd"><kbd>Enter</kbd> 录入</span>
+                <span class="pd-kbd"><kbd>F2</kbd> 铭牌识别</span>
+                <span class="pd-kbd"><kbd>Esc</kbd> 清空</span>
+              </div>
+
+              <!-- 重复检测提示条（静态演示） -->
+              <div class="pd-dup-warn" role="alert">
+                <i data-lucide="copy" class="htsm-icon pd-warn-icon" aria-hidden="true"></i>
+                <span class="pd-warn-text">检测到编码 <span class="htsm-mono">168023</span> 末尾与已录入重复 · 请确认是否继续录入</span>
+                <button type="button" class="pd-mini-btn pd-mini-primary">确认录入</button>
+                <button type="button" class="pd-mini-btn pd-mini-ghost">取消</button>
+              </div>
+
+              <!-- 最近录入 -->
+              <div class="pd-recent">
+                <div class="pd-recent-title">最近录入</div>
+                <div class="pd-recent-item">
+                  <span class="htsm-mono pd-recent-code">168049</span>
+                  <span class="pd-recent-time">2 分钟前</span>
+                  <i data-lucide="check" class="pd-recent-ok" aria-hidden="true"></i>
+                </div>
+                <div class="pd-recent-item">
+                  <span class="htsm-mono pd-recent-code">168048</span>
+                  <span class="pd-recent-time">5 分钟前</span>
+                  <i data-lucide="check" class="pd-recent-ok" aria-hidden="true"></i>
+                </div>
+                <div class="pd-recent-item">
+                  <span class="htsm-mono pd-recent-code">168047</span>
+                  <span class="pd-recent-time">8 分钟前</span>
+                  <i data-lucide="check" class="pd-recent-ok" aria-hidden="true"></i>
+                </div>
+              </div>
+            </section>
+
+            <!-- 右卡下方：编码列表 -->
+            <section class="pd-card pd-list-card">
+              <div class="pd-card-head">
+                <i data-lucide="table" class="htsm-icon pd-head-icon" aria-hidden="true"></i>
+                <h3 class="pd-card-title">编码列表</h3>
+                <span class="pd-card-stats">共 <span class="htsm-num">74</span> 条</span>
+                <div class="pd-card-head-right">
+                  <button type="button" class="pd-text-btn" data-open-modal="modal-recycle">
+                    <i data-lucide="trash-2" class="htsm-icon" aria-hidden="true"></i>
+                    回收站
+                  </button>
+
+                  <div class="pd-dropdown-wrap" id="dropdown-export">
+                    <button type="button" class="pd-text-btn pd-dropdown-trigger" data-open-dropdown="dropdown-export">
+                      <i data-lucide="download" class="htsm-icon" aria-hidden="true"></i>
+                      导出编码
+                      <i data-lucide="chevron-down" class="htsm-icon pd-dropdown-caret" aria-hidden="true"></i>
+                    </button>
+                    <div class="pd-dropdown-menu">
+                      <div class="pd-dropdown-group">
+                        <div class="pd-dropdown-group-title">导出完整编码</div>
+                        <button type="button" class="pd-dropdown-item" data-dropdown-item data-toast="已导出">全部</button>
+                        <button type="button" class="pd-dropdown-item" data-dropdown-item data-toast="已导出">按日期分Sheet</button>
+                        <button type="button" class="pd-dropdown-item" data-dropdown-item data-open-modal="modal-export-qty">指定数量</button>
+                      </div>
+                      <div class="pd-dropdown-group">
+                        <div class="pd-dropdown-group-title">仅导出数字</div>
+                        <button type="button" class="pd-dropdown-item" data-dropdown-item data-toast="已导出">全部</button>
+                        <button type="button" class="pd-dropdown-item" data-dropdown-item data-toast="已导出">按日期分Sheet</button>
+                        <button type="button" class="pd-dropdown-item" data-dropdown-item data-open-modal="modal-export-qty-numeric">指定数量</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button type="button" class="pd-text-btn" data-toggle-batch>
+                    <i data-lucide="check-square" class="htsm-icon" aria-hidden="true"></i>
+                    批量选择
+                  </button>
+
+                  <button type="button" class="pd-btn-danger-text" data-open-modal="modal-scan-delete">
+                    <i data-lucide="scan-line" class="htsm-icon" aria-hidden="true"></i>
+                    扫码删除
+                  </button>
+
+                  <button type="button" class="pd-text-btn" data-open-modal="modal-scan-add">
+                    <i data-lucide="camera" class="htsm-icon" aria-hidden="true"></i>
+                    扫码添加
+                  </button>
+
+                  <button type="button" class="pd-btn-primary" data-open-modal="modal-add-code">
+                    <i data-lucide="plus" class="htsm-icon" aria-hidden="true"></i>
+                    添加编码
+                  </button>
+                </div>
+              </div>
+
+              <!-- 默认工具条：搜索 + 排序 -->
+              <div class="pd-toolbar" id="pd-toolbar-default">
+                <div class="pd-toolbar-search">
+                  <i data-lucide="search" class="htsm-icon pd-toolbar-search-icon" aria-hidden="true"></i>
+                  <input type="search" class="pd-toolbar-input" placeholder="搜索编码或范围，如 100-110" aria-label="搜索编码" autocomplete="off" spellcheck="false" />
+                </div>
+                <select class="pd-sort-select" aria-label="排序方式">
+                  <option value="timeDesc" selected>时间（最新在前）</option>
+                  <option value="timeAsc">时间（最早在前）</option>
+                  <option value="codeAsc">编码（从小到大）</option>
+                  <option value="codeDesc">编码（从大到小）</option>
+                </select>
+              </div>
+
+              <!-- 批量模式工具条（默认隐藏，批量选择按钮切换） -->
+              <div class="pd-toolbar pd-batch-bar" id="pd-batch-bar" hidden>
+                <label class="pd-check">
+                  <input type="checkbox" /> 全选 (2/74)
+                </label>
+                <div class="pd-batch-date">
+                  <input type="date" class="pd-date-input" aria-label="开始日期" />
+                  <span class="pd-date-sep">~</span>
+                  <input type="date" class="pd-date-input" aria-label="结束日期" />
+                </div>
+                <div class="pd-batch-actions">
+                  <button type="button" class="pd-btn-ghost" data-open-modal="modal-move">
+                    <i data-lucide="swap" class="htsm-icon" aria-hidden="true"></i>
+                    移动到
+                  </button>
+                  <button type="button" class="pd-btn-ghost" data-toast="已导出选中的 2 个编码">
+                    <i data-lucide="download" class="htsm-icon" aria-hidden="true"></i>
+                    导出选中 (2)
+                  </button>
+                  <button type="button" class="pd-btn-danger-text" data-toast="已将 2 个编码移入回收站">
+                    <i data-lucide="trash-2" class="htsm-icon" aria-hidden="true"></i>
+                    删除选中 (2)
+                  </button>
+                </div>
+              </div>
+
+              <div class="pd-table-wrap">
+                <table class="pd-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">编码</th>
+                      <th scope="col">日期</th>
+                      <th scope="col">描述</th>
+                      <th scope="col">录入时间</th>
+                      <th scope="col">操作</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="t-code">168049</td>
+                      <td><span class="pd-date-pill">2024-08-13</span></td>
+                      <td class="t-note">批次 B0813-A</td>
+                      <td class="t-time">09:24</td>
+                      <td class="t-actions">
+                        <button type="button" class="pd-row-btn" aria-label="编辑 168049" title="编辑" data-open-modal="modal-edit-code">
+                          <i data-lucide="pencil" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="pd-row-btn pd-row-danger" aria-label="删除 168049" title="删除" data-toast="编码已移入回收站">
+                          <i data-lucide="trash-2" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="t-code">168048</td>
+                      <td><span class="pd-date-pill">2024-08-13</span></td>
+                      <td class="t-note">批次 B0813-A</td>
+                      <td class="t-time">09:21</td>
+                      <td class="t-actions">
+                        <button type="button" class="pd-row-btn" aria-label="编辑 168048" title="编辑">
+                          <i data-lucide="pencil" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="pd-row-btn pd-row-danger" aria-label="删除 168048" title="删除" data-toast="编码已移入回收站">
+                          <i data-lucide="trash-2" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="t-code">168047</td>
+                      <td><span class="pd-date-pill">2024-08-13</span></td>
+                      <td class="t-note">批次 B0812-B</td>
+                      <td class="t-time">09:19</td>
+                      <td class="t-actions">
+                        <button type="button" class="pd-row-btn" aria-label="编辑 168047" title="编辑">
+                          <i data-lucide="pencil" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="pd-row-btn pd-row-danger" aria-label="删除 168047" title="删除" data-toast="编码已移入回收站">
+                          <i data-lucide="trash-2" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="t-code">168023</td>
+                      <td><span class="pd-date-pill">2024-08-12</span></td>
+                      <td class="t-note">批次 B0812-A</td>
+                      <td class="t-time">14:02</td>
+                      <td class="t-actions">
+                        <button type="button" class="pd-row-btn" aria-label="编辑 168023" title="编辑">
+                          <i data-lucide="pencil" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="pd-row-btn pd-row-danger" aria-label="删除 168023" title="删除">
+                          <i data-lucide="trash-2" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="t-code">168022</td>
+                      <td><span class="pd-date-pill">2024-08-12</span></td>
+                      <td class="t-note">批次 B0812-A</td>
+                      <td class="t-time">14:01</td>
+                      <td class="t-actions">
+                        <button type="button" class="pd-row-btn" aria-label="编辑 168022" title="编辑">
+                          <i data-lucide="pencil" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="pd-row-btn pd-row-danger" aria-label="删除 168022" title="删除">
+                          <i data-lucide="trash-2" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="t-code">168000</td>
+                      <td><span class="pd-date-pill">2024-08-10</span></td>
+                      <td class="t-note">首段录入</td>
+                      <td class="t-time">10:00</td>
+                      <td class="t-actions">
+                        <button type="button" class="pd-row-btn" aria-label="编辑 168000" title="编辑">
+                          <i data-lucide="pencil" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="pd-row-btn pd-row-danger" aria-label="删除 168000" title="删除" data-toast="编码已移入回收站">
+                          <i data-lucide="trash-2" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="t-code">167999</td>
+                      <td><span class="pd-date-pill">2024-08-09</span></td>
+                      <td class="t-note">待核对</td>
+                      <td class="t-time">16:40</td>
+                      <td class="t-actions">
+                        <button type="button" class="pd-row-btn" aria-label="编辑 167999" title="编辑">
+                          <i data-lucide="pencil" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="pd-row-btn pd-row-danger" aria-label="删除 167999" title="删除" data-toast="编码已移入回收站">
+                          <i data-lucide="trash-2" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="t-code">167988</td>
+                      <td><span class="pd-date-pill">2024-08-08</span></td>
+                      <td class="t-note">已恢复</td>
+                      <td class="t-time">15:12</td>
+                      <td class="t-actions">
+                        <button type="button" class="pd-row-btn" aria-label="编辑 167988" title="编辑">
+                          <i data-lucide="pencil" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="pd-row-btn pd-row-danger" aria-label="删除 167988" title="删除" data-toast="编码已移入回收站">
+                          <i data-lucide="trash-2" class="htsm-icon" aria-hidden="true"></i>
+                        </button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="pd-pagination">
+                <div class="pd-page-btns">
+                  <button type="button" class="pd-page-btn" aria-label="上一页">&laquo;</button>
+                  <button type="button" class="pd-page-btn pd-page-active" aria-current="page">1</button>
+                  <button type="button" class="pd-page-btn">2</button>
+                  <button type="button" class="pd-page-btn">3</button>
+                  <span class="pd-page-ellipsis" aria-hidden="true">&hellip;</span>
+                  <button type="button" class="pd-page-btn">8</button>
+                  <button type="button" class="pd-page-btn" aria-label="下一页">&raquo;</button>
+                </div>
+                <div class="pd-page-info">共 <span class="htsm-num">74</span> 条 · 每页 <span class="htsm-num">10</span> 条</div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ============ 产品详情 · 页面级样式 ============ -->
+<style id="page-product-detail">
+  /* ---------- 页面骨架 ---------- */
+  .pd-page { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+
+  /* ---------- 面包屑 ---------- */
+  .pd-breadcrumb { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--htsm-ink-3); }
+  .pd-sep { color: var(--htsm-ink-3); }
+  .pd-current { color: var(--htsm-ink); font-weight: 600; }
+
+  /* ---------- 卡片基元 ---------- */
+  .pd-card {
+    background: var(--htsm-surface);
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-lg);
+    box-shadow: var(--htsm-shadow-1);
+    padding: 20px;
+  }
+  .pd-card-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pd-head-icon { width: 18px; height: 18px; color: var(--htsm-primary); flex-shrink: 0; }
+  .pd-card-title { font-size: 14px; font-weight: 600; line-height: 1.3; color: var(--htsm-ink); margin: 0; }
+
+  /* ---------- 通用按钮 ---------- */
+  .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid var(--htsm-line-strong);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface);
+    color: var(--htsm-ink-2);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .btn-outline:hover { border-color: var(--htsm-primary); color: var(--htsm-primary); }
+  .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: var(--htsm-r-md);
+    background: transparent;
+    color: var(--htsm-state-error);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color .15s;
+  }
+  .btn-danger:hover { background: var(--htsm-state-error-soft); }
+
+  /* ---------- 产品信息卡 ---------- */
+  .pd-info-card { display: flex; flex-direction: column; gap: 16px; }
+  .pd-hero { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .pd-hero-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
+  .pd-hero-name { min-width: 0; }
+  .pd-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: var(--htsm-r-pill);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .pd-pill-cat { background: var(--htsm-primary-soft); color: var(--htsm-primary); }
+  .pd-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: var(--htsm-r-pill);
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .pd-badge-warn { background: var(--htsm-state-warning-soft); color: var(--htsm-state-warning); }
+  .pd-badge-ok { background: var(--htsm-state-success-soft); color: var(--htsm-state-success); }
+  .pd-dot { width: 6px; height: 6px; border-radius: var(--htsm-r-pill); background: currentColor; }
+  .pd-info-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 24px; }
+  @media (max-width: 1200px) { .pd-info-grid { grid-template-columns: repeat(2, 1fr); } }
+  .pd-meta-item { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .pd-meta-label { font-size: 12px; color: var(--htsm-ink-3); }
+  .pd-meta-value { font-size: 13.5px; font-weight: 500; color: var(--htsm-ink); word-break: break-all; }
+  .pd-info-grid .htsm-mono { font-size: 13.5px; font-weight: 500; }
+  .pd-info-actions { display: flex; align-items: center; gap: 8px; padding-top: 16px; border-top: 1px solid var(--htsm-line); }
+
+  /* ---------- 核心栅格：左 1/3 | 右 2/3，1024px 以下单列 ---------- */
+  .pd-core-grid { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; align-items: start; }
+  .pd-col-left { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  .pd-col-right { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+  @media (max-width: 1024px) { .pd-core-grid { grid-template-columns: 1fr; } }
+
+  /* ---------- 号码段与需求 ---------- */
+  .pd-range-card { display: flex; flex-direction: column; gap: 14px; }
+  .pd-range-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .pd-range-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface-2);
+  }
+  .pd-range-code { font-size: 13.5px; color: var(--htsm-ink); }
+  .pd-range-len { font-size: 12px; color: var(--htsm-ink-3); font-variant-numeric: tabular-nums; flex-shrink: 0; }
+  .pd-add-range {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 9px 0;
+    border: 1px dashed var(--htsm-line-strong);
+    border-radius: var(--htsm-r-md);
+    background: transparent;
+    color: var(--htsm-ink-2);
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color .15s, color .15s, background-color .15s;
+  }
+  .pd-add-range:hover { border-color: var(--htsm-primary); color: var(--htsm-primary); background: var(--htsm-primary-soft); }
+  .pd-need {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding-top: 14px;
+    border-top: 1px solid var(--htsm-line);
+  }
+  .pd-need-num { font-family: var(--htsm-font-mono); font-size: 28px; font-weight: 700; line-height: 1.15; color: var(--htsm-ink); font-variant-numeric: tabular-nums; }
+  .pd-need-label { font-size: 12px; color: var(--htsm-ink-2); }
+  .pd-progress { display: flex; flex-direction: column; gap: 8px; }
+  .pd-progress-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12.5px;
+    color: var(--htsm-ink-2);
+  }
+  .pd-progress-pct { font-family: var(--htsm-font-mono); font-size: 12.5px; font-weight: 600; color: var(--htsm-ink); }
+  .pd-progress-track { height: 8px; border-radius: var(--htsm-r-pill); background: var(--htsm-surface-3); overflow: hidden; }
+  .pd-progress-fill { height: 100%; border-radius: var(--htsm-r-pill); background: var(--htsm-primary); }
+
+  /* ---------- 快速录入 ---------- */
+  .pd-quick-card { display: flex; flex-direction: column; gap: 14px; }
+  .pd-quick-head { row-gap: 10px; }
+  .pd-card-desc { margin-left: auto; font-size: 12px; color: var(--htsm-ink-3); text-align: right; }
+  .pd-quick-actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .pd-kbd-badge {
+    margin-left: 2px;
+    padding: 1px 6px;
+    border-radius: var(--htsm-r-sm);
+    background: var(--htsm-primary-soft);
+    color: var(--htsm-primary);
+    font-family: var(--htsm-font-mono);
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.5;
+  }
+  .pd-quick-row { display: flex; gap: 10px; }
+  .pd-quick-input {
+    flex: 1;
+    min-width: 0;
+    height: 52px;
+    padding: 0 18px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface-2);
+    font-family: inherit;
+    font-size: 14px;
+    text-align: center;
+    color: var(--htsm-ink);
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .pd-quick-input::placeholder { color: var(--htsm-ink-3); }
+  .pd-quick-input:focus { border-color: var(--htsm-primary); box-shadow: 0 0 0 3px var(--htsm-primary-soft); }
+  .pd-quick-submit { height: 52px; padding: 0 24px; flex-shrink: 0; }
+  .pd-kbd-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .pd-kbd {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--htsm-r-pill);
+    background: var(--htsm-surface-3);
+    font-size: 11.5px;
+    color: var(--htsm-ink-3);
+  }
+  .pd-kbd kbd {
+    font-family: var(--htsm-font-mono);
+    font-size: 10.5px;
+    line-height: 1.2;
+    padding: 2px 6px;
+    border: 1px solid var(--htsm-line-strong);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    background: var(--htsm-surface);
+    color: var(--htsm-ink-2);
+  }
+  /* ---------- 重复检测提示条 ---------- */
+  .pd-dup-warn {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-state-warning-soft);
+    color: var(--htsm-state-warning);
+    font-size: 12.5px;
+  }
+  .pd-warn-icon { width: 15px; height: 15px; flex-shrink: 0; }
+  .pd-warn-text { flex: 1; min-width: 200px; }
+  .pd-mini-btn {
+    padding: 4px 12px;
+    border: 1px solid transparent;
+    border-radius: var(--htsm-r-sm);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color .15s, border-color .15s;
+  }
+  .pd-mini-primary { background: var(--htsm-state-warning); color: var(--htsm-primary-ink); }
+  .pd-mini-primary:hover { background: var(--htsm-state-warning); }
+  .pd-mini-ghost { border-color: var(--htsm-line-strong); background: var(--htsm-surface); color: var(--htsm-ink-2); }
+  .pd-mini-ghost:hover { border-color: var(--htsm-state-warning); color: var(--htsm-state-warning); }
+
+  /* ---------- 最近录入 ---------- */
+  .pd-recent { display: flex; flex-direction: column; padding-top: 14px; border-top: 1px solid var(--htsm-line); }
+  .pd-recent-title { font-size: 12px; font-weight: 600; color: var(--htsm-ink-2); margin-bottom: 4px; }
+  .pd-recent-item { display: flex; align-items: center; gap: 10px; padding: 7px 2px; }
+  .pd-recent-code { font-size: 13px; color: var(--htsm-ink); }
+  .pd-recent-time { margin-left: auto; font-size: 11.5px; color: var(--htsm-ink-3); font-variant-numeric: tabular-nums; }
+  .pd-recent-ok { width: 15px; height: 15px; color: var(--htsm-state-success); flex-shrink: 0; }
+
+  /* ---------- 编码列表 ---------- */
+  .pd-card-stats { margin-left: auto; font-size: 12.5px; color: var(--htsm-ink-3); }
+  .pd-card-head-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .pd-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--htsm-line-strong);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface);
+    color: var(--htsm-ink-2);
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .pd-icon-btn:hover { border-color: var(--htsm-primary); color: var(--htsm-primary); }
+  .pd-text-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: none;
+    border-radius: var(--htsm-r-sm);
+    background: transparent;
+    color: var(--htsm-ink-2);
+    font-size: 13px;
+    cursor: pointer;
+    transition: color .15s, background-color .15s;
+  }
+  .pd-text-btn:hover { color: var(--htsm-state-error); background: var(--htsm-state-error-soft); }
+  .pd-table-wrap { overflow-x: auto; margin-top: 12px; }
+  .pd-table { width: 100%; min-width: 640px; border-collapse: collapse; }
+  .pd-table th {
+    padding: 10px 12px;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--htsm-ink-2);
+    text-align: left;
+    border-bottom: 1px solid var(--htsm-line-strong);
+    white-space: nowrap;
+  }
+  .pd-table td {
+    padding: 11px 12px;
+    font-size: 13px;
+    color: var(--htsm-ink);
+    border-bottom: 1px solid var(--htsm-line);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .pd-table tbody tr:last-child td { border-bottom: none; }
+  .pd-table .t-code { font-family: var(--htsm-font-mono); font-size: 13px; }
+  .pd-table .t-note { color: var(--htsm-ink-2); font-size: 12.5px; }
+  .pd-table .t-time { color: var(--htsm-ink-3); font-size: 12px; font-variant-numeric: tabular-nums; }
+  .pd-table .t-actions { text-align: right; }
+  .pd-date-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: var(--htsm-r-pill);
+    background: var(--htsm-surface-3);
+    font-size: 11.5px;
+    color: var(--htsm-ink-2);
+    font-variant-numeric: tabular-nums;
+  }
+  .pd-row-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: var(--htsm-r-sm);
+    background: transparent;
+    color: var(--htsm-ink-3);
+    cursor: pointer;
+    transition: color .15s, background-color .15s;
+  }
+  .pd-row-btn:hover { color: var(--htsm-primary); background: var(--htsm-primary-soft); }
+  .pd-row-btn.pd-row-danger:hover { color: var(--htsm-state-error); background: var(--htsm-state-error-soft); }
+  .pd-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  .pd-page-btns { display: flex; align-items: center; gap: 4px; }
+  .pd-page-btn {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-sm);
+    background: var(--htsm-surface);
+    color: var(--htsm-ink-2);
+    font-family: var(--htsm-font-mono);
+    font-size: 12.5px;
+    cursor: pointer;
+    transition: border-color .15s, color .15s, background-color .15s;
+  }
+  .pd-page-btn:hover { border-color: var(--htsm-primary); color: var(--htsm-primary); }
+  .pd-page-btn.pd-page-active { background: var(--htsm-primary); border-color: var(--htsm-primary); color: var(--htsm-primary-ink); }
+  .pd-page-ellipsis { color: var(--htsm-ink-3); padding: 0 4px; font-size: 12.5px; }
+  .pd-page-info { font-size: 12.5px; color: var(--htsm-ink-3); }
+
+  /* ---------- 数据质量 ---------- */
+  .pd-quality-card { display: flex; flex-direction: column; gap: 14px; }
+  .pd-quality-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  @media (max-width: 768px) { .pd-quality-grid { grid-template-columns: 1fr; } }
+  .pd-quality-block {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface-2);
+    min-width: 0;
+  }
+  .pd-quality-num { font-family: var(--htsm-font-mono); font-size: 22px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
+  .pd-quality-error .pd-quality-num { color: var(--htsm-state-error); }
+  .pd-quality-warn .pd-quality-num { color: var(--htsm-state-warning); }
+  .pd-quality-label { font-size: 12.5px; color: var(--htsm-ink-2); }
+  .pd-quality-ring {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: var(--htsm-r-pill);
+    background: conic-gradient(var(--htsm-primary) 82%, var(--htsm-surface-3) 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .pd-quality-ring::before {
+    content: "";
+    position: absolute;
+    inset: 5px;
+    border-radius: var(--htsm-r-pill);
+    background: var(--htsm-surface-2);
+  }
+  .pd-quality-ring span {
+    position: relative;
+    font-family: var(--htsm-font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--htsm-primary);
+  }
+  .pd-quality-note { margin: 0; font-size: 12px; color: var(--htsm-ink-2); }
+
+  /* 左列窄版适配（数据质量卡位于号码段卡下方） */
+  .pd-core-grid .pd-quality-grid { grid-template-columns: 1fr; gap: 8px; }
+  .pd-core-grid .pd-quality-block { padding: 10px 14px; }
+  .pd-core-grid .pd-quality-label { margin-left: auto; text-align: right; }
+  @media (max-width: 1024px) {
+    .pd-core-grid .pd-quality-grid { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .pd-core-grid .pd-quality-block { padding: 12px 14px; }
+    .pd-core-grid .pd-quality-label { margin-left: 0; text-align: left; }
+  }
+  @media (max-width: 768px) {
+    .pd-core-grid .pd-quality-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- 通用弹窗 / 工具条按钮 ---------- */
+  .pd-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: none;
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-primary);
+    color: var(--htsm-primary-ink);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: background-color .15s;
+  }
+  .pd-btn-primary:hover { background: var(--htsm-primary-hover); }
+  .pd-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 1px solid var(--htsm-line-strong);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface);
+    color: var(--htsm-ink-2);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .pd-btn-ghost:hover { border-color: var(--htsm-primary); color: var(--htsm-primary); }
+  .pd-btn-danger-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border: none;
+    border-radius: var(--htsm-r-md);
+    background: transparent;
+    color: var(--htsm-state-error);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: background-color .15s;
+  }
+  .pd-btn-danger-text:hover { background: var(--htsm-state-error-soft); }
+  .pd-btn-danger-solid {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: none;
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-state-error);
+    color: var(--htsm-primary-ink);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .pd-btn-danger-solid:hover { opacity: .9; }
+
+  /* 编码列表卡头部按钮组：间距与高度对齐 */
+  .pd-card-head-right { gap: 6px; }
+  .pd-card-head-right .pd-btn-primary { padding: 6px 12px; }
+  .pd-card-head-right .pd-btn-danger-text { padding: 6px 8px; }
+  .pd-card-head-right .pd-text-btn:hover { color: var(--htsm-primary); background: var(--htsm-primary-soft); }
+
+  /* ---------- 导出下拉菜单 ---------- */
+  .pd-dropdown-wrap { position: relative; }
+  .pd-dropdown-caret { width: 14px; height: 14px; color: var(--htsm-ink-3); }
+  .pd-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    min-width: 220px;
+    padding: 6px;
+    border: 1px solid var(--htsm-line);
+    border-radius: 8px;
+    background: var(--htsm-surface);
+    box-shadow: var(--htsm-shadow-overlay);
+    z-index: 300;
+    display: none;
+  }
+  .pd-dropdown-menu.is-open { display: block; }
+  .pd-dropdown-group { padding: 4px 0; }
+  .pd-dropdown-group + .pd-dropdown-group { border-top: 1px solid var(--htsm-line); margin-top: 4px; }
+  .pd-dropdown-group-title {
+    padding: 6px 10px 4px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--htsm-ink-3);
+  }
+  .pd-dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 10px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--htsm-ink);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color .15s, color .15s;
+  }
+  .pd-dropdown-item:hover { background: var(--htsm-surface-2); color: var(--htsm-primary); }
+
+  /* ---------- 编码列表工具条（默认：搜索 + 排序） ---------- */
+  .pd-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface-2);
+  }
+  .pd-toolbar[hidden] { display: none; }
+  .pd-toolbar-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 220px;
+    max-width: 340px;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .pd-toolbar-search:focus-within { border-color: var(--htsm-primary); box-shadow: 0 0 0 3px var(--htsm-primary-soft); }
+  .pd-toolbar-search-icon { width: 15px; height: 15px; color: var(--htsm-ink-3); flex-shrink: 0; }
+  .pd-toolbar-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--htsm-ink);
+  }
+  .pd-toolbar-input::placeholder { color: var(--htsm-ink-3); }
+  .pd-sort-select {
+    height: 36px;
+    padding: 0 32px 0 12px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background-color: var(--htsm-surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A98AE' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    color: var(--htsm-ink);
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+  }
+  .pd-sort-select:focus { border-color: var(--htsm-primary); }
+
+  /* ---------- 批量模式工具条 ---------- */
+  .pd-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--htsm-ink);
+    cursor: pointer;
+    user-select: none;
+  }
+  .pd-check input[type="checkbox"] { accent-color: var(--htsm-primary); cursor: pointer; }
+  .pd-batch-date { display: flex; align-items: center; gap: 8px; }
+  .pd-date-input {
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface);
+    color: var(--htsm-ink);
+    font-family: inherit;
+    font-size: 13px;
+    outline: none;
+    cursor: pointer;
+  }
+  .pd-date-input:focus { border-color: var(--htsm-primary); }
+  .pd-date-sep { color: var(--htsm-ink-3); font-size: 13px; }
+  .pd-batch-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+
+  /* ---------- 弹窗基础 ---------- */
+  .pd-modal-mask {
+    position: fixed;
+    inset: 0;
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 6vh 16px 24px;
+    background: rgba(18, 32, 58, 0.45);
+    z-index: 1000;
+    overflow-y: auto;
+  }
+  .pd-modal-mask.is-open { display: flex; }
+  .pd-modal {
+    width: 480px;
+    max-width: 100%;
+    margin: auto 0;
+    border-radius: var(--htsm-r-lg);
+    background: var(--htsm-surface);
+    box-shadow: var(--htsm-shadow-modal);
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 12vh);
+  }
+  .pd-modal--500 { width: 500px; }
+  .pd-modal--520 { width: 520px; }
+  .pd-modal--640 { width: 640px; }
+  .pd-modal--700 { width: 700px; }
+  .pd-modal-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--htsm-line);
+    flex-shrink: 0;
+  }
+  .pd-modal-title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--htsm-ink);
+    word-break: break-all;
+  }
+  .pd-modal-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: var(--htsm-r-sm);
+    background: transparent;
+    color: var(--htsm-ink-3);
+    cursor: pointer;
+    transition: color .15s, background-color .15s;
+  }
+  .pd-modal-close:hover { color: var(--htsm-ink); background: var(--htsm-surface-2); }
+  .pd-modal-body { padding: 18px 20px; overflow-y: auto; }
+  .pd-modal-foot {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 14px 20px 16px;
+    border-top: 1px solid var(--htsm-line);
+    flex-shrink: 0;
+  }
+  .pd-modal-foot-center { justify-content: center; }
+  .pd-modal--danger .pd-modal-title { color: var(--htsm-state-error); }
+
+  /* ---------- 弹窗表单 ---------- */
+  .pd-form { display: flex; flex-direction: column; gap: 14px; }
+  .pd-form-field { display: flex; flex-direction: column; gap: 6px; }
+  .pd-form-label { font-size: 13px; font-weight: 500; color: var(--htsm-ink); }
+  .pd-form-required { color: var(--htsm-state-error); }
+  .pd-input {
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface);
+    font-family: inherit;
+    font-size: 13.5px;
+    color: var(--htsm-ink);
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .pd-input:focus { border-color: var(--htsm-primary); box-shadow: 0 0 0 3px var(--htsm-primary-soft); }
+  .pd-input::placeholder { color: var(--htsm-ink-3); }
+  .pd-input-mono { font-family: var(--htsm-font-mono); font-size: 14px; font-variant-numeric: tabular-nums; }
+  .pd-input[type="date"] { cursor: pointer; }
+  .pd-form-tip { margin: 0; font-size: 12.5px; color: var(--htsm-ink-3); }
+
+  /* ---------- 扫码删除弹窗 ---------- */
+  .pd-scan-input-wrap { position: relative; }
+  .pd-scan-input-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 17px;
+    height: 17px;
+    color: var(--htsm-state-error);
+    pointer-events: none;
+  }
+  .pd-scan-input {
+    width: 100%;
+    height: 46px;
+    padding: 0 12px 0 38px;
+    border: 1.5px solid var(--htsm-line-strong);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface-2);
+    font-family: var(--htsm-font-mono);
+    font-size: 15px;
+    color: var(--htsm-ink);
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .pd-scan-input:focus { border-color: var(--htsm-state-error); box-shadow: 0 0 0 3px var(--htsm-state-error-soft); }
+  .pd-scan-input::placeholder { color: var(--htsm-ink-3); }
+  .pd-scan-tip { margin: 10px 0 0; font-size: 12.5px; color: var(--htsm-ink-3); }
+  .pd-scan-stats { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
+  .pd-scan-ok { font-size: 14px; color: var(--htsm-ink); }
+  .pd-scan-ok-num { font-size: 16px; font-weight: 700; color: var(--htsm-state-success); }
+  .pd-scan-fail-title { margin: 0 0 8px; font-size: 13px; color: var(--htsm-state-error); }
+  .pd-scan-fail-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface-2);
+  }
+  .pd-tag-danger {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: var(--htsm-r-pill);
+    background: var(--htsm-state-error-soft);
+    color: var(--htsm-state-error);
+    font-size: 12.5px;
+    font-weight: 500;
+  }
+
+  /* ---------- 扫码添加提示弹窗 ---------- */
+  .pd-scan-add-body { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 26px 20px 20px; text-align: center; }
+  .pd-scan-add-icon {
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--htsm-r-pill);
+    background: var(--htsm-primary-soft);
+    color: var(--htsm-primary);
+  }
+  .pd-scan-add-icon svg { width: 22px; height: 22px; }
+  .pd-scan-add-desc { margin: 0; font-size: 13.5px; line-height: 1.7; color: var(--htsm-ink-2); max-width: 360px; }
+
+  /* ---------- 移动编码弹窗 ---------- */
+  .pd-move-desc { margin: 0 0 14px; font-size: 14px; line-height: 1.6; color: var(--htsm-ink); }
+  .pd-move-desc strong { font-weight: 700; }
+  .pd-select {
+    width: 100%;
+    height: 40px;
+    padding: 0 32px 0 12px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-md);
+    background-color: var(--htsm-surface);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238A98AE' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    color: var(--htsm-ink);
+    font-family: inherit;
+    font-size: 13.5px;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+  }
+  .pd-select:focus { border-color: var(--htsm-primary); }
+
+  /* ---------- 回收站弹窗 ---------- */
+  .pd-recycle-stats { margin: 0 0 12px; font-size: 13px; color: var(--htsm-ink-2); }
+  .pd-recycle-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface-2);
+  }
+  .pd-recycle-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+  .pd-recycle-list { margin-top: 12px; border: 1px solid var(--htsm-line); border-radius: var(--htsm-r-md); overflow: hidden; }
+  .pd-recycle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--htsm-line);
+  }
+  .pd-recycle-row:last-child { border-bottom: none; }
+  .pd-recycle-row:nth-child(even) { background: var(--htsm-surface-2); }
+  .pd-row-check { accent-color: var(--htsm-primary); cursor: pointer; }
+  .pd-recycle-code { font-size: 13.5px; color: var(--htsm-ink); }
+  .pd-recycle-time { font-size: 12.5px; color: var(--htsm-ink-3); font-variant-numeric: tabular-nums; }
+  .pd-recycle-ops { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .pd-ops-restore,
+  .pd-ops-purge {
+    border: none;
+    background: transparent;
+    font-size: 13px;
+    cursor: pointer;
+    padding: 4px 2px;
+  }
+  .pd-ops-restore { color: var(--htsm-state-success); }
+  .pd-ops-restore:hover { text-decoration: underline; }
+  .pd-ops-purge { color: var(--htsm-state-error); }
+  .pd-ops-purge:hover { text-decoration: underline; }
+
+  /* ---------- 缺失 / 超出编码弹窗 ---------- */
+  .pd-codes-stats { margin: 0 0 12px; font-size: 13px; color: var(--htsm-ink-2); }
+  .pd-codes-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface-2);
+  }
+  .pd-codes-prefix { width: 190px; }
+  .pd-codes-batch-btn { margin-left: auto; }
+  .pd-codes-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 14px;
+  }
+  .pd-code-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 8px;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-sm);
+    background: var(--htsm-surface);
+  }
+  .pd-code-item:hover { border-color: var(--htsm-line-strong); }
+  .pd-code-value { flex: 1; min-width: 0; font-size: 13px; color: var(--htsm-ink); }
+  .pd-code-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border: none;
+    border-radius: var(--htsm-r-sm);
+    background: transparent;
+    cursor: pointer;
+    transition: background-color .15s, color .15s;
+  }
+  .pd-code-action svg { width: 13px; height: 13px; }
+  .pd-code-add { color: var(--htsm-primary); }
+  .pd-code-add:hover { background: var(--htsm-primary-soft); }
+  .pd-code-del { color: var(--htsm-state-error); }
+  .pd-code-del:hover { background: var(--htsm-state-error-soft); }
+  .pd-codes-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 16px;
+  }
+  .pd-mini-page {
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--htsm-line);
+    border-radius: var(--htsm-r-sm);
+    background: var(--htsm-surface);
+    color: var(--htsm-ink-2);
+    font-family: var(--htsm-font-mono);
+    font-size: 13px;
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .pd-mini-page:hover { border-color: var(--htsm-primary); color: var(--htsm-primary); }
+  .pd-mini-page.pd-mini-page-active { background: var(--htsm-primary); border-color: var(--htsm-primary); color: var(--htsm-primary-ink); }
+  .pd-mini-page-info { font-size: 12.5px; color: var(--htsm-ink-3); margin-left: 4px; }
+
+  /* ---------- toast ---------- */
+  .pd-toast {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 16px;
+    border-radius: var(--htsm-r-md);
+    background: var(--htsm-surface);
+    box-shadow: var(--htsm-shadow-overlay), 0 0 0 1px var(--htsm-line);
+    font-size: 13.5px;
+    color: var(--htsm-ink);
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    z-index: 2000;
+  }
+  .pd-toast.is-open { opacity: 1; transform: translateY(0); }
+  .pd-toast-icon { width: 18px; height: 18px; color: var(--htsm-state-success); flex-shrink: 0; }
+  .pd-toast-text { white-space: nowrap; }
+
+  /* ---------- 产品信息卡徽标（可点击） ---------- */
+  .pd-badge-btn {
+    border: 1px solid transparent;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color .15s, opacity .15s;
+  }
+  .pd-badge-btn:hover { border-color: currentColor; opacity: .85; }
+  .pd-badge-error { background: var(--htsm-state-error-soft); color: var(--htsm-state-error); }
+
+  /* ---------- 弹窗 / 工具条响应式 ---------- */
+  @media (max-width: 768px) {
+    .pd-modal,
+    .pd-modal--500,
+    .pd-modal--520,
+    .pd-modal--640,
+    .pd-modal--700 { width: 92vw; }
+    .pd-toolbar { padding: 10px; }
+    .pd-toolbar-search { max-width: none; }
+    .pd-batch-actions { margin-left: 0; }
+    .pd-codes-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+
+<script>lucide.createIcons();</script>
+
+<!-- ============================================================
+     弹窗组件区（遮罩 .pd-modal-mask + 卡片 .pd-modal）
+     data-open-modal / data-close-modal / data-dropdown-item / data-toast 由下方脚本驱动
+     ============================================================ -->
+
+<!-- 添加编码弹窗 -->
+<div class="pd-modal-mask" id="modal-add-code" role="dialog" aria-modal="true" aria-labelledby="add-code-title">
+  <div class="pd-modal">
+    <div class="pd-modal-head">
+      <h4 class="pd-modal-title" id="add-code-title">添加编码</h4>
+      <button type="button" class="pd-modal-close" data-close-modal aria-label="关闭">
+        <i data-lucide="x" class="htsm-icon" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="pd-modal-body">
+      <div class="pd-form">
+        <div class="pd-form-field">
+          <label class="pd-form-label" for="add-code-input">编码 <span class="pd-form-required">*</span></label>
+          <input id="add-code-input" type="text" class="pd-input pd-input-mono" placeholder="输入编码或扫描" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="pd-form-field">
+          <label class="pd-form-label" for="add-code-desc">描述</label>
+          <input id="add-code-desc" type="text" class="pd-input" placeholder="如 批次 B0813-A" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="pd-form-field">
+          <label class="pd-form-label" for="add-code-date">日期</label>
+          <input id="add-code-date" type="date" class="pd-input" />
+        </div>
+      </div>
+    </div>
+    <div class="pd-modal-foot">
+      <button type="button" class="pd-btn-ghost" data-close-modal>取消</button>
+      <button type="button" class="pd-btn-primary" data-toast="编码添加成功" data-close-modal>
+        <i data-lucide="check" class="htsm-icon" aria-hidden="true"></i>
+        保存
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑编码弹窗 -->
+<div class="pd-modal-mask" id="modal-edit-code" role="dialog" aria-modal="true" aria-labelledby="edit-code-title">
+  <div class="pd-modal">
+    <div class="pd-modal-head">
+      <h4 class="pd-modal-title" id="edit-code-title">编辑编码</h4>
+      <button type="button" class="pd-modal-close" data-close-modal aria-label="关闭">
+        <i data-lucide="x" class="htsm-icon" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="pd-modal-body">
+      <div class="pd-form">
+        <div class="pd-form-field">
+          <label class="pd-form-label" for="edit-code-input">编码 <span class="pd-form-required">*</span></label>
+          <input id="edit-code-input" type="text" class="pd-input pd-input-mono" value="168049" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="pd-form-field">
+          <label class="pd-form-label" for="edit-code-desc">描述</label>
+          <input id="edit-code-desc" type="text" class="pd-input" value="批次 B0813-A" autocomplete="off" spellcheck="false" />
+        </div>
+        <div class="pd-form-field">
+          <label class="pd-form-label" for="edit-code-date">日期</label>
+          <input id="edit-code-date" type="date" class="pd-input" value="2024-08-13" />
+        </div>
+      </div>
+    </div>
+    <div class="pd-modal-foot">
+      <button type="button" class="pd-btn-ghost" data-close-modal>取消</button>
+      <button type="button" class="pd-btn-primary" data-toast="编码修改成功" data-close-modal>
+        <i data-lucide="check" class="htsm-icon" aria-hidden="true"></i>
+        保存
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 导出指定数量弹窗 -->
+<div class="pd-modal-mask" id="modal-export-qty" role="dialog" aria-modal="true" aria-labelledby="export-qty-title">
+  <div class="pd-modal">
+    <div class="pd-modal-head">
+      <h4 class="pd-modal-title" id="export-qty-title">导出指定数量的编码</h4>
+      <button type="button" class="pd-modal-close" data-close-modal aria-label="关闭">
+        <i data-lucide="x" class="htsm-icon" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="pd-modal-body">
+      <p class="pd-form-tip">将按录入时间（最新录入优先）导出指定数量的编码。</p>
+      <div class="pd-form-field" style="margin-top: 14px;">
+        <label class="pd-form-label" for="export-qty-input">导出数量</label>
+        <input id="export-qty-input" type="number" class="pd-input pd-input-mono" value="50" min="1" max="74" />
+      </div>
+      <p class="pd-form-tip" style="margin-top: 8px;">（最多可导出 74 个）</p>
+    </div>
+    <div class="pd-modal-foot">
+      <button type="button" class="pd-btn-ghost" data-close-modal>取消</button>
+      <button type="button" class="pd-btn-primary" data-toast="成功导出 50 个最新编码" data-close-modal>
+        <i data-lucide="download" class="htsm-icon" aria-hidden="true"></i>
+        导出
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 仅导出数字 - 指定数量弹窗 -->
+<div class="pd-modal-mask" id="modal-export-qty-numeric" role="dialog" aria-modal="true" aria-labelledby="export-qty-num-title">
+  <div class="pd-modal">
+    <div class="pd-modal-head">
+      <h4 class="pd-modal-title" id="export-qty-num-title">仅导出数字 - 指定数量</h4>
+      <button type="button" class="pd-modal-close" data-close-modal aria-label="关闭">
+        <i data-lucide="x" class="htsm-icon" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="pd-modal-body">
+      <p class="pd-form-tip">将按录入时间导出指定数量的编码，编码列仅保留末尾数字。</p>
+      <div class="pd-form-field" style="margin-top: 14px;">
+        <label class="pd-form-label" for="export-qty-num-input">导出数量</label>
+        <input id="export-qty-num-input" type="number" class="pd-input pd-input-mono" value="50" min="1" max="74" />
+      </div>
+      <p class="pd-form-tip" style="margin-top: 8px;">（最多可导出 74 个）</p>
+    </div>
+    <div class="pd-modal-foot">
+      <button type="button" class="pd-btn-ghost" data-close-modal>取消</button>
+      <button type="button" class="pd-btn-primary" data-toast="已导出 50 个编码（仅数字）" data-close-modal>
+        <i data-lucide="download" class="htsm-icon" aria-hidden="true"></i>
+        导出
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 扫码删除弹窗（红色主题） -->
+<div class="pd-modal-mask" id="modal-scan-delete" role="dialog" aria-modal="true" aria-labelledby="scan-delete-title">
+  <div class="pd-modal pd-modal--500 pd-modal--danger">
+    <div class="pd-modal-head">
+      <h4 class="pd-modal-title" id="scan-delete-title">扫码枪删除编码</h4>
+      <button type="button" class="pd-modal-close" data-close-modal aria-label="关闭">
+        <i data-lucide="x" class="htsm-icon" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="pd-modal-body">
+      <div class="pd-scan-input-wrap">
+        <i data-lucide="scan-line" class="pd-scan-input-icon" aria-hidden="true"></i>
+        <input type="text" class="pd-scan-input" placeholder="请使用扫码枪扫描…" autocomplete="off" spellcheck="false" />
+      </div>
+      <p class="pd-scan-tip">输入后按 Enter 删除，自动移入回收站</p>
+      <div class="pd-scan-stats">
+        <div class="pd-scan-ok">
+          已成功删除 <span class="htsm-num pd-scan-ok-num">2</span> 个编码
+        </div>
+        <div class="pd-scan-fail">
+          <p class="pd-scan-fail-title">以下编码因为没有录入，无法删除（<span class="htsm-num">1</span> 个）：</p>
+          <div class="pd-scan-fail-tags">
+            <span class="pd-tag-danger htsm-mono">168999</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pd-modal-foot pd-modal-foot-center">
+      <button type="button" class="pd-btn-danger-text" data-close-modal>
+        <i data-lucide="x" class="htsm-icon" aria-hidden="true"></i>
+        关闭弹窗
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 扫码添加提示弹窗 -->
+<div class="pd-modal-mask" id="modal-scan-add" role="dialog" aria-modal="true" aria-labelledby="scan-add-title">
+  <div class="pd-modal">
+    <div class="pd-modal-head">
+      <h4 class="pd-modal-title" id="scan-add-title">扫码添加</h4>
+      <button type="button" class="pd-modal-close" data-close-modal aria-label="关闭">
+        <i data-lucide="x" class="htsm-icon" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="pd-modal-body pd-scan-add-body">
+      <div class="pd-scan-add-icon" aria-hidden="true">
+        <i data-lucide="camera"></i>
+      </div>
+      <p class="pd-scan-add-desc">摄像头扫码支持 QR / 条码识别，连续扫描模式。演示环境请使用扫码枪或手动输入。</p>
+    </div>
+    <div class="pd-modal-foot pd-modal-foot-center">
+      <button type="button" class="pd-btn-primary" data-close-modal>知道了</button>
+    </div>
+  </div>
+</div>
+
+<!-- 移动编码弹窗 -->
+<div class="pd-modal-mask" id="modal-move" role="dialog" aria-modal="true" aria-labelledby="move-title">
+  <div class="pd-modal pd-modal--520">
+    <div class="pd-modal-head">
+      <h4 class="pd-modal-title" id="move-title">移动编码</h4>
+      <button type="button" class="pd-modal-close" data-close-modal aria-label="关闭">
+        <i data-lucide="x" class="htsm-icon" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="pd-modal-body">
+      <p class="pd-move-desc">已选择 <strong class="htsm-num">2</strong> 个编码，请选择要移动到的目标产品：</p>
+      <select class="pd-select" aria-label="目标产品">
+        <option value="" disabled selected>请选择目标产品</option>
+        <option value="G050-121">石墨电极 G050-121</option>
+        <option value="F120-08">碳素制品 F120-08</option>
+        <option value="M080-66">机械密封 M080-66</option>
+        <option value="R200-03">其他 R200-03</option>
+      </select>
+    </div>
+    <div class="pd-modal-foot">
+      <button type="button" class="pd-btn-ghost" data-close-modal>取消</button>
+      <button type="button" class="pd-btn-primary" data-toast="移动成功" data-close-modal>
+        <i data-lucide="swap" class="htsm-icon" aria-hidden="true"></i>
+        确认移动
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 回收站弹窗 -->
+<div class="pd-modal-mask" id="modal-recycle" role="dialog" aria-modal="true" aria-labelledby="recycle-title">
+  <div class="pd-modal pd-modal--640">
+    <div class="pd-modal-head">
+      <h4 class="pd-modal-title" id="recycle-title">回收站</h4>
+      <button type="button" class="pd-modal-close" data-close-modal aria-label="关闭">
+        <i data-lucide="x" class="htsm-icon" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="pd-modal-body">
+      <p class="pd-recycle-stats">共 <span class="htsm-num">12</span> 个已删除编码</p>
+      <div class="pd-recycle-toolbar">
+        <label class="pd-check">
+          <input type="checkbox" /> 全选
+        </label>
+        <div class="pd-recycle-actions">
+          <button type="button" class="pd-btn-ghost" data-toast="已恢复 2 个编码">
+            <i data-lucide="rotate-ccw" class="htsm-icon" aria-hidden="true"></i>
+            批量恢复
+          </button>
+          <button type="button" class="pd-btn-danger-text" data-toast="已永久删除 2 个编码">
+            <i data-lucide="trash-2" class="htsm-icon" aria-hidden="true"></i>
+            批量永久删除
+          </button>
+        </div>
+      </div>
+      <div class="pd-recycle-list">
+        <div class="pd-recycle-row">
+          <input type="checkbox" class="pd-row-check" aria-label="选择 168995" />
+          <span class="htsm-mono pd-recycle-code">168995</span>
+          <span class="pd-recycle-time">2024-08-13 10:12</span>
+          <div class="pd-recycle-ops">
+            <button type="button" class="pd-ops-restore" data-toast="编码已恢复">恢复</button>
+            <button type="button" class="pd-ops-purge" data-toast="编码已永久删除">永久删除</button>
+          </div>
+        </div>
+        <div class="pd-recycle-row">
+          <input type="checkbox" class="pd-row-check" aria-label="选择 168994" />
+          <span class="htsm-mono pd-recycle-code">168994</span>
+          <span class="pd-recycle-time">2024-08-13 09:58</span>
+          <div class="pd-recycle-ops">
+            <button type="button" class="pd-ops-restore" data-toast="编码已恢复">恢复</button>
+            <button type="button" class="pd-ops-purge" data-toast="编码已永久删除">永久删除</button>
+          </div>
+        </div>
+        <div class="pd-recycle-row">
+          <input type="checkbox" class="pd-row-check" aria-label="选择 168993" />
+          <span class="htsm-mono pd-recycle-code">168993</span>
+          <span class="pd-recycle-time">2024-08-13 09:47</span>
+          <div class="pd-recycle-ops">
+            <button type="button" class="pd-ops-restore" data-toast="编码已恢复">恢复</button>
+            <button type="button" class="pd-ops-purge" data-toast="编码已永久删除">永久删除</button>
+          </div>
+        </div>
+        <div class="pd-recycle-row">
+          <input type="checkbox" class="pd-row-check" aria-label="选择 167988" />
+          <span class="htsm-mono pd-recycle-code">167988</span>
+          <span class="pd-recycle-time">2024-08-08 15:30</span>
+          <div class="pd-recycle-ops">
+            <button type="button" class="pd-ops-restore" data-toast="编码已恢复">恢复</button>
+            <button type="button" class="pd-ops-purge" data-toast="编码已永久删除">永久删除</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pd-modal-foot pd-modal-foot-center">
+      <button type="button" class="pd-btn-ghost" data-close-modal>关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 缺失编码弹窗 -->
+<div class="pd-modal-mask" id="modal-missing" role="dialog" aria-modal="true" aria-labelledby="missing-title">
+  <div class="pd-modal pd-modal--700">
+    <div class="pd-modal-head">
+      <h4 class="pd-modal-title" id="missing-title">石墨电极 G050-120 - 缺失编码</h4>
+      <button type="button" class="pd-modal-close" data-close-modal aria-label="关闭">
+        <i data-lucide="x" class="htsm-icon" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="pd-modal-body">
+      <p class="pd-codes-stats">共 <span class="htsm-num">9</span> 个缺失编码</p>
+      <div class="pd-codes-toolbar">
+        <label class="pd-check">
+          <input type="checkbox" /> 全选
+        </label>
+        <select class="pd-sort-select" aria-label="排列顺序">
+          <option value="asc" selected>升序排列</option>
+          <option value="desc">降序排列</option>
+        </select>
+        <input type="text" class="pd-input pd-input-mono pd-codes-prefix" value="1680" placeholder="编码前缀，如 168-" autocomplete="off" spellcheck="false" />
+        <button type="button" class="pd-btn-primary pd-codes-batch-btn" data-toast="成功批量添加 3 个缺失编码">
+          <i data-lucide="plus" class="htsm-icon" aria-hidden="true"></i>
+          批量添加 (3)
+        </button>
+      </div>
+      <div class="pd-codes-grid">
+        <div class="pd-code-item">
+          <input type="checkbox" class="pd-row-check" checked aria-label="选择 168001" />
+          <span class="htsm-mono pd-code-value">168001</span>
+          <button type="button" class="pd-code-action pd-code-add" data-toast="已添加缺失编码" aria-label="添加 168001">
+            <i data-lucide="plus" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="pd-code-item">
+          <input type="checkbox" class="pd-row-check" checked aria-label="选择 168003" />
+          <span class="htsm-mono pd-code-value">168003</span>
+          <button type="button" class="pd-code-action pd-code-add" data-toast="已添加缺失编码" aria-label="添加 168003">
+            <i data-lucide="plus" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="pd-code-item">
+          <input type="checkbox" class="pd-row-check" checked aria-label="选择 168007" />
+          <span class="htsm-mono pd-code-value">168007</span>
+          <button type="button" class="pd-code-action pd-code-add" data-toast="已添加缺失编码" aria-label="添加 168007">
+            <i data-lucide="plus" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="pd-code-item">
+          <input type="checkbox" class="pd-row-check" aria-label="选择 168011" />
+          <span class="htsm-mono pd-code-value">168011</span>
+          <button type="button" class="pd-code-action pd-code-add" data-toast="已添加缺失编码" aria-label="添加 168011">
+            <i data-lucide="plus" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="pd-code-item">
+          <input type="checkbox" class="pd-row-check" aria-label="选择 168015" />
+          <span class="htsm-mono pd-code-value">168015</span>
+          <button type="button" class="pd-code-action pd-code-add" data-toast="已添加缺失编码" aria-label="添加 168015">
+            <i data-lucide="plus" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="pd-code-item">
+          <input type="checkbox" class="pd-row-check" aria-label="选择 168019" />
+          <span class="htsm-mono pd-code-value">168019</span>
+          <button type="button" class="pd-code-action pd-code-add" data-toast="已添加缺失编码" aria-label="添加 168019">
+            <i data-lucide="plus" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="pd-code-item">
+          <input type="checkbox" class="pd-row-check" aria-label="选择 168021" />
+          <span class="htsm-mono pd-code-value">168021</span>
+          <button type="button" class="pd-code-action pd-code-add" data-toast="已添加缺失编码" aria-label="添加 168021">
+            <i data-lucide="plus" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="pd-code-item">
+          <input type="checkbox" class="pd-row-check" aria-label="选择 168025" />
+          <span class="htsm-mono pd-code-value">168025</span>
+          <button type="button" class="pd-code-action pd-code-add" data-toast="已添加缺失编码" aria-label="添加 168025">
+            <i data-lucide="plus" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="pd-code-item">
+          <input type="checkbox" class="pd-row-check" aria-label="选择 168030" />
+          <span class="htsm-mono pd-code-value">168030</span>
+          <button type="button" class="pd-code-action pd-code-add" data-toast="已添加缺失编码" aria-label="添加 168030">
+            <i data-lucide="plus" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <div class="pd-codes-pagination">
+        <button type="button" class="pd-mini-page" aria-label="上一页">&laquo;</button>
+        <button type="button" class="pd-mini-page pd-mini-page-active" aria-current="page">1</button>
+        <button type="button" class="pd-mini-page" aria-label="下一页">&raquo;</button>
+        <span class="pd-mini-page-info">共 1 页</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 超出范围编码弹窗 -->
+<div class="pd-modal-mask" id="modal-excess" role="dialog" aria-modal="true" aria-labelledby="excess-title">
+  <div class="pd-modal pd-modal--700">
+    <div class="pd-modal-head">
+      <h4 class="pd-modal-title" id="excess-title">石墨电极 G050-120 - 超出范围编码</h4>
+      <button type="button" class="pd-modal-close" data-close-modal aria-label="关闭">
+        <i data-lucide="x" class="htsm-icon" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="pd-modal-body">
+      <p class="pd-codes-stats">共 <span class="htsm-num">3</span> 个超出编码</p>
+      <div class="pd-codes-toolbar">
+        <label class="pd-check">
+          <input type="checkbox" /> 全选
+        </label>
+        <select class="pd-sort-select" aria-label="排列顺序">
+          <option value="asc" selected>升序排列</option>
+          <option value="desc">降序排列</option>
+        </select>
+        <button type="button" class="pd-btn-danger-solid pd-codes-batch-btn" data-toast="成功批量删除 1 个超出编码">
+          <i data-lucide="trash-2" class="htsm-icon" aria-hidden="true"></i>
+          批量删除 (1)
+        </button>
+      </div>
+      <div class="pd-codes-grid">
+        <div class="pd-code-item">
+          <input type="checkbox" class="pd-row-check" checked aria-label="选择 167998" />
+          <span class="htsm-mono pd-code-value">167998</span>
+          <button type="button" class="pd-code-action pd-code-del" data-toast="已删除超出编码" aria-label="删除 167998">
+            <i data-lucide="trash-2" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="pd-code-item">
+          <input type="checkbox" class="pd-row-check" aria-label="选择 169051" />
+          <span class="htsm-mono pd-code-value">169051</span>
+          <button type="button" class="pd-code-action pd-code-del" data-toast="已删除超出编码" aria-label="删除 169051">
+            <i data-lucide="trash-2" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="pd-code-item">
+          <input type="checkbox" class="pd-row-check" aria-label="选择 169052" />
+          <span class="htsm-mono pd-code-value">169052</span>
+          <button type="button" class="pd-code-action pd-code-del" data-toast="已删除超出编码" aria-label="删除 169052">
+            <i data-lucide="trash-2" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+      <div class="pd-codes-pagination">
+        <button type="button" class="pd-mini-page" aria-label="上一页">&laquo;</button>
+        <button type="button" class="pd-mini-page pd-mini-page-active" aria-current="page">1</button>
+        <button type="button" class="pd-mini-page" aria-label="下一页">&raquo;</button>
+        <span class="pd-mini-page-info">共 1 页</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- toast 提示 -->
+<div class="pd-toast" id="pd-toast" role="status" aria-live="polite">
+  <i data-lucide="check-circle-2" class="htsm-icon pd-toast-icon" aria-hidden="true"></i>
+  <span class="pd-toast-text" id="pd-toast-text">已导出</span>
+</div>
+
+<!-- ============ 页面交互脚本 ============ -->
+<script id="page-interactions">
+(function () {
+  'use strict';
+
+  /* ---------- 弹窗开关 ---------- */
+  function openModal(id) {
+    var mask = document.getElementById(id);
+    if (mask) mask.classList.add('is-open');
+  }
+
+  function closeModal(mask) {
+    mask.classList.remove('is-open');
+  }
+
+  /* 打开：data-open-modal="modal-id" */
+  document.querySelectorAll('[data-open-modal]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      openModal(el.getAttribute('data-open-modal'));
+    });
+  });
+
+  /* 关闭：data-close-modal（弹窗内任意关闭按钮） */
+  document.querySelectorAll('[data-close-modal]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var mask = el.closest('.pd-modal-mask');
+      if (mask) closeModal(mask);
+    });
+  });
+
+  /* 点击遮罩关闭 */
+  document.querySelectorAll('.pd-modal-mask').forEach(function (mask) {
+    mask.addEventListener('click', function (e) {
+      if (e.target === mask) closeModal(mask);
+    });
+  });
+
+  /* ---------- 导出下拉菜单 ---------- */
+  function closeAllDropdowns() {
+    document.querySelectorAll('.pd-dropdown-menu.is-open').forEach(function (m) {
+      m.classList.remove('is-open');
+    });
+  }
+
+  document.querySelectorAll('[data-open-dropdown]').forEach(function (trigger) {
+    trigger.addEventListener('click', function (e) {
+      e.stopPropagation();
+      var wrap = document.getElementById(trigger.getAttribute('data-open-dropdown'));
+      if (!wrap) return;
+      var menu = wrap.querySelector('.pd-dropdown-menu');
+      if (!menu) return;
+      var wasOpen = menu.classList.contains('is-open');
+      closeAllDropdowns();
+      if (!wasOpen) menu.classList.add('is-open');
+    });
+  });
+
+  /* 菜单项：点击后关闭菜单（数量类同时由 data-open-modal 打开弹窗） */
+  document.querySelectorAll('[data-dropdown-item]').forEach(function (item) {
+    item.addEventListener('click', function () {
+      closeAllDropdowns();
+    });
+  });
+
+  /* 点击外部关闭下拉菜单 */
+  document.addEventListener('click', function (e) {
+    if (!e.target.closest('.pd-dropdown-wrap')) {
+      closeAllDropdowns();
+    }
+  });
+
+  /* ---------- 批量模式工具条切换 ---------- */
+  document.querySelectorAll('[data-toggle-batch]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var def = document.getElementById('pd-toolbar-default');
+      var batch = document.getElementById('pd-batch-bar');
+      if (def) def.hidden = !def.hidden;
+      if (batch) batch.hidden = !batch.hidden;
+    });
+  });
+
+  /* ---------- toast 提示 ---------- */
+  var toastEl = document.getElementById('pd-toast');
+  var toastText = document.getElementById('pd-toast-text');
+  var toastTimer = null;
+
+  function showToast(msg) {
+    if (!toastEl || !toastText) return;
+    toastText.textContent = msg;
+    toastEl.classList.add('is-open');
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      toastEl.classList.remove('is-open');
+    }, 2500);
+  }
+
+  document.querySelectorAll('[data-toast]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      showToast(el.getAttribute('data-toast'));
+    });
+  });
+
+  /* 渲染弹窗区内新增的 lucide 图标 */
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
+})();
+</script>
+</body>
+</html>

@@ -1380,12 +1380,12 @@ const ProductDetail = () => {
               paginatedModalList.map((c) => (
                 <div key={c} style={{ 
                   padding: '6px 8px', 
-                  background: '#fafafa', 
-                  borderRadius: 4, 
+                  background: 'var(--htsm-surface-2)', 
+                  borderRadius: 'var(--htsm-r-sm)', 
                   display: 'flex', 
                   justifyContent: 'space-between', 
                   alignItems: 'center',
-                  border: '1px solid #f0f0f0'
+                  border: '1px solid var(--htsm-line)'
                 }}>
                   <Checkbox 
                     checked={modalSelectedCodes.includes(c)}
@@ -1406,7 +1406,7 @@ const ProductDetail = () => {
                 </div>
               ))
             ) : (
-              <div style={{ gridColumn: 'span 4', color: '#999', textAlign: 'center', padding: '20px' }}>
+              <div style={{ gridColumn: 'span 4', color: 'var(--htsm-ink-3)', textAlign: 'center', padding: '20px' }}>
                 <Empty description="暂无数据" image={Empty.PRESENTED_IMAGE_SIMPLE} />
               </div>
             )}
@@ -1458,7 +1458,7 @@ const ProductDetail = () => {
             disabled={scanDeleteLoading}
             autoFocus
             size="large"
-            prefix={<QrcodeOutlined style={{ color: '#1890ff' }} />}
+            prefix={<QrcodeOutlined style={{ color: 'var(--htsm-primary)' }} />}
             autoComplete="off"
           />
           {scanDeleteLoading && (
@@ -1469,20 +1469,20 @@ const ProductDetail = () => {
           
           <div style={{ marginTop: 24, textAlign: 'left' }}>
             <div style={{ marginBottom: 8 }}>
-              <strong>已成功删除：</strong> <span style={{ color: '#52c41a', fontWeight: 'bold' }}>{scanDeleteSuccessCount}</span> 个编码
+              <strong>已成功删除：</strong> <span style={{ color: 'var(--htsm-state-success)', fontWeight: 'bold' }}>{scanDeleteSuccessCount}</span> 个编码
             </div>
             {scanDeleteFailedCodes.length > 0 && (
               <div>
-                <div style={{ marginBottom: 8, color: '#f5222d' }}>
+                <div style={{ marginBottom: 8, color: 'var(--htsm-state-error)' }}>
                   <strong>以下编码因为没有录入，无法删除 ({scanDeleteFailedCodes.length} 个)：</strong>
                 </div>
                 <div style={{ 
                   maxHeight: '150px', 
                   overflowY: 'auto', 
                   padding: '8px', 
-                  background: '#fafafa', 
-                  border: '1px solid #f0f0f0',
-                  borderRadius: '4px',
+                  background: 'var(--htsm-surface-2)', 
+                  border: '1px solid var(--htsm-line)',
+                  borderRadius: 'var(--htsm-r-sm)',
                   display: 'flex',
                   flexWrap: 'wrap',
                   gap: '8px'
@@ -1520,7 +1520,7 @@ const ProductDetail = () => {
               onChange={setExportQuantity}
               style={{ width: 120 }}
             />
-            <span style={{ marginLeft: 8, color: '#999' }}>
+            <span style={{ marginLeft: 8, color: 'var(--htsm-ink-3)' }}>
               (最多可导出 {codes.length} 个)
             </span>
           </div>
@@ -1548,7 +1548,7 @@ const ProductDetail = () => {
               onChange={setNumericExportQuantity}
               style={{ width: 120 }}
             />
-            <span style={{ marginLeft: 8, color: '#999' }}>
+            <span style={{ marginLeft: 8, color: 'var(--htsm-ink-3)' }}>
               (最多可导出 {codes.length} 个)
             </span>
           </div>
@@ -1596,7 +1596,7 @@ const ProductDetail = () => {
             }
           />
           {allProducts.length === 0 && (
-            <p style={{ color: '#999', marginTop: 8 }}>暂无可移动的目标产品</p>
+            <p style={{ color: 'var(--htsm-ink-3)', marginTop: 8 }}>暂无可移动的目标产品</p>
           )}
         </div>
       </Modal>

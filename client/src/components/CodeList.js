@@ -93,7 +93,7 @@ const CodeList = ({
             }
             description={code.description || '无描述'}
           />
-          <div style={{ color: '#888', fontSize: '12px' }}>
+          <div style={{ color: 'var(--htsm-ink-3)', fontSize: '12px' }}>
             {new Date(code.createdAt).toLocaleString()}
           </div>
         </List.Item>

@@ -52,8 +52,8 @@ const ProductCard = memo(({
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        border: selected ? '2px solid #1890ff' : undefined,
-        backgroundColor: selected ? '#f0f8ff' : undefined
+        border: selected ? '2px solid var(--htsm-primary)' : undefined,
+        backgroundColor: selected ? 'var(--htsm-primary-soft)' : undefined
       }}
       styles={{
         body: {
@@ -89,15 +89,18 @@ const ProductCard = memo(({
         </Popconfirm>
       ]}
     >
-      {/* 批量选择模式下的选择框 */}
-      {batchMode && (
-        <div style={{ marginBottom: 12, textAlign: 'right' }}>
+      {/* 分类 + 选择（原型对齐：分类 pill 左、选择框右） */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, minHeight: '28px' }}>
+        {product.category ? (
+          <span className="htsm-cat-pill">{product.category}</span>
+        ) : <span />}
+        {batchMode && (
           <Checkbox
             checked={selected}
             onChange={(e) => onSelect && onSelect(e.target.checked)}
           />
-        </div>
-      )}
+        )}
+      </div>
 
       {/* 产品标题和描述区域 */}
       <div style={{ marginBottom: 16 }}>
@@ -115,7 +118,7 @@ const ProductCard = memo(({
           {product.name}
         </div>
         <div style={{ 
-          color: '#666', 
+          color: 'var(--htsm-ink-2)', 
           fontSize: '14px',
           minHeight: '20px',
           lineHeight: '20px'
@@ -124,23 +127,18 @@ const ProductCard = memo(({
         </div>
       </div>
 
-      {/* 分类标签区域 */}
-      <div style={{ marginBottom: 12, minHeight: '24px' }}>
-        {product.category && (
-          <Tag color="blue">{product.category}</Tag>
-        )}
-      </div>
-
-      {/* 进度统计区域 */}
+      {/* 进度统计区域（原型对齐：已录入 x / y + 百分比） */}
       <div style={{ marginBottom: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-          <span>已录入: {codeCount}</span>
-          <span>需求: {requiredQuantity}</span>
+          <span className="htsm-entry-text">已录入 <span className="htsm-num">{codeCount}</span> / <span className="htsm-num">{requiredQuantity}</span></span>
+          <span className="htsm-entry-pct htsm-num">{completionRate}%</span>
         </div>
         <Progress 
           percent={completionRate} 
           size="small" 
-          status={completionRate < 100 ? "active" : "success"}
+          showInfo={false}
+          strokeColor={completionRate >= 100 ? 'var(--htsm-state-success)' : 'var(--htsm-primary)'}
+          trailColor="var(--htsm-surface-3)"
         />
       </div>
       
@@ -148,8 +146,8 @@ const ProductCard = memo(({
       <div style={{ marginBottom: 12, minHeight: '40px' }}>
         {((product.codeRanges && product.codeRanges.length > 0) || (product.codeStart && product.codeEnd)) ? (
           <>
-            <div style={{ fontSize: '12px', marginBottom: 4 }}>
-              编码范围: {product.codeRanges && product.codeRanges.length > 0 
+            <div className="htsm-mono" style={{ fontSize: '13px', marginBottom: 8, color: 'var(--htsm-ink-2)' }}>
+              {product.codeRanges && product.codeRanges.length > 0 
                 ? product.codeRanges.map(r => `${r.start} - ${r.end}`).join(', ') 
                 : `${product.codeStart} - ${product.codeEnd}`}
             </div>
@@ -166,7 +164,7 @@ const ProductCard = memo(({
                     </div>
                   }
                 >
-                  <Tag color="red" size="small" style={{ cursor: 'pointer' }} onClick={() => onViewMissing && onViewMissing(missingCodesList)}>
+                  <Tag color="error" size="small" style={{ cursor: 'pointer', marginInlineEnd: 0 }} onClick={() => onViewMissing && onViewMissing(missingCodesList)}>
                     缺失 {missingCodesList && missingCodesList.length} 个
                   </Tag>
                 </Tooltip>
@@ -183,15 +181,18 @@ const ProductCard = memo(({
                     </div>
                   }
                 >
-                  <Tag color="orange" size="small" style={{ cursor: 'pointer' }} onClick={() => onViewExcess && onViewExcess(excessCodes)}>
+                  <Tag color="warning" size="small" style={{ cursor: 'pointer', marginInlineEnd: 0 }} onClick={() => onViewExcess && onViewExcess(excessCodes)}>
                     超出 {excessCodes && excessCodes.length} 个
                   </Tag>
                 </Tooltip>
               )}
+              {!hasMissing && !hasExcess && (
+                <Tag color="success" size="small" style={{ marginInlineEnd: 0 }}>完整</Tag>
+              )}
             </div>
           </>
         ) : (
-          <div style={{ fontSize: '12px', color: '#ccc' }}>
+          <div style={{ fontSize: '12px', color: 'var(--htsm-ink-3)' }}>
             未设置编码范围
           </div>
         )}
@@ -201,8 +202,8 @@ const ProductCard = memo(({
       <div style={{ 
         marginTop: 'auto',
         fontSize: '12px', 
-        color: '#888',
-        borderTop: '1px solid #f0f0f0',
+        color: 'var(--htsm-ink-3)',
+        borderTop: '1px solid var(--htsm-line)',
         paddingTop: 8
       }}>
         创建时间: {new Date(product.createdAt).toLocaleDateString()}

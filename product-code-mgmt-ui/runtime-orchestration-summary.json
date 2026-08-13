@@ -1,0 +1,1335 @@
+{
+  "schemaVersion": "1.0",
+  "skillProvenance": {
+    "name": "solo-design",
+    "version": "2026.07.22.00.00.00",
+    "version_source": "skill-release-manifest.json",
+    "schema_version": "1.0",
+    "release": "prompt-base-cloud-ssot-migration",
+    "read_status": "loaded"
+  },
+  "project": {
+    "resolvedLane": "complex_html_page",
+    "deviceType": "desktop",
+    "sharedProjectShellContract": {
+      "shell": "partials/project-shell.html",
+      "sharedRegions": [
+        "sidebar-nav",
+        "topbar",
+        "app-frame",
+        "user-area"
+      ],
+      "mutableSlots": [
+        "activeNavItem",
+        "pageTitle"
+      ],
+      "mobileNavigation": {
+        "applies": false,
+        "reason": "桌面端企业后台，不采用移动底部导航"
+      }
+    },
+    "intentProfile": {
+      "kind": "multi-page-system-refactor",
+      "sourceSystem": "产品编码管理系统 (React + Ant Design)",
+      "scope": "全系统 UI 重构，覆盖仪表盘/产品管理/产品详情/高级搜索/备份管理/404",
+      "designDirection": "深色侧边栏·企业级科技蓝后台"
+    },
+    "selectedIntentWorkflowRead": true,
+    "contextRequirementsLoaded": [
+      {
+        "path": "intent-workflows/intent-project-complex-build/INTENT_WORKFLOW.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "intent-workflows/intent-project-complex-build/start-complex-project-build.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "intent-workflows/intent-project-complex-build/00-requirement-and-style-intake.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "intent-workflows/intent-project-complex-build/01-graphic-asset-preparation.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "intent-workflows/intent-project-complex-build/02-page-composition.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "intent-workflows/intent-project-complex-build/03-interaction-validation-delivery.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "intent-workflows/intent-project-complex-build/orchestration-summary-fields.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "intent-workflows/intent-project-complex-build/complex-page-dispatch-contract.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "intent-workflows/intent-project-complex-build/complex-page-runtime.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "intent-workflows/intent-project-complex-build/interaction-wiring-plan.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "shared-runtime/runtime-boundaries/lane-runtime-contracts.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "shared-runtime/agent-dispatch-runtime/lane-dispatch-index.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "shared-runtime/agent-dispatch-runtime/shared-page-rendering-kernel.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "shared-runtime/orchestration-summary-contract/orchestration-summary-contract.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "shared-runtime/orchestration-summary-contract/generalized-flow-control-fields.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "shared-runtime/design-artifact-formats/design-project-file-format.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "shared-runtime/html-rendering-primitives/shared-html-rendering-primitives.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "delivery-quality/page-rendering-quality-gate.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "delivery-quality/design-artifact-validation.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "delivery-quality/delivery-evidence-contract.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "visual-experience/visual-experience-guidelines.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "visual-experience/visual-checkpoint-protocol.md",
+        "readStatus": "loaded",
+        "bodyRead": true
+      },
+      {
+        "path": "skill-release-manifest.json",
+        "readStatus": "loaded",
+        "bodyRead": true
+      }
+    ],
+    "contextReadScope": "lane-runbook + lane dispatch contract + shared page rendering kernel + design file format + shared html primitives + quality gate + artifact validation + delivery evidence + visual experience + checkpoint protocol + source system code (client/src)",
+    "readScopeLedger": [
+      {
+        "path": "d:/Users/A1_Pa/Desktop/HTSM/产品编码管理系统/client/src/App.js",
+        "readStatus": "loaded",
+        "reason": "系统页面路由与整体框架"
+      },
+      {
+        "path": "d:/Users/A1_Pa/Desktop/HTSM/产品编码管理系统/client/src/App.css",
+        "readStatus": "loaded",
+        "reason": "现有视觉风格基线"
+      },
+      {
+        "path": "d:/Users/A1_Pa/Desktop/HTSM/产品编码管理系统/client/src/pages/Dashboard.js",
+        "readStatus": "loaded",
+        "reason": "仪表盘操作逻辑与数据形态"
+      },
+      {
+        "path": "d:/Users/A1_Pa/Desktop/HTSM/产品编码管理系统/client/src/pages/ProductList.js",
+        "readStatus": "loaded",
+        "reason": "产品管理操作逻辑"
+      },
+      {
+        "path": "d:/Users/A1_Pa/Desktop/HTSM/产品编码管理系统/client/src/pages/ProductDetail.js",
+        "readStatus": "loaded",
+        "reason": "产品详情/编码管理操作逻辑"
+      },
+      {
+        "path": "d:/Users/A1_Pa/Desktop/HTSM/产品编码管理系统/client/src/pages/AdvancedSearch.js",
+        "readStatus": "loaded",
+        "reason": "高级搜索操作逻辑"
+      },
+      {
+        "path": "d:/Users/A1_Pa/Desktop/HTSM/产品编码管理系统/client/src/components/AppHeader.js",
+        "readStatus": "loaded",
+        "reason": "导航结构现状"
+      },
+      {
+        "path": "d:/Users/A1_Pa/Desktop/HTSM/产品编码管理系统/client/src/components/ProductCard.js",
+        "readStatus": "loaded",
+        "reason": "产品卡片信息结构"
+      },
+      {
+        "path": "d:/Users/A1_Pa/Desktop/HTSM/产品编码管理系统/client/src/config/index.js",
+        "readStatus": "loaded",
+        "reason": "业务配置与数据示例"
+      },
+      {
+        "actor": "page-sub-agent",
+        "lane": "complex_html_page",
+        "path": "intent-workflows/intent-project-complex-build/complex-page-runtime.md",
+        "reason": "page runtime guide",
+        "scopeClass": "page-runtime",
+        "declaredBeforeRead": true,
+        "recordedAt": "2026-08-12T09:36:34.785Z",
+        "nodeId": "page-index",
+        "htmlSrc": "pages/index.html"
+      },
+      {
+        "actor": "page-sub-agent",
+        "lane": "complex_html_page",
+        "path": "intent-workflows/intent-project-complex-build/complex-page-dispatch-contract.md",
+        "reason": "dispatch contract",
+        "scopeClass": "dispatch-contract",
+        "declaredBeforeRead": true,
+        "recordedAt": "2026-08-12T09:36:34.785Z",
+        "nodeId": "page-index",
+        "htmlSrc": "pages/index.html"
+      },
+      {
+        "actor": "page-sub-agent",
+        "lane": "complex_html_page",
+        "path": "delivery-quality/page-density-guidelines.md",
+        "reason": "pageType=information-dense",
+        "ownerLane": "complex_html_page",
+        "scopeClass": "supplementary",
+        "declaredBeforeRead": true,
+        "recordedAt": "2026-08-12T09:36:34.785Z",
+        "nodeId": "page-index",
+        "htmlSrc": "pages/index.html"
+      }
+    ],
+    "generationTree": {
+      "nodeId": "gen-project-shell",
+      "kind": "project-shell",
+      "pageIds": [
+        "page-index",
+        "page-products",
+        "page-product-detail",
+        "page-search",
+        "page-backup",
+        "page-404"
+      ],
+      "output": "partials/project-shell.html",
+      "sharedRegions": [
+        "sidebar-nav",
+        "topbar",
+        "app-frame",
+        "user-area"
+      ],
+      "privateRegions": [
+        "main-content"
+      ],
+      "mutableSlots": [
+        "activeNavItem",
+        "pageTitle"
+      ],
+      "status": "completed",
+      "children": [
+        {
+          "nodeId": "gen-page-index",
+          "kind": "page-leaf",
+          "pageIds": [
+            "page-index"
+          ],
+          "output": "pages/index.html",
+          "sharedRegions": [],
+          "privateRegions": [
+            "dashboard-content"
+          ],
+          "mutableSlots": [
+            "activeNavItem",
+            "pageTitle"
+          ],
+          "status": "planned",
+          "children": []
+        },
+        {
+          "nodeId": "gen-page-products",
+          "kind": "page-leaf",
+          "pageIds": [
+            "page-products"
+          ],
+          "output": "pages/products.html",
+          "sharedRegions": [],
+          "privateRegions": [
+            "products-content"
+          ],
+          "mutableSlots": [
+            "activeNavItem",
+            "pageTitle"
+          ],
+          "status": "planned",
+          "children": []
+        },
+        {
+          "nodeId": "gen-page-product-detail",
+          "kind": "page-leaf",
+          "pageIds": [
+            "page-product-detail"
+          ],
+          "output": "pages/product-detail.html",
+          "sharedRegions": [],
+          "privateRegions": [
+            "detail-content"
+          ],
+          "mutableSlots": [
+            "activeNavItem",
+            "pageTitle"
+          ],
+          "status": "planned",
+          "children": []
+        },
+        {
+          "nodeId": "gen-page-search",
+          "kind": "page-leaf",
+          "pageIds": [
+            "page-search"
+          ],
+          "output": "pages/search.html",
+          "sharedRegions": [],
+          "privateRegions": [
+            "search-content"
+          ],
+          "mutableSlots": [
+            "activeNavItem",
+            "pageTitle"
+          ],
+          "status": "planned",
+          "children": []
+        },
+        {
+          "nodeId": "gen-page-backup",
+          "kind": "page-leaf",
+          "pageIds": [
+            "page-backup"
+          ],
+          "output": "pages/backup.html",
+          "sharedRegions": [],
+          "privateRegions": [
+            "backup-content"
+          ],
+          "mutableSlots": [
+            "activeNavItem",
+            "pageTitle"
+          ],
+          "status": "planned",
+          "children": []
+        },
+        {
+          "nodeId": "gen-page-404",
+          "kind": "page-leaf",
+          "pageIds": [
+            "page-404"
+          ],
+          "output": "pages/404.html",
+          "sharedRegions": [],
+          "privateRegions": [
+            "notfound-content"
+          ],
+          "mutableSlots": [
+            "activeNavItem",
+            "pageTitle"
+          ],
+          "status": "planned",
+          "children": []
+        }
+      ]
+    },
+    "cssPreflightEvidence": {
+      "cssPath": "colors_and_type.css",
+      "brandPrefix": "htsm",
+      "preflightStatus": "passed",
+      "preflightCommand": "apply-html-head-contract.mjs skeleton mode",
+      "preflightAt": 1786527123000
+    },
+    "mobileNavigation": {
+      "applies": false,
+      "reason": "桌面端企业后台，不做移动底部导航；响应式降级为可滚动内容"
+    },
+    "dispatchPreflightManifest": [
+      {
+        "recorded_at": "2026-08-12T09:36:34.785Z",
+        "generatedBy": "build-page-dispatch-manifest.mjs",
+        "packetType": "ComplexPagePacket",
+        "laneContract": {
+          "resolvedLane": "complex_html_page",
+          "packetType": "ComplexPagePacket",
+          "pageRuntimeGuide": "intent-workflows/intent-project-complex-build/complex-page-runtime.md",
+          "dispatchContract": "intent-workflows/intent-project-complex-build/complex-page-dispatch-contract.md"
+        },
+        "taskLinePresent": true,
+        "outputPathPresent": true,
+        "sharedTemplate": "intent-workflows/intent-project-complex-build/complex-page-runtime.md",
+        "nodeId": "page-index",
+        "htmlSrc": "pages/index.html",
+        "supplementaryReads": [
+          {
+            "path": "delivery-quality/page-density-guidelines.md",
+            "reason": "pageType=information-dense",
+            "ownerLane": "complex_html_page"
+          }
+        ],
+        "allowedWritePaths": [
+          "pages/index.html",
+          "assets/"
+        ],
+        "forbiddenWriteRoots": [
+          "*.design",
+          "runtime-orchestration-summary.json",
+          "validation-report.json",
+          "finish-readiness-report.json",
+          "restore-contract-report.json",
+          "page-generation-summary.json"
+        ],
+        "toolPolicy": {
+          "todoWriteAllowed": false,
+          "validationScriptsAllowed": false,
+          "previewAllowed": false,
+          "helperScriptsAllowed": false,
+          "designFileWriteAllowed": false,
+          "allowedWritePaths": [
+            "pages/index.html",
+            "assets/"
+          ]
+        },
+        "skillRuntime": {
+          "skillDir": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design",
+          "deterministicToolDir": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling",
+          "toolPaths": {
+            "applyHtmlHeadContract": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\apply-html-head-contract.mjs",
+            "recordDispatchCompletion": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\record-dispatch-completion.mjs",
+            "buildPageDispatchManifest": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\build-page-dispatch-manifest.mjs",
+            "validateDesignWorkspace": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-design-workspace.mjs",
+            "validateFinishReadiness": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-finish-readiness.mjs",
+            "validateRestoreContract": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-restore-contract.mjs"
+          },
+          "requiredForPageSubAgent": [
+            "applyHtmlHeadContract",
+            "recordDispatchCompletion"
+          ],
+          "pathInjection": "absolute",
+          "pathContract": "Do not use {SKILL_DIR} placeholders inside Page Sub-Agent packets; use toolPaths.* absolute paths.",
+          "commandTemplates": {
+            "recordDispatchCompletion": "node \"c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\record-dispatch-completion.mjs\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\" --node-id=\"page-index\" --html-src=\"pages/index.html\" --status=completed --changed-files=<comma-separated-project-relative-files> --trace-digest=<main-agent-runtime-trace-digest> --tool-ledger-json=<tool-ledger-json-or-file>"
+          }
+        },
+        "cssFilePath": "d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\colors_and_type.css",
+        "htmlFilePath": "d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\pages\\index.html",
+        "brandPrefix": "htsm",
+        "aestheticsMode": "free-explore",
+        "toolDisciplineBlockPresent": true,
+        "fillHtmlHeadCommand": "node \"c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\apply-html-head-contract.mjs\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\colors_and_type.css\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\pages\\index.html\" --title=\"仪表盘\" --lang=\"zh-CN\" --prefix=\"htsm\" --charts",
+        "headFillMode": "skeleton-first",
+        "viewportMode": null,
+        "completionSchemaExpected": "full",
+        "restoreFields": null,
+        "restoreContractStatus": null,
+        "restoreCompactPacket": null,
+        "deterministicCommands": null,
+        "sourceAuthorityLock": null,
+        "preDispatchFileHashes": {
+          "product-code-mgmt-ui.design": "099099f162f265150b102b6333897d476c220421f916a0ac8b64d95deff9fc37"
+        },
+        "contextPreflight": {
+          "workflowPath": "intent-workflows/intent-project-complex-build/INTENT_WORKFLOW.md",
+          "requiredContextFiles": [
+            "shared-runtime/runtime-boundaries/lane-runtime-contracts.md",
+            "shared-runtime/agent-dispatch-runtime/lane-dispatch-index.md",
+            "shared-runtime/agent-dispatch-runtime/shared-page-rendering-kernel.md",
+            "delivery-quality/page-rendering-quality-gate.md",
+            "delivery-quality/design-artifact-validation.md",
+            "delivery-quality/delivery-evidence-contract.md",
+            "visual-experience/visual-experience-guidelines.md",
+            "visual-experience/visual-checkpoint-protocol.md"
+          ],
+          "optionalContextFiles": [],
+          "passed": true
+        },
+        "pageSliceOnly": true,
+        "requiredFieldsPresent": true,
+        "missingFields": [],
+        "fillHtmlHeadCommandValid": true,
+        "mobileNavigation": {
+          "required": false,
+          "appliesToThisPage": false,
+          "canonicalHtmlIncluded": false,
+          "missingFields": []
+        },
+        "persistedToSummary": true,
+        "taskQueryAudited": false,
+        "proofSource": "summary-only",
+        "largeWorkflowFilesInTaskQuery": null
+      },
+      {
+        "recorded_at": "2026-08-12T09:36:34.785Z",
+        "generatedBy": "build-page-dispatch-manifest.mjs",
+        "packetType": "ComplexPagePacket",
+        "laneContract": {
+          "resolvedLane": "complex_html_page",
+          "packetType": "ComplexPagePacket",
+          "pageRuntimeGuide": "intent-workflows/intent-project-complex-build/complex-page-runtime.md",
+          "dispatchContract": "intent-workflows/intent-project-complex-build/complex-page-dispatch-contract.md"
+        },
+        "taskLinePresent": true,
+        "outputPathPresent": true,
+        "sharedTemplate": "intent-workflows/intent-project-complex-build/complex-page-runtime.md",
+        "nodeId": "page-products",
+        "htmlSrc": "pages/products.html",
+        "supplementaryReads": [],
+        "allowedWritePaths": [
+          "pages/products.html",
+          "assets/"
+        ],
+        "forbiddenWriteRoots": [
+          "*.design",
+          "runtime-orchestration-summary.json",
+          "validation-report.json",
+          "finish-readiness-report.json",
+          "restore-contract-report.json",
+          "page-generation-summary.json"
+        ],
+        "toolPolicy": {
+          "todoWriteAllowed": false,
+          "validationScriptsAllowed": false,
+          "previewAllowed": false,
+          "helperScriptsAllowed": false,
+          "designFileWriteAllowed": false,
+          "allowedWritePaths": [
+            "pages/products.html",
+            "assets/"
+          ]
+        },
+        "skillRuntime": {
+          "skillDir": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design",
+          "deterministicToolDir": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling",
+          "toolPaths": {
+            "applyHtmlHeadContract": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\apply-html-head-contract.mjs",
+            "recordDispatchCompletion": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\record-dispatch-completion.mjs",
+            "buildPageDispatchManifest": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\build-page-dispatch-manifest.mjs",
+            "validateDesignWorkspace": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-design-workspace.mjs",
+            "validateFinishReadiness": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-finish-readiness.mjs",
+            "validateRestoreContract": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-restore-contract.mjs"
+          },
+          "requiredForPageSubAgent": [
+            "applyHtmlHeadContract",
+            "recordDispatchCompletion"
+          ],
+          "pathInjection": "absolute",
+          "pathContract": "Do not use {SKILL_DIR} placeholders inside Page Sub-Agent packets; use toolPaths.* absolute paths.",
+          "commandTemplates": {
+            "recordDispatchCompletion": "node \"c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\record-dispatch-completion.mjs\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\" --node-id=\"page-products\" --html-src=\"pages/products.html\" --status=completed --changed-files=<comma-separated-project-relative-files> --trace-digest=<main-agent-runtime-trace-digest> --tool-ledger-json=<tool-ledger-json-or-file>"
+          }
+        },
+        "cssFilePath": "d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\colors_and_type.css",
+        "htmlFilePath": "d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\pages\\products.html",
+        "brandPrefix": "htsm",
+        "aestheticsMode": "free-explore",
+        "toolDisciplineBlockPresent": true,
+        "fillHtmlHeadCommand": "node \"c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\apply-html-head-contract.mjs\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\colors_and_type.css\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\pages\\products.html\" --title=\"产品管理\" --lang=\"zh-CN\" --prefix=\"htsm\"",
+        "headFillMode": "skeleton-first",
+        "viewportMode": null,
+        "completionSchemaExpected": "full",
+        "restoreFields": null,
+        "restoreContractStatus": null,
+        "restoreCompactPacket": null,
+        "deterministicCommands": null,
+        "sourceAuthorityLock": null,
+        "preDispatchFileHashes": {
+          "product-code-mgmt-ui.design": "099099f162f265150b102b6333897d476c220421f916a0ac8b64d95deff9fc37"
+        },
+        "contextPreflight": {
+          "workflowPath": "intent-workflows/intent-project-complex-build/INTENT_WORKFLOW.md",
+          "requiredContextFiles": [
+            "shared-runtime/runtime-boundaries/lane-runtime-contracts.md",
+            "shared-runtime/agent-dispatch-runtime/lane-dispatch-index.md",
+            "shared-runtime/agent-dispatch-runtime/shared-page-rendering-kernel.md",
+            "delivery-quality/page-rendering-quality-gate.md",
+            "delivery-quality/design-artifact-validation.md",
+            "delivery-quality/delivery-evidence-contract.md",
+            "visual-experience/visual-experience-guidelines.md",
+            "visual-experience/visual-checkpoint-protocol.md"
+          ],
+          "optionalContextFiles": [],
+          "passed": true
+        },
+        "pageSliceOnly": true,
+        "requiredFieldsPresent": true,
+        "missingFields": [],
+        "fillHtmlHeadCommandValid": true,
+        "mobileNavigation": {
+          "required": false,
+          "appliesToThisPage": false,
+          "canonicalHtmlIncluded": false,
+          "missingFields": []
+        },
+        "persistedToSummary": true,
+        "taskQueryAudited": false,
+        "proofSource": "summary-only",
+        "largeWorkflowFilesInTaskQuery": null
+      },
+      {
+        "recorded_at": "2026-08-12T09:36:34.785Z",
+        "generatedBy": "build-page-dispatch-manifest.mjs",
+        "packetType": "ComplexPagePacket",
+        "laneContract": {
+          "resolvedLane": "complex_html_page",
+          "packetType": "ComplexPagePacket",
+          "pageRuntimeGuide": "intent-workflows/intent-project-complex-build/complex-page-runtime.md",
+          "dispatchContract": "intent-workflows/intent-project-complex-build/complex-page-dispatch-contract.md"
+        },
+        "taskLinePresent": true,
+        "outputPathPresent": true,
+        "sharedTemplate": "intent-workflows/intent-project-complex-build/complex-page-runtime.md",
+        "nodeId": "page-product-detail",
+        "htmlSrc": "pages/product-detail.html",
+        "supplementaryReads": [],
+        "allowedWritePaths": [
+          "pages/product-detail.html",
+          "assets/"
+        ],
+        "forbiddenWriteRoots": [
+          "*.design",
+          "runtime-orchestration-summary.json",
+          "validation-report.json",
+          "finish-readiness-report.json",
+          "restore-contract-report.json",
+          "page-generation-summary.json"
+        ],
+        "toolPolicy": {
+          "todoWriteAllowed": false,
+          "validationScriptsAllowed": false,
+          "previewAllowed": false,
+          "helperScriptsAllowed": false,
+          "designFileWriteAllowed": false,
+          "allowedWritePaths": [
+            "pages/product-detail.html",
+            "assets/"
+          ]
+        },
+        "skillRuntime": {
+          "skillDir": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design",
+          "deterministicToolDir": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling",
+          "toolPaths": {
+            "applyHtmlHeadContract": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\apply-html-head-contract.mjs",
+            "recordDispatchCompletion": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\record-dispatch-completion.mjs",
+            "buildPageDispatchManifest": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\build-page-dispatch-manifest.mjs",
+            "validateDesignWorkspace": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-design-workspace.mjs",
+            "validateFinishReadiness": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-finish-readiness.mjs",
+            "validateRestoreContract": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-restore-contract.mjs"
+          },
+          "requiredForPageSubAgent": [
+            "applyHtmlHeadContract",
+            "recordDispatchCompletion"
+          ],
+          "pathInjection": "absolute",
+          "pathContract": "Do not use {SKILL_DIR} placeholders inside Page Sub-Agent packets; use toolPaths.* absolute paths.",
+          "commandTemplates": {
+            "recordDispatchCompletion": "node \"c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\record-dispatch-completion.mjs\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\" --node-id=\"page-product-detail\" --html-src=\"pages/product-detail.html\" --status=completed --changed-files=<comma-separated-project-relative-files> --trace-digest=<main-agent-runtime-trace-digest> --tool-ledger-json=<tool-ledger-json-or-file>"
+          }
+        },
+        "cssFilePath": "d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\colors_and_type.css",
+        "htmlFilePath": "d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\pages\\product-detail.html",
+        "brandPrefix": "htsm",
+        "aestheticsMode": "free-explore",
+        "toolDisciplineBlockPresent": true,
+        "fillHtmlHeadCommand": "node \"c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\apply-html-head-contract.mjs\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\colors_and_type.css\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\pages\\product-detail.html\" --title=\"产品详情\" --lang=\"zh-CN\" --prefix=\"htsm\"",
+        "headFillMode": "skeleton-first",
+        "viewportMode": null,
+        "completionSchemaExpected": "full",
+        "restoreFields": null,
+        "restoreContractStatus": null,
+        "restoreCompactPacket": null,
+        "deterministicCommands": null,
+        "sourceAuthorityLock": null,
+        "preDispatchFileHashes": {
+          "product-code-mgmt-ui.design": "099099f162f265150b102b6333897d476c220421f916a0ac8b64d95deff9fc37"
+        },
+        "contextPreflight": {
+          "workflowPath": "intent-workflows/intent-project-complex-build/INTENT_WORKFLOW.md",
+          "requiredContextFiles": [
+            "shared-runtime/runtime-boundaries/lane-runtime-contracts.md",
+            "shared-runtime/agent-dispatch-runtime/lane-dispatch-index.md",
+            "shared-runtime/agent-dispatch-runtime/shared-page-rendering-kernel.md",
+            "delivery-quality/page-rendering-quality-gate.md",
+            "delivery-quality/design-artifact-validation.md",
+            "delivery-quality/delivery-evidence-contract.md",
+            "visual-experience/visual-experience-guidelines.md",
+            "visual-experience/visual-checkpoint-protocol.md"
+          ],
+          "optionalContextFiles": [],
+          "passed": true
+        },
+        "pageSliceOnly": true,
+        "requiredFieldsPresent": true,
+        "missingFields": [],
+        "fillHtmlHeadCommandValid": true,
+        "mobileNavigation": {
+          "required": false,
+          "appliesToThisPage": false,
+          "canonicalHtmlIncluded": false,
+          "missingFields": []
+        },
+        "persistedToSummary": true,
+        "taskQueryAudited": false,
+        "proofSource": "summary-only",
+        "largeWorkflowFilesInTaskQuery": null
+      },
+      {
+        "recorded_at": "2026-08-12T09:36:34.785Z",
+        "generatedBy": "build-page-dispatch-manifest.mjs",
+        "packetType": "ComplexPagePacket",
+        "laneContract": {
+          "resolvedLane": "complex_html_page",
+          "packetType": "ComplexPagePacket",
+          "pageRuntimeGuide": "intent-workflows/intent-project-complex-build/complex-page-runtime.md",
+          "dispatchContract": "intent-workflows/intent-project-complex-build/complex-page-dispatch-contract.md"
+        },
+        "taskLinePresent": true,
+        "outputPathPresent": true,
+        "sharedTemplate": "intent-workflows/intent-project-complex-build/complex-page-runtime.md",
+        "nodeId": "page-search",
+        "htmlSrc": "pages/search.html",
+        "supplementaryReads": [],
+        "allowedWritePaths": [
+          "pages/search.html",
+          "assets/"
+        ],
+        "forbiddenWriteRoots": [
+          "*.design",
+          "runtime-orchestration-summary.json",
+          "validation-report.json",
+          "finish-readiness-report.json",
+          "restore-contract-report.json",
+          "page-generation-summary.json"
+        ],
+        "toolPolicy": {
+          "todoWriteAllowed": false,
+          "validationScriptsAllowed": false,
+          "previewAllowed": false,
+          "helperScriptsAllowed": false,
+          "designFileWriteAllowed": false,
+          "allowedWritePaths": [
+            "pages/search.html",
+            "assets/"
+          ]
+        },
+        "skillRuntime": {
+          "skillDir": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design",
+          "deterministicToolDir": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling",
+          "toolPaths": {
+            "applyHtmlHeadContract": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\apply-html-head-contract.mjs",
+            "recordDispatchCompletion": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\record-dispatch-completion.mjs",
+            "buildPageDispatchManifest": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\build-page-dispatch-manifest.mjs",
+            "validateDesignWorkspace": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-design-workspace.mjs",
+            "validateFinishReadiness": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-finish-readiness.mjs",
+            "validateRestoreContract": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-restore-contract.mjs"
+          },
+          "requiredForPageSubAgent": [
+            "applyHtmlHeadContract",
+            "recordDispatchCompletion"
+          ],
+          "pathInjection": "absolute",
+          "pathContract": "Do not use {SKILL_DIR} placeholders inside Page Sub-Agent packets; use toolPaths.* absolute paths.",
+          "commandTemplates": {
+            "recordDispatchCompletion": "node \"c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\record-dispatch-completion.mjs\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\" --node-id=\"page-search\" --html-src=\"pages/search.html\" --status=completed --changed-files=<comma-separated-project-relative-files> --trace-digest=<main-agent-runtime-trace-digest> --tool-ledger-json=<tool-ledger-json-or-file>"
+          }
+        },
+        "cssFilePath": "d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\colors_and_type.css",
+        "htmlFilePath": "d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\pages\\search.html",
+        "brandPrefix": "htsm",
+        "aestheticsMode": "free-explore",
+        "toolDisciplineBlockPresent": true,
+        "fillHtmlHeadCommand": "node \"c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\apply-html-head-contract.mjs\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\colors_and_type.css\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\pages\\search.html\" --title=\"高级搜索\" --lang=\"zh-CN\" --prefix=\"htsm\"",
+        "headFillMode": "skeleton-first",
+        "viewportMode": null,
+        "completionSchemaExpected": "full",
+        "restoreFields": null,
+        "restoreContractStatus": null,
+        "restoreCompactPacket": null,
+        "deterministicCommands": null,
+        "sourceAuthorityLock": null,
+        "preDispatchFileHashes": {
+          "product-code-mgmt-ui.design": "099099f162f265150b102b6333897d476c220421f916a0ac8b64d95deff9fc37"
+        },
+        "contextPreflight": {
+          "workflowPath": "intent-workflows/intent-project-complex-build/INTENT_WORKFLOW.md",
+          "requiredContextFiles": [
+            "shared-runtime/runtime-boundaries/lane-runtime-contracts.md",
+            "shared-runtime/agent-dispatch-runtime/lane-dispatch-index.md",
+            "shared-runtime/agent-dispatch-runtime/shared-page-rendering-kernel.md",
+            "delivery-quality/page-rendering-quality-gate.md",
+            "delivery-quality/design-artifact-validation.md",
+            "delivery-quality/delivery-evidence-contract.md",
+            "visual-experience/visual-experience-guidelines.md",
+            "visual-experience/visual-checkpoint-protocol.md"
+          ],
+          "optionalContextFiles": [],
+          "passed": true
+        },
+        "pageSliceOnly": true,
+        "requiredFieldsPresent": true,
+        "missingFields": [],
+        "fillHtmlHeadCommandValid": true,
+        "mobileNavigation": {
+          "required": false,
+          "appliesToThisPage": false,
+          "canonicalHtmlIncluded": false,
+          "missingFields": []
+        },
+        "persistedToSummary": true,
+        "taskQueryAudited": false,
+        "proofSource": "summary-only",
+        "largeWorkflowFilesInTaskQuery": null
+      },
+      {
+        "recorded_at": "2026-08-12T09:36:34.785Z",
+        "generatedBy": "build-page-dispatch-manifest.mjs",
+        "packetType": "ComplexPagePacket",
+        "laneContract": {
+          "resolvedLane": "complex_html_page",
+          "packetType": "ComplexPagePacket",
+          "pageRuntimeGuide": "intent-workflows/intent-project-complex-build/complex-page-runtime.md",
+          "dispatchContract": "intent-workflows/intent-project-complex-build/complex-page-dispatch-contract.md"
+        },
+        "taskLinePresent": true,
+        "outputPathPresent": true,
+        "sharedTemplate": "intent-workflows/intent-project-complex-build/complex-page-runtime.md",
+        "nodeId": "page-backup",
+        "htmlSrc": "pages/backup.html",
+        "supplementaryReads": [],
+        "allowedWritePaths": [
+          "pages/backup.html",
+          "assets/"
+        ],
+        "forbiddenWriteRoots": [
+          "*.design",
+          "runtime-orchestration-summary.json",
+          "validation-report.json",
+          "finish-readiness-report.json",
+          "restore-contract-report.json",
+          "page-generation-summary.json"
+        ],
+        "toolPolicy": {
+          "todoWriteAllowed": false,
+          "validationScriptsAllowed": false,
+          "previewAllowed": false,
+          "helperScriptsAllowed": false,
+          "designFileWriteAllowed": false,
+          "allowedWritePaths": [
+            "pages/backup.html",
+            "assets/"
+          ]
+        },
+        "skillRuntime": {
+          "skillDir": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design",
+          "deterministicToolDir": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling",
+          "toolPaths": {
+            "applyHtmlHeadContract": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\apply-html-head-contract.mjs",
+            "recordDispatchCompletion": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\record-dispatch-completion.mjs",
+            "buildPageDispatchManifest": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\build-page-dispatch-manifest.mjs",
+            "validateDesignWorkspace": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-design-workspace.mjs",
+            "validateFinishReadiness": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-finish-readiness.mjs",
+            "validateRestoreContract": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-restore-contract.mjs"
+          },
+          "requiredForPageSubAgent": [
+            "applyHtmlHeadContract",
+            "recordDispatchCompletion"
+          ],
+          "pathInjection": "absolute",
+          "pathContract": "Do not use {SKILL_DIR} placeholders inside Page Sub-Agent packets; use toolPaths.* absolute paths.",
+          "commandTemplates": {
+            "recordDispatchCompletion": "node \"c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\record-dispatch-completion.mjs\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\" --node-id=\"page-backup\" --html-src=\"pages/backup.html\" --status=completed --changed-files=<comma-separated-project-relative-files> --trace-digest=<main-agent-runtime-trace-digest> --tool-ledger-json=<tool-ledger-json-or-file>"
+          }
+        },
+        "cssFilePath": "d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\colors_and_type.css",
+        "htmlFilePath": "d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\pages\\backup.html",
+        "brandPrefix": "htsm",
+        "aestheticsMode": "free-explore",
+        "toolDisciplineBlockPresent": true,
+        "fillHtmlHeadCommand": "node \"c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\apply-html-head-contract.mjs\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\colors_and_type.css\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\pages\\backup.html\" --title=\"备份管理\" --lang=\"zh-CN\" --prefix=\"htsm\"",
+        "headFillMode": "skeleton-first",
+        "viewportMode": null,
+        "completionSchemaExpected": "full",
+        "restoreFields": null,
+        "restoreContractStatus": null,
+        "restoreCompactPacket": null,
+        "deterministicCommands": null,
+        "sourceAuthorityLock": null,
+        "preDispatchFileHashes": {
+          "product-code-mgmt-ui.design": "099099f162f265150b102b6333897d476c220421f916a0ac8b64d95deff9fc37"
+        },
+        "contextPreflight": {
+          "workflowPath": "intent-workflows/intent-project-complex-build/INTENT_WORKFLOW.md",
+          "requiredContextFiles": [
+            "shared-runtime/runtime-boundaries/lane-runtime-contracts.md",
+            "shared-runtime/agent-dispatch-runtime/lane-dispatch-index.md",
+            "shared-runtime/agent-dispatch-runtime/shared-page-rendering-kernel.md",
+            "delivery-quality/page-rendering-quality-gate.md",
+            "delivery-quality/design-artifact-validation.md",
+            "delivery-quality/delivery-evidence-contract.md",
+            "visual-experience/visual-experience-guidelines.md",
+            "visual-experience/visual-checkpoint-protocol.md"
+          ],
+          "optionalContextFiles": [],
+          "passed": true
+        },
+        "pageSliceOnly": true,
+        "requiredFieldsPresent": true,
+        "missingFields": [],
+        "fillHtmlHeadCommandValid": true,
+        "mobileNavigation": {
+          "required": false,
+          "appliesToThisPage": false,
+          "canonicalHtmlIncluded": false,
+          "missingFields": []
+        },
+        "persistedToSummary": true,
+        "taskQueryAudited": false,
+        "proofSource": "summary-only",
+        "largeWorkflowFilesInTaskQuery": null
+      },
+      {
+        "recorded_at": "2026-08-12T09:36:34.785Z",
+        "generatedBy": "build-page-dispatch-manifest.mjs",
+        "packetType": "ComplexPagePacket",
+        "laneContract": {
+          "resolvedLane": "complex_html_page",
+          "packetType": "ComplexPagePacket",
+          "pageRuntimeGuide": "intent-workflows/intent-project-complex-build/complex-page-runtime.md",
+          "dispatchContract": "intent-workflows/intent-project-complex-build/complex-page-dispatch-contract.md"
+        },
+        "taskLinePresent": true,
+        "outputPathPresent": true,
+        "sharedTemplate": "intent-workflows/intent-project-complex-build/complex-page-runtime.md",
+        "nodeId": "page-404",
+        "htmlSrc": "pages/404.html",
+        "supplementaryReads": [],
+        "allowedWritePaths": [
+          "pages/404.html",
+          "assets/"
+        ],
+        "forbiddenWriteRoots": [
+          "*.design",
+          "runtime-orchestration-summary.json",
+          "validation-report.json",
+          "finish-readiness-report.json",
+          "restore-contract-report.json",
+          "page-generation-summary.json"
+        ],
+        "toolPolicy": {
+          "todoWriteAllowed": false,
+          "validationScriptsAllowed": false,
+          "previewAllowed": false,
+          "helperScriptsAllowed": false,
+          "designFileWriteAllowed": false,
+          "allowedWritePaths": [
+            "pages/404.html",
+            "assets/"
+          ]
+        },
+        "skillRuntime": {
+          "skillDir": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design",
+          "deterministicToolDir": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling",
+          "toolPaths": {
+            "applyHtmlHeadContract": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\apply-html-head-contract.mjs",
+            "recordDispatchCompletion": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\record-dispatch-completion.mjs",
+            "buildPageDispatchManifest": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\build-page-dispatch-manifest.mjs",
+            "validateDesignWorkspace": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-design-workspace.mjs",
+            "validateFinishReadiness": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-finish-readiness.mjs",
+            "validateRestoreContract": "c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\validate-restore-contract.mjs"
+          },
+          "requiredForPageSubAgent": [
+            "applyHtmlHeadContract",
+            "recordDispatchCompletion"
+          ],
+          "pathInjection": "absolute",
+          "pathContract": "Do not use {SKILL_DIR} placeholders inside Page Sub-Agent packets; use toolPaths.* absolute paths.",
+          "commandTemplates": {
+            "recordDispatchCompletion": "node \"c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\record-dispatch-completion.mjs\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\" --node-id=\"page-404\" --html-src=\"pages/404.html\" --status=completed --changed-files=<comma-separated-project-relative-files> --trace-digest=<main-agent-runtime-trace-digest> --tool-ledger-json=<tool-ledger-json-or-file>"
+          }
+        },
+        "cssFilePath": "d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\colors_and_type.css",
+        "htmlFilePath": "d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\pages\\404.html",
+        "brandPrefix": "htsm",
+        "aestheticsMode": "free-explore",
+        "toolDisciplineBlockPresent": true,
+        "fillHtmlHeadCommand": "node \"c:\\Users\\A1_Pa\\.trae\\builtin\\design\\default\\skills\\solo-design\\shared-runtime\\deterministic-tooling\\apply-html-head-contract.mjs\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\colors_and_type.css\" \"d:\\Users\\A1_Pa\\Desktop\\HTSM\\产品编码管理系统\\product-code-mgmt-ui\\pages\\404.html\" --title=\"页面未找到\" --lang=\"zh-CN\" --prefix=\"htsm\"",
+        "headFillMode": "skeleton-first",
+        "viewportMode": null,
+        "completionSchemaExpected": "full",
+        "restoreFields": null,
+        "restoreContractStatus": null,
+        "restoreCompactPacket": null,
+        "deterministicCommands": null,
+        "sourceAuthorityLock": null,
+        "preDispatchFileHashes": {
+          "product-code-mgmt-ui.design": "099099f162f265150b102b6333897d476c220421f916a0ac8b64d95deff9fc37"
+        },
+        "contextPreflight": {
+          "workflowPath": "intent-workflows/intent-project-complex-build/INTENT_WORKFLOW.md",
+          "requiredContextFiles": [
+            "shared-runtime/runtime-boundaries/lane-runtime-contracts.md",
+            "shared-runtime/agent-dispatch-runtime/lane-dispatch-index.md",
+            "shared-runtime/agent-dispatch-runtime/shared-page-rendering-kernel.md",
+            "delivery-quality/page-rendering-quality-gate.md",
+            "delivery-quality/design-artifact-validation.md",
+            "delivery-quality/delivery-evidence-contract.md",
+            "visual-experience/visual-experience-guidelines.md",
+            "visual-experience/visual-checkpoint-protocol.md"
+          ],
+          "optionalContextFiles": [],
+          "passed": true
+        },
+        "pageSliceOnly": true,
+        "requiredFieldsPresent": true,
+        "missingFields": [],
+        "fillHtmlHeadCommandValid": true,
+        "mobileNavigation": {
+          "required": false,
+          "appliesToThisPage": false,
+          "canonicalHtmlIncluded": false,
+          "missingFields": []
+        },
+        "persistedToSummary": true,
+        "taskQueryAudited": false,
+        "proofSource": "summary-only",
+        "largeWorkflowFilesInTaskQuery": null
+      }
+    ],
+    "validationRunDiscipline": {
+      "maxFullValidationRuns": 2,
+      "softWarningsTriggerRepair": false,
+      "blockingRepairMode": "targeted-once",
+      "forbiddenRepairTriggers": [
+        "soft-warning-only",
+        "provenance-warning-only",
+        "style-warning-only"
+      ]
+    },
+    "validationHistory": [],
+    "validationRepairLedger": [],
+    "validationSnapshot": {},
+    "artifactReadinessEvidence": {},
+    "lowValueCallWatchdog": {
+      "applies": true,
+      "maxBoundedCalls": 12,
+      "noProgressNextAction": "stop_loop_and_report",
+      "noProgressTarget": "runtime-orchestration-summary.json"
+    },
+    "sourceAuthorityLock": {
+      "authorityType": "source-system-code",
+      "lockStatus": "locked",
+      "visualAuthority": "深色侧边栏 + 企业级科技蓝 + 卡片化数据密度",
+      "contentAuthority": "client/src 现有操作逻辑与业务文案"
+    },
+    "visualQualityCheckpoints": [
+      {
+        "checkpointId": "vq-anchor",
+        "dimension": "visual-anchor",
+        "expected": "深色侧边栏主导航 + 顶部状态栏 + 浅色内容区，科技蓝 #1747E6 作为唯一主色",
+        "evidenceTarget": "partials/project-shell.html#sidebar-nav"
+      },
+      {
+        "checkpointId": "vq-hierarchy",
+        "dimension": "information-hierarchy",
+        "expected": "统计卡片/KPI 优先，业务内容其次，辅助操作最末；标题层级清晰",
+        "evidenceTarget": "pages/index.html#content"
+      },
+      {
+        "checkpointId": "vq-structure",
+        "dimension": "composition-structure",
+        "expected": "企业后台密度：24px 栅格、8pt 间距、卡片化分区、批次/数量信息突出",
+        "evidenceTarget": "pages/products.html#layout"
+      },
+      {
+        "checkpointId": "vq-implementation",
+        "dimension": "implementation-strategy",
+        "expected": "colors_and_type.css 变量 + Tailwind 语义类 + 静态 critical-layout CSS，无外部图片依赖",
+        "evidenceTarget": "pages/index.html#implementation"
+      }
+    ],
+    "wiringRegistrationEvidence": {},
+    "expectedDispatches": [
+      {
+        "nodeId": "page-index",
+        "pageId": "page-index",
+        "targetPageId": "page-index",
+        "htmlSrc": "pages/index.html",
+        "packetType": "ComplexPagePacket",
+        "status": "completed",
+        "changedFiles": [
+          "pages/index.html"
+        ],
+        "toolCallLedger": {
+          "source": "main-agent-runtime-trace",
+          "traceDigest": "E6329E2F12931A6AC67B13641DCA3A3571F68D7C7BF445A0C4D3EEE77FA0ED47",
+          "todoWriteCalls": 0,
+          "previewCalls": 0,
+          "validationScriptCalls": 0,
+          "helperScriptWrites": 0
+        },
+        "recordedAt": "2026-08-12T10:08:06.503Z",
+        "source": "record-dispatch-completion.mjs"
+      },
+      {
+        "nodeId": "page-products",
+        "pageId": "page-products",
+        "targetPageId": "page-products",
+        "htmlSrc": "pages/products.html",
+        "packetType": "ComplexPagePacket",
+        "status": "completed",
+        "changedFiles": [
+          "pages/products.html"
+        ],
+        "toolCallLedger": {
+          "source": "main-agent-runtime-trace",
+          "traceDigest": "EA1F8BAD9B93FAB569A0087C53A8E677394B7B363C3D7AB5767E498CF53B2D50",
+          "todoWriteCalls": 0,
+          "previewCalls": 0,
+          "validationScriptCalls": 0,
+          "helperScriptWrites": 0
+        },
+        "recordedAt": "2026-08-12T10:08:06.582Z",
+        "source": "record-dispatch-completion.mjs"
+      },
+      {
+        "nodeId": "page-product-detail",
+        "pageId": "page-product-detail",
+        "targetPageId": "page-product-detail",
+        "htmlSrc": "pages/product-detail.html",
+        "packetType": "ComplexPagePacket",
+        "status": "completed",
+        "changedFiles": [
+          "pages/product-detail.html"
+        ],
+        "toolCallLedger": {
+          "source": "main-agent-runtime-trace",
+          "traceDigest": "4749E6E585D6FDD5D1FB2ACF6AD4E09634633FDC7DFBE39D8DBFD9F7333AC59B",
+          "todoWriteCalls": 0,
+          "previewCalls": 0,
+          "validationScriptCalls": 0,
+          "helperScriptWrites": 0
+        },
+        "recordedAt": "2026-08-12T10:08:06.659Z",
+        "source": "record-dispatch-completion.mjs"
+      },
+      {
+        "nodeId": "page-search",
+        "pageId": "page-search",
+        "targetPageId": "page-search",
+        "htmlSrc": "pages/search.html",
+        "packetType": "ComplexPagePacket",
+        "status": "completed",
+        "changedFiles": [
+          "pages/search.html"
+        ],
+        "toolCallLedger": {
+          "source": "main-agent-runtime-trace",
+          "traceDigest": "78E05A64558F5034FD138647D745D36092806DBAE8E7652C295D3530B84B109C",
+          "todoWriteCalls": 0,
+          "previewCalls": 0,
+          "validationScriptCalls": 0,
+          "helperScriptWrites": 0
+        },
+        "recordedAt": "2026-08-12T10:08:14.439Z",
+        "source": "record-dispatch-completion.mjs"
+      },
+      {
+        "nodeId": "page-backup",
+        "pageId": "page-backup",
+        "targetPageId": "page-backup",
+        "htmlSrc": "pages/backup.html",
+        "packetType": "ComplexPagePacket",
+        "status": "completed",
+        "changedFiles": [
+          "pages/backup.html"
+        ],
+        "toolCallLedger": {
+          "source": "main-agent-runtime-trace",
+          "traceDigest": "2E9DCC9E055B5928FE90BA39757747980A42FE65EB9BC6B8C91A2E99E2315AE2",
+          "todoWriteCalls": 0,
+          "previewCalls": 0,
+          "validationScriptCalls": 0,
+          "helperScriptWrites": 0
+        },
+        "recordedAt": "2026-08-12T10:08:14.519Z",
+        "source": "record-dispatch-completion.mjs"
+      },
+      {
+        "nodeId": "page-404",
+        "pageId": "page-404",
+        "targetPageId": "page-404",
+        "htmlSrc": "pages/404.html",
+        "packetType": "ComplexPagePacket",
+        "status": "completed",
+        "changedFiles": [
+          "pages/404.html"
+        ],
+        "toolCallLedger": {
+          "source": "main-agent-runtime-trace",
+          "traceDigest": "F0C35087C68DAA09266CB73275652E7FE09FAB0224BDF99BCDB8CD209B77A623",
+          "todoWriteCalls": 0,
+          "previewCalls": 0,
+          "validationScriptCalls": 0,
+          "helperScriptWrites": 0
+        },
+        "recordedAt": "2026-08-12T10:08:14.601Z",
+        "source": "record-dispatch-completion.mjs"
+      }
+    ],
+    "mainAgentPostDispatchMutations": [
+      {
+        "path": "html-head-contract",
+        "reason": "index",
+        "owner": "main-agent",
+        "recordedAt": "2026-08-12T09:59:54.310Z",
+        "source": "record-dispatch-completion.mjs"
+      },
+      {
+        "path": "html-head-contract",
+        "reason": "products",
+        "owner": "main-agent",
+        "recordedAt": "2026-08-12T09:59:54.390Z",
+        "source": "record-dispatch-completion.mjs"
+      },
+      {
+        "path": "html-head-contract",
+        "reason": "detail",
+        "owner": "main-agent",
+        "recordedAt": "2026-08-12T10:00:02.617Z",
+        "source": "record-dispatch-completion.mjs"
+      },
+      {
+        "path": "html-head-contract",
+        "reason": "search",
+        "owner": "main-agent",
+        "recordedAt": "2026-08-12T10:00:02.696Z",
+        "source": "record-dispatch-completion.mjs"
+      },
+      {
+        "path": "html-head-contract",
+        "reason": "backup",
+        "owner": "main-agent",
+        "recordedAt": "2026-08-12T10:00:02.775Z",
+        "source": "record-dispatch-completion.mjs"
+      },
+      {
+        "path": "html-head-contract",
+        "reason": "404",
+        "owner": "main-agent",
+        "recordedAt": "2026-08-12T10:00:02.854Z",
+        "source": "record-dispatch-completion.mjs"
+      },
+      {
+        "path": "design",
+        "reason": "canvas-layout-normalization",
+        "owner": "main-agent",
+        "recordedAt": "2026-08-12T10:06:07.729Z",
+        "source": "record-dispatch-completion.mjs"
+      },
+      {
+        "path": "repair",
+        "reason": "html-token-inline",
+        "owner": "main-agent",
+        "recordedAt": "2026-08-12T10:06:07.729Z",
+        "source": "record-dispatch-completion.mjs"
+      },
+      {
+        "path": "product-code-mgmt-ui.design",
+        "reason": "canvas-layout-normalization",
+        "owner": "main-agent",
+        "recordedAt": "2026-08-12T10:08:06.503Z",
+        "source": "record-dispatch-completion.mjs"
+      }
+    ]
+  },
+  "designSource": {
+    "operatingMode": "free-explore",
+    "libraryIdentity": null,
+    "deviceType": "desktop"
+  },
+  "pages": [
+    {
+      "nodeId": "page-products",
+      "htmlSrc": "pages/products.html",
+      "title": "产品管理",
+      "pageType": "task-driven",
+      "chartsRequired": false,
+      "imagePlan": [],
+      "supplementaryReads": []
+    },
+    {
+      "nodeId": "page-product-detail",
+      "htmlSrc": "pages/product-detail.html",
+      "title": "产品详情",
+      "pageType": "task-driven",
+      "chartsRequired": false,
+      "imagePlan": [],
+      "supplementaryReads": []
+    },
+    {
+      "nodeId": "page-search",
+      "htmlSrc": "pages/search.html",
+      "title": "高级搜索",
+      "pageType": "task-driven",
+      "chartsRequired": false,
+      "imagePlan": [],
+      "supplementaryReads": []
+    },
+    {
+      "nodeId": "page-backup",
+      "htmlSrc": "pages/backup.html",
+      "title": "数据备份与恢复",
+      "pageType": "task-driven",
+      "chartsRequired": false,
+      "imagePlan": [],
+      "supplementaryReads": []
+    },
+    {
+      "nodeId": "page-404",
+      "htmlSrc": "pages/404.html",
+      "title": "页面未找到",
+      "pageType": "information-dense",
+      "chartsRequired": false,
+      "imagePlan": [],
+      "supplementaryReads": []
+    }
+  ],
+  "assets": []
+}

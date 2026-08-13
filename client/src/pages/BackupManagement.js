@@ -331,7 +331,7 @@ const BackupManagement = () => {
                 label="执行频率 (Cron 表达式)"
                 rules={[{ required: true, message: '请输入 Cron 表达式' }]}
                 tooltip="默认 '0 2 * * *' 表示每天凌晨 2 点执行"
-                extra={cronPreview ? <span style={{ color: cronPreview.includes('无效') ? '#ff4d4f' : '#52c41a' }}>执行周期：{cronPreview}</span> : null}
+                extra={cronPreview ? <span style={{ color: cronPreview.includes('无效') ? 'var(--htsm-state-error)' : 'var(--htsm-state-success)' }}>执行周期：{cronPreview}</span> : null}
               >
                 <Input placeholder="例如: 0 2 * * *" />
               </Form.Item>

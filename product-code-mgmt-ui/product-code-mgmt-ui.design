@@ -1,0 +1,125 @@
+{
+  "data": [
+    {
+      "id": "page-products",
+      "title": "产品管理",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1786527123000,
+      "canvasData": {
+        "x": 0,
+        "y": 0,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-c8fe23a4",
+          "measuredAt": 1786600330632
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/products.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-product-detail",
+      "title": "产品详情",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1786527123000,
+      "canvasData": {
+        "x": 620,
+        "y": 0,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-3efe30d0",
+          "measuredAt": 1786600330632
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/product-detail.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-search",
+      "title": "高级搜索",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1786527123000,
+      "canvasData": {
+        "x": 1240,
+        "y": 0,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-f4c5db1a",
+          "measuredAt": 1786600330632
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/search.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-backup",
+      "title": "数据备份与恢复",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1786527123000,
+      "canvasData": {
+        "x": 1860,
+        "y": 0,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-3fd6796b",
+          "measuredAt": 1786600330632
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/backup.html",
+        "interactions": []
+      }
+    },
+    {
+      "id": "page-404",
+      "title": "页面未找到",
+      "type": "page",
+      "version": 1,
+      "createdAt": 1786527123000,
+      "canvasData": {
+        "x": 2480,
+        "y": 0,
+        "group": 0,
+        "layoutSnapshot": {
+          "version": 1,
+          "contentHeight": 900,
+          "viewportWidth": 1440,
+          "sourceHash": "fnv1a-855e0bd7",
+          "measuredAt": 1786600330632
+        }
+      },
+      "devMetadata": {
+        "htmlSrc": "pages/404.html",
+        "interactions": []
+      }
+    }
+  ],
+  "config": {
+    "autoLayout": true,
+    "deviceType": "desktop",
+    "projectName": "产品编码管理系统 · UI 重构",
+    "visualEditorEnabled": true
+  }
+}

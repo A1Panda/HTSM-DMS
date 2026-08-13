@@ -1,0 +1,139 @@
+{
+  "root": {
+    "nodeId": "gen-project-shell",
+    "kind": "project-shell",
+    "pageIds": [
+      "page-index",
+      "page-products",
+      "page-product-detail",
+      "page-search",
+      "page-backup",
+      "page-404"
+    ],
+    "output": "partials/project-shell.html",
+    "sharedRegions": [
+      "sidebar-nav",
+      "topbar",
+      "app-frame",
+      "user-area"
+    ],
+    "privateRegions": [
+      "main-content"
+    ],
+    "mutableSlots": [
+      "activeNavItem",
+      "pageTitle"
+    ],
+    "status": "completed",
+    "children": [
+      {
+        "nodeId": "gen-page-index",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-index"
+        ],
+        "output": "pages/index.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          "dashboard-content"
+        ],
+        "mutableSlots": [
+          "activeNavItem",
+          "pageTitle"
+        ],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-products",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-products"
+        ],
+        "output": "pages/products.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          "products-content"
+        ],
+        "mutableSlots": [
+          "activeNavItem",
+          "pageTitle"
+        ],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-product-detail",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-product-detail"
+        ],
+        "output": "pages/product-detail.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          "detail-content"
+        ],
+        "mutableSlots": [
+          "activeNavItem",
+          "pageTitle"
+        ],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-search",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-search"
+        ],
+        "output": "pages/search.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          "search-content"
+        ],
+        "mutableSlots": [
+          "activeNavItem",
+          "pageTitle"
+        ],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-backup",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-backup"
+        ],
+        "output": "pages/backup.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          "backup-content"
+        ],
+        "mutableSlots": [
+          "activeNavItem",
+          "pageTitle"
+        ],
+        "status": "planned",
+        "children": []
+      },
+      {
+        "nodeId": "gen-page-404",
+        "kind": "page-leaf",
+        "pageIds": [
+          "page-404"
+        ],
+        "output": "pages/404.html",
+        "sharedRegions": [],
+        "privateRegions": [
+          "notfound-content"
+        ],
+        "mutableSlots": [
+          "activeNavItem",
+          "pageTitle"
+        ],
+        "status": "planned",
+        "children": []
+      }
+    ]
+  }
+}

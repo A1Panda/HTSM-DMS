@@ -50,7 +50,9 @@ exports.getGoods = async (req, res) => {
       list = filtered;
     }
 
-    res.json(list);
+    // 限制返回条数，避免宽泛关键字返回上千条导致网络传输与前端渲染卡顿
+    const MAX_RESULTS = 200;
+    res.json(list.slice(0, MAX_RESULTS));
   } catch (error) {
     console.error('获取快工单商品列表失败:', error.response?.data || error.message);
     res.status(502).json({

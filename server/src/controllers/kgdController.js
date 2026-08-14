@@ -41,6 +41,16 @@ exports.getGoods = async (req, res) => {
 
     const list = await fetchGoods(keyword);
 
+    // 优先返回最新商品：按编码倒序（SP+YYYYMMDD+序号，日期/序号定长，字典序即时间序），无编码的排最后
+    list.sort((a, b) => {
+      const ca = a.code ?? '';
+      const cb = b.code ?? '';
+      if (!ca && !cb) return (b.id ?? 0) - (a.id ?? 0);
+      if (!ca) return 1;
+      if (!cb) return -1;
+      return cb.localeCompare(ca);
+    });
+
     // 限制返回条数，避免宽泛关键字返回上千条导致网络传输与前端渲染卡顿
     const MAX_RESULTS = 200;
     res.json(list.slice(0, MAX_RESULTS));

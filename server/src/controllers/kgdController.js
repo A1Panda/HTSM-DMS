@@ -15,7 +15,14 @@ async function fetchGoods(keyword) {
     headers: { 'X-API-Key': KGD_API_KEY },
     timeout: 30000
   });
-  return response.data || [];
+  const data = response.data;
+  // 兼容主系统不同版本的返回结构：数组 / { list } / { data }
+  if (Array.isArray(data)) return data;
+  if (data && Array.isArray(data.list)) return data.list;
+  if (data && Array.isArray(data.data)) return data.data;
+  // 主系统返回了异常体（非数组），抛带明细的错误，避免误报“list.filter is not a function”
+  const detail = data?.error || data?.message || JSON.stringify(data).slice(0, 200);
+  throw new Error(`主系统返回异常数据: ${detail}`);
 }
 
 /**
@@ -86,9 +93,10 @@ exports.getBillNum = async (req, res) => {
       timeout: 30000
     });
 
-    const { list = [] } = response.data || {};
+    const payload = response.data;
+    const rawList = Array.isArray(payload) ? payload : (payload?.list ?? []);
     // goods_keyword 为模糊查询，这里按完整商品名精确匹配
-    const bills = list
+    const bills = rawList
       .filter((b) => (b.goods?.name ?? '') === goodsName)
       .map((b) => ({
         code: b.code ?? '',

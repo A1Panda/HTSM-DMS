@@ -94,7 +94,17 @@ exports.getBillNum = async (req, res) => {
     });
 
     const payload = response.data;
-    const rawList = Array.isArray(payload) ? payload : (payload?.list ?? []);
+    // 兼容主系统不同版本的返回结构：数组 / { list } / { success, data: { list, count } }
+    let rawList = [];
+    if (Array.isArray(payload)) {
+      rawList = payload;
+    } else if (Array.isArray(payload?.list)) {
+      rawList = payload.list;
+    } else if (Array.isArray(payload?.data?.list)) {
+      rawList = payload.data.list;
+    } else if (Array.isArray(payload?.data)) {
+      rawList = payload.data;
+    }
     // goods_keyword 为模糊查询，这里按完整商品名精确匹配
     const bills = rawList
       .filter((b) => (b.goods?.name ?? '') === goodsName)

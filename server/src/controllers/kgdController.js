@@ -27,9 +27,9 @@ async function fetchGoods(keyword) {
 
 /**
  * 商品列表代理：GET /api/kgd/goods?keyword=xxx
- * 转发到快工单系统 /api/report-data/goods，按商品名/编号/规格模糊查询。
- * 快工单 goods_keyword 只匹配名称/编号/规格，HT 图号等扩展字段在这里本地补充过滤：
- * 先按关键字走服务端过滤（快），若未命中（如纯 HT 图号搜索）则回退拉取全量后本地过滤。
+ * 转发到快工单系统 /api/report-data/goods。
+ * 快工单已升级：读本地缓存（毫秒级）+ keyword 支持名称/编号/规格/扩展字段（HT图号）过滤，
+ * 这里无需再做本地补滤，直接透传关键字并限制返回条数。
  */
 exports.getGoods = async (req, res) => {
   try {
@@ -39,23 +39,7 @@ exports.getGoods = async (req, res) => {
 
     const keyword = (req.query.keyword || '').trim();
 
-    let list = await fetchGoods(keyword);
-
-    const kw = keyword.toLowerCase();
-    if (kw) {
-      const hit = (g) =>
-        (g.name ?? '').toLowerCase().includes(kw) ||
-        (g.code ?? '').toLowerCase().includes(kw) ||
-        (g.standard ?? '').toLowerCase().includes(kw) ||
-        (g.fieldValueList ?? []).some((f) => String(f.value ?? '').toLowerCase().includes(kw));
-      let filtered = list.filter(hit);
-      if (!filtered.length) {
-        // 服务端过滤未命中（如纯 HT 图号）→ 拉全量后本地过滤
-        list = await fetchGoods('');
-        filtered = list.filter(hit);
-      }
-      list = filtered;
-    }
+    const list = await fetchGoods(keyword);
 
     // 限制返回条数，避免宽泛关键字返回上千条导致网络传输与前端渲染卡顿
     const MAX_RESULTS = 200;

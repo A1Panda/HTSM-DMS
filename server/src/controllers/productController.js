@@ -193,9 +193,6 @@ exports.createProduct = async (req, res) => {
     
     res.status(201).json(newProduct);
   } catch (error) {
-    if (error.message === '产品已存在' || error.code === 11000) {
-      return res.status(400).json({ error: '产品已存在' });
-    }
     console.error('添加产品失败:', error);
     res.status(500).json({ error: '添加产品失败' });
   }
@@ -293,9 +290,6 @@ exports.updateProduct = async (req, res) => {
     
     res.json(product);
   } catch (error) {
-    if (error.code === 11000 || error.message === '产品已存在') {
-      return res.status(400).json({ error: '产品名称已存在' });
-    }
     console.error('更新产品失败:', error);
     res.status(500).json({ error: '更新产品失败' });
   }

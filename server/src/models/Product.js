@@ -7,7 +7,6 @@ const productSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    unique: true,
     trim: true
   },
   description: {
@@ -99,12 +98,6 @@ if (process.env.MONGODB_URI) {
         products = JSON.parse(data);
       }
       
-      // 检查产品是否已存在
-      const existingProduct = products.find(p => p.name === productData.name);
-      if (existingProduct) {
-        throw new Error('产品已存在');
-      }
-      
       const newProduct = {
         id: Date.now().toString(),
         codeRanges: productData.codeRanges || [],
@@ -137,14 +130,6 @@ if (process.env.MONGODB_URI) {
         return null;
       }
 
-      // 检查产品名称是否已存在
-      if (updateData.name && updateData.name !== products[productIndex].name) {
-        const existingProduct = products.find(p => p.name === updateData.name);
-        if (existingProduct) {
-          throw new Error('产品已存在');
-        }
-      }
-      
       // 更新产品数据
       const updatedProduct = {
         ...products[productIndex],

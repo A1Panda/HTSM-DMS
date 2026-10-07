@@ -298,7 +298,9 @@ MongoDB（配置 MONGODB_URI 时） 或  本地 data/*.json（默认）
 
 #### Product 模型（[Product.js](server/src/models/Product.js)）
 
-字段：`name`（必填、唯一、trim）、`description`、`category`、`requiredQuantity`、`codeStart`、`codeEnd`、`codeRanges`（`[{start, end}]`）、`createdAt`。
+字段：`name`（必填、trim，**允许重名**）、`description`、`category`、`requiredQuantity`、`codeStart`、`codeEnd`、`codeRanges`（`[{start, end}]`）、`createdAt`。
+
+> 注意：`name` 历史上曾声明 `unique: true`，现已移除，产品**允许重名**（创建/更新均不再做名称去重）。MongoDB 模式下，改动 Schema **不会自动删除**已存在的唯一索引，需手动删除遗留的 `name_1` 索引（`db.products.dropIndex('name_1')`），否则插入重名仍会触发 `E11000` 而报错。文件系统模式本身无此约束。
 
 `toJSON` 转换将 `_id` 映射为 `id`（virtuals）。
 

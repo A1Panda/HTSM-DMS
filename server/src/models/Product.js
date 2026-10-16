@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 
 // 定义产品模式
 const productSchema = new mongoose.Schema({
@@ -99,7 +100,9 @@ if (process.env.MONGODB_URI) {
       }
       
       const newProduct = {
-        id: Date.now().toString(),
+        // 使用 UUID 生成 id：Date.now() 在多设备同毫秒并发创建时会碰撞，
+        // 导致产品 id 重复甚至覆盖彼此的产品编码文件
+        id: crypto.randomUUID(),
         codeRanges: productData.codeRanges || [],
         ...productData,
         createdAt: new Date().toISOString()
@@ -108,9 +111,11 @@ if (process.env.MONGODB_URI) {
       products.push(newProduct);
       fs.writeFileSync(productsFile, JSON.stringify(products, null, 2));
       
-      // 为新产品创建编码文件
+      // 为新产品创建编码文件（仅当不存在时创建，避免极端情况下覆盖已有产品的编码数据）
       const codesFile = path.join(DATA_DIR, `${newProduct.id}_codes.json`);
-      fs.writeFileSync(codesFile, JSON.stringify([], null, 2));
+      if (!fs.existsSync(codesFile)) {
+        fs.writeFileSync(codesFile, JSON.stringify([], null, 2));
+      }
       
       return newProduct;
     },

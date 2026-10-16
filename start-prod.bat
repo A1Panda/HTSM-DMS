@@ -21,11 +21,31 @@ echo Node.js 环境正常。
 :: 1. 检查并构建前端
 echo.
 echo [1/3] 正在检查前端构建...
+set NEED_BUILD=0
 if not exist "client\build\index.html" (
-    echo 未发现构建文件，开始构建前端...
+    set NEED_BUILD=1
+    echo 未发现构建文件，需要构建前端。
+) else (
+    powershell -NoProfile -Command "$b=(Get-Item 'client\build\index.html' -ErrorAction SilentlyContinue).LastWriteTime; $f=@(); $f+=Get-ChildItem 'client\src' -Recurse -File -ErrorAction SilentlyContinue; $f+=Get-ChildItem 'client\public' -Recurse -File -ErrorAction SilentlyContinue; $f+=Get-Item 'client\package.json' -ErrorAction SilentlyContinue; if($f | Where-Object { $_.LastWriteTime -gt $b } | Select-Object -First 1){exit 1}else{exit 0}"
+    if !errorlevel! equ 1 (
+        set NEED_BUILD=1
+        echo 检测到前端源码比构建产物新，需要重新构建。
+    ) else (
+        echo 已有构建文件且是最新的，跳过构建。
+    )
+)
+
+if !NEED_BUILD! equ 1 (
     cd client
-    echo 正在安装前端依赖...
-    call npm install
+    if not exist "node_modules" (
+        echo 正在安装前端依赖...
+        call npm install
+        if !errorlevel! neq 0 (
+            echo [错误] 前端依赖安装失败！
+            pause
+            exit /b 1
+        )
+    )
     echo 正在构建前端项目...
     call npm run build
     if !errorlevel! neq 0 (
@@ -35,9 +55,6 @@ if not exist "client\build\index.html" (
     )
     cd ..
     echo 前端构建完成。
-) else (
-    echo 发现已有构建文件，跳过构建步骤。
-    echo (如果需要重新构建，请手动删除 client\build 目录)
 )
 
 :: 2. 检查后端依赖

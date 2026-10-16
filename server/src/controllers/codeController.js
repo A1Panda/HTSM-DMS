@@ -3,6 +3,23 @@ const Product = require('../models/Product');
 const { validationResult } = require('express-validator');
 const { extractNumericValue } = require('../utils/codeUtils');
 
+// 同一产品的写操作串行化队列。
+// 「先查重、再写入」本身不是原子操作：多台设备并发录入时可能同时通过查重，
+// 导致重复编码（MongoDB 模式下数据库唯一索引只约束精确字符串，管不住「末尾数字相同」）。
+// 这里以 productId 为键把写操作的临界区串行执行，使查重与写入成为原子整体。
+const productWriteQueues = new Map();
+const withProductWriteLock = (productId, task) => {
+  const key = String(productId);
+  const prev = productWriteQueues.get(key) || Promise.resolve();
+  const run = prev.then(task, task);
+  const guard = run.catch(() => {});
+  productWriteQueues.set(key, guard);
+  guard.then(() => {
+    if (productWriteQueues.get(key) === guard) productWriteQueues.delete(key);
+  });
+  return run;
+};
+
 // 获取所有编码（带分页）
 exports.getAllCodes = async (req, res) => {
   try {
@@ -107,6 +124,48 @@ exports.getProductCodes = async (req, res) => {
   }
 };
 
+// 添加编码的临界区：查重与写入必须作为一个整体执行（由 withProductWriteLock 串行化）
+const addCodeCriticalSection = async (productId, code, description, date) => {
+  const isMongoDB = !!process.env.MONGODB_URI;
+  const newNum = extractNumericValue(code);
+
+  if (isMongoDB) {
+    // 获取该产品所有编码，按末尾数字检查重复
+    const allCodes = await Code.find({ productId });
+
+    if (!isNaN(newNum)) {
+      // 检查未删除的编码中是否有末尾数字相同的
+      const duplicateActive = allCodes.find(c => !c.deleted && extractNumericValue(c.code) === newNum);
+      if (duplicateActive) {
+        throw new Error('编码已存在');
+      }
+
+      // 回收站中有末尾数字相同的编码 → 永久删除旧的，使用新的编码字符串录入
+      const duplicateDeleted = allCodes.find(c => c.deleted && extractNumericValue(c.code) === newNum);
+      if (duplicateDeleted) {
+        await Code.findByIdAndDelete(duplicateDeleted._id);
+      }
+    }
+  } else {
+    // 文件系统环境 — 回收站中有末尾数字相同的编码 → 永久删除旧的
+    const deletedCodes = await Code.find({ productId, deleted: true });
+    if (!isNaN(newNum)) {
+      const duplicateDeleted = deletedCodes.find(c => extractNumericValue(c.code) === newNum);
+      if (duplicateDeleted) {
+        await Code.findByIdAndDelete(duplicateDeleted.id, productId);
+      }
+    }
+  }
+
+  // 创建新编码
+  return await Code.create({
+    code,
+    description: description || '',
+    date: date || '',
+    productId
+  });
+};
+
 // 为产品添加编码
 exports.addCode = async (req, res) => {
   // 验证请求
@@ -130,50 +189,15 @@ exports.addCode = async (req, res) => {
       return res.status(404).json({ error: '产品不存在' });
     }
 
-    // 检查是否已存在（末尾数字相同即视为重复）
-    const isMongoDB = !!process.env.MONGODB_URI;
-    
-    if (isMongoDB) {
-      // 获取该产品所有编码，按末尾数字检查重复
-      const allCodes = await Code.find({ productId });
-      const newNum = extractNumericValue(code);
-      
-      if (!isNaN(newNum)) {
-        // 检查未删除的编码中是否有末尾数字相同的
-        const duplicateActive = allCodes.find(c => !c.deleted && extractNumericValue(c.code) === newNum);
-        if (duplicateActive) {
-          return res.status(400).json({ error: `编码已存在（末尾数字 ${newNum} 重复），请使用不同的编码` });
-        }
-        
-        // 回收站中有末尾数字相同的编码 → 永久删除旧的，使用新的编码字符串录入
-        const duplicateDeleted = allCodes.find(c => c.deleted && extractNumericValue(c.code) === newNum);
-        if (duplicateDeleted) {
-          await Code.findByIdAndDelete(duplicateDeleted._id);
-        }
-      }
-    } else {
-      // 文件系统环境 — 回收站中有末尾数字相同的编码 → 永久删除旧的
-      const deletedCodes = await Code.find({ productId, deleted: true });
-      const newNum = extractNumericValue(code);
-      if (!isNaN(newNum)) {
-        const duplicateDeleted = deletedCodes.find(c => extractNumericValue(c.code) === newNum);
-        if (duplicateDeleted) {
-          await Code.findByIdAndDelete(duplicateDeleted.id, productId);
-        }
-      }
-    }
-    
-    // 创建新编码
-    const newCode = await Code.create({
-      code,
-      description: description || '',
-      date: date || '',
-      productId
-    });
+    // 查重与写入在同一产品的临界区内串行执行，避免并发录入绕过查重
+    const newCode = await withProductWriteLock(productId, () =>
+      addCodeCriticalSection(productId, code, description, date)
+    );
     
     res.status(201).json(newCode);
   } catch (error) {
-    if (error.message === '编码已存在') {
+    // 文件模式自抛的「编码已存在」；MongoDB 下并发写入触发唯一索引（E11000）
+    if (error.message === '编码已存在' || error.code === 11000) {
       return res.status(400).json({ error: '编码已存在，请使用不同的编码' });
     }
     console.error('添加编码失败:', error);
@@ -217,6 +241,42 @@ exports.deleteCode = async (req, res) => {
   }
 };
 
+// 更新编码的临界区：冲突检查与更新必须作为一个整体执行（由 withProductWriteLock 串行化）
+const updateCodeCriticalSection = async (productId, codeId, { code, description, date }) => {
+  const isMongoDB = !!process.env.MONGODB_URI;
+  const newNum = extractNumericValue(code);
+
+  if (isMongoDB) {
+    const allCodes = await Code.find({ productId, _id: { $ne: codeId } });
+    if (!isNaN(newNum) && allCodes.find(c => extractNumericValue(c.code) === newNum)) {
+      throw Object.assign(new Error(`编码已存在（末尾数字 ${newNum} 重复），请使用不同的编码`), { status: 400 });
+    }
+
+    return await Code.findByIdAndUpdate(
+      codeId,
+      { code, description: description || '', date: date || '' },
+      { new: true }
+    );
+  }
+
+  // 文件系统环境 — 检查末尾数字是否与其他编码冲突
+  const allCodes = await Code.find({ productId });
+  if (!isNaN(newNum)) {
+    const existingConflict = allCodes.find(c =>
+      extractNumericValue(c.code) === newNum && String(c._id || c.id) !== String(codeId)
+    );
+    if (existingConflict) {
+      throw Object.assign(new Error(`编码已存在（末尾数字 ${newNum} 重复），请使用不同的编码`), { status: 400 });
+    }
+  }
+
+  return await Code.findByIdAndUpdate(
+    codeId,
+    { code, description: description || '', date: date || '' },
+    productId
+  );
+};
+
 // 更新编码
 exports.updateCode = async (req, res) => {
   // 验证请求
@@ -244,54 +304,23 @@ exports.updateCode = async (req, res) => {
       return res.status(400).json({ error: '编码不能为空或格式错误' });
     }
 
-    // 检查是否修改了编码且末尾数字与其他编码冲突
-    const isMongoDB = !!process.env.MONGODB_URI;
+    // 冲突检查与更新在同一产品的临界区内串行执行
+    const updatedCode = await withProductWriteLock(productId, () =>
+      updateCodeCriticalSection(productId, codeId, { code, description, date })
+    );
     
-    if (isMongoDB) {
-      const allCodes = await Code.find({ productId, _id: { $ne: codeId } });
-      const newNum = extractNumericValue(code);
-      if (!isNaN(newNum)) {
-        const duplicate = allCodes.find(c => extractNumericValue(c.code) === newNum);
-        if (duplicate) {
-          return res.status(400).json({ error: `编码已存在（末尾数字 ${newNum} 重复），请使用不同的编码` });
-        }
-      }
-      
-      const updatedCode = await Code.findByIdAndUpdate(
-        codeId,
-        { code, description: description || '', date: date || '' },
-        { new: true }
-      );
-      
-      if (!updatedCode) {
-        return res.status(404).json({ error: '编码不存在' });
-      }
-      return res.json(updatedCode);
-    } else {
-      // 文件系统环境 — 检查末尾数字是否与其他编码冲突
-      const allCodes = await Code.find({ productId });
-      const newNum = extractNumericValue(code);
-      if (!isNaN(newNum)) {
-        const existingConflict = allCodes.find(c => 
-          extractNumericValue(c.code) === newNum && String(c._id || c.id) !== String(codeId)
-        );
-        if (existingConflict) {
-          return res.status(400).json({ error: `编码已存在（末尾数字 ${newNum} 重复），请使用不同的编码` });
-        }
-      }
-      
-      const updatedCode = await Code.findByIdAndUpdate(
-        codeId,
-        { code, description: description || '', date: date || '' },
-        productId
-      );
-      
-      if (!updatedCode) {
-        return res.status(404).json({ error: '编码不存在' });
-      }
-      return res.json(updatedCode);
+    if (!updatedCode) {
+      return res.status(404).json({ error: '编码不存在' });
     }
+    return res.json(updatedCode);
   } catch (error) {
+    if (error.status === 400 || error.message === '编码已存在') {
+      return res.status(400).json({ error: error.message });
+    }
+    // MongoDB 下并发写入触发唯一索引（E11000）
+    if (error.code === 11000) {
+      return res.status(400).json({ error: '编码已存在，请使用不同的编码' });
+    }
     console.error('更新编码失败:', error);
     res.status(500).json({ error: '更新编码失败' });
   }

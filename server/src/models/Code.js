@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { extractNumericValue } = require('../utils/codeUtils');
 
 // 定义编码模式
@@ -215,7 +216,9 @@ if (process.env.MONGODB_URI) {
       }
       
       const newCode = {
-        id: Date.now().toString(),
+        // 使用 UUID 生成 id：Date.now() 在多设备同毫秒并发录入时会碰撞，
+        // 导致编码 id 重复，后续按 id 编辑/删除会命中错误记录
+        id: crypto.randomUUID(),
         code: codeData.code,
         description: codeData.description || '',
         date: codeData.date || '',

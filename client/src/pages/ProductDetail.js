@@ -97,6 +97,7 @@ const ProductDetail = () => {
   const [scanDeleteSuccessCount, setScanDeleteSuccessCount] = useState(0);
   const [scanDeleteFailedCodes, setScanDeleteFailedCodes] = useState([]);
   const scanDeleteInputRef = useRef(null);
+  const quickInputRef = useRef(null);
 
   // 移动编码状态
   const [moveModalVisible, setMoveModalVisible] = useState(false);
@@ -292,6 +293,23 @@ const ProductDetail = () => {
     loadCodes();
   }, [id]);
 
+  // 多设备同步：页面可见时定时刷新编码列表，切回标签页时立即刷新。
+  // 这样其它设备录入/删除的编码会自动同步到本机，避免用过期列表误判重复。
+  const loadCodesRef = useRef(loadCodes);
+  loadCodesRef.current = loadCodes;
+  useEffect(() => {
+    if (!id || id === 'undefined') return undefined;
+    const refreshIfVisible = () => {
+      if (document.visibilityState === 'visible') loadCodesRef.current();
+    };
+    const timer = setInterval(refreshIfVisible, 5000);
+    document.addEventListener('visibilitychange', refreshIfVisible);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener('visibilitychange', refreshIfVisible);
+    };
+  }, [id]);
+
   // 添加编码
   const handleAddCode = async (values) => {
     try {
@@ -340,7 +358,17 @@ const ProductDetail = () => {
       loadCodes();
     } catch (error) {
       console.error('添加编码失败:', error);
-      message.error('添加编码失败: ' + (error.response?.data?.error || '未知错误'));
+      const data = error.response?.data;
+      const isDuplicate = error.response?.status === 400 &&
+        (data?.duplicate === true || /编码已存在/.test(data?.error || ''));
+      if (isDuplicate) {
+        // 服务端判定重复：弹出与本地判定一致的告警/确认弹窗
+        // （多设备并发时本机编码列表可能尚未同步到该编码）
+        quickInputRef.current?.showDuplicate(values.code);
+        loadCodes();
+      } else {
+        message.error('添加编码失败: ' + (data?.error || '未知错误'));
+      }
     } finally {
       setQuickInputLoading(false);
     }
@@ -1224,9 +1252,9 @@ const ProductDetail = () => {
       >
         {/* 快速编码输入区域 */}
         <QuickCodeInput 
+          ref={quickInputRef}
           onSubmit={handleQuickAddCode}
           loading={quickInputLoading}
-          existingCodes={codes}
           onDuplicate={handleDuplicateCode}
         />
         <Divider style={{ margin: '0 0 16px 0' }} />

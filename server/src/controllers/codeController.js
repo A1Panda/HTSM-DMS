@@ -198,7 +198,8 @@ exports.addCode = async (req, res) => {
   } catch (error) {
     // 文件模式自抛的「编码已存在」；MongoDB 下并发写入触发唯一索引（E11000）
     if (error.message === '编码已存在' || error.code === 11000) {
-      return res.status(400).json({ error: '编码已存在，请使用不同的编码' });
+      // duplicate: true 供前端识别为「重复编码」并弹出确认弹窗
+      return res.status(400).json({ error: '编码已存在，请使用不同的编码', duplicate: true });
     }
     console.error('添加编码失败:', error);
     res.status(500).json({ error: '添加编码失败' });

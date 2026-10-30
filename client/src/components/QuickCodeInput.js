@@ -1,7 +1,37 @@
 import React, { useState, useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import { Input, Button, message, Tooltip, Alert, Modal } from 'antd';
-import { ScanOutlined, EnterOutlined, WarningOutlined } from '@ant-design/icons';
+import { ScanOutlined, EnterOutlined, WarningOutlined, CheckCircleFilled } from '@ant-design/icons';
 import PropTypes from 'prop-types';
+
+// 成功提示音：用 Web Audio 合成两声上行短音，无需额外音频文件，
+// 与重复编码的告警音形成明显区分（听到即可确认录入成功，无需盯屏幕）
+let successAudioCtx = null;
+const playSuccessSound = () => {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    if (!successAudioCtx) successAudioCtx = new AudioCtx();
+    if (successAudioCtx.state === 'suspended') successAudioCtx.resume();
+    const ctx = successAudioCtx;
+    const now = ctx.currentTime;
+    [880, 1318.5].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const start = now + i * 0.1;
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(0.22, start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.09);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(start);
+      osc.stop(start + 0.1);
+    });
+  } catch (e) {
+    // 浏览器禁用音频时静默忽略，不影响录入
+  }
+};
 
 /**
  * 快速编码输入组件
@@ -21,8 +51,10 @@ const QuickCodeInput = forwardRef(({
   const [duplicateWarning, setDuplicateWarning] = useState(false);
   const [duplicateCode, setDuplicateCode] = useState('');
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
+  const [successCode, setSuccessCode] = useState(''); // 最近一次成功录入的编码
   const inputRef = useRef(null);
   const needRefocusRef = useRef(false); // 提交完成后是否需要重新聚焦
+  const successTimerRef = useRef(null); // 成功提示自动消失定时器
 
   // 组件挂载时自动聚焦
   useEffect(() => {
@@ -90,6 +122,9 @@ const QuickCodeInput = forwardRef(({
 
   // 服务端判定重复后由父组件调用：展示告警、声音与确认弹窗
   const showDuplicate = (duplicateValue) => {
+    // 同一时刻只展示一种提示
+    if (successTimerRef.current) clearTimeout(successTimerRef.current);
+    setSuccessCode('');
     setDuplicateWarning(true);
     setDuplicateCode(duplicateValue || '');
 
@@ -106,12 +141,32 @@ const QuickCodeInput = forwardRef(({
     setConfirmModalVisible(true);
   };
 
-  // 暴露给父组件：服务端判定重复时调用，复用同一套告警/弹窗
-  useImperativeHandle(ref, () => ({ showDuplicate }));
+  // 编码成功录入后由父组件调用：醒目的成功横幅 + 提示音
+  const showSuccess = (codeValue) => {
+    setDuplicateWarning(false);
+    setDuplicateCode('');
+    setConfirmModalVisible(false);
+    setSuccessCode(codeValue || '');
+    playSuccessSound();
+    if (successTimerRef.current) clearTimeout(successTimerRef.current);
+    successTimerRef.current = setTimeout(() => setSuccessCode(''), 2500);
+  };
+
+  // 暴露给父组件：服务端判定重复 / 录入成功时调用
+  useImperativeHandle(ref, () => ({ showDuplicate, showSuccess }));
+
+  // 卸载时清理定时器
+  useEffect(() => () => {
+    if (successTimerRef.current) clearTimeout(successTimerRef.current);
+  }, []);
 
   return (
-    <div className="quick-code-input" style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}>
-      <div style={{ display: 'flex' }}>
+    <div
+      className={`quick-code-input${successCode ? ' is-success' : ''}`}
+      style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}
+    >
+      <div style={{ position: 'relative' }}>
+        <div style={{ display: 'flex' }}>
         <Input
           ref={inputRef}
           value={code}
@@ -136,6 +191,17 @@ const QuickCodeInput = forwardRef(({
             快速添加
           </Button>
         </Tooltip>
+        </div>
+
+        {successCode && (
+          <div className="quick-code-success">
+            <CheckCircleFilled className="quick-code-success-icon" />
+            <div>
+              <div className="quick-code-success-title">已成功录入系统</div>
+              <div className="quick-code-success-code">{successCode}</div>
+            </div>
+          </div>
+        )}
       </div>
       
       {duplicateWarning && (

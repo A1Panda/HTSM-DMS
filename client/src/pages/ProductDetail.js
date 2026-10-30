@@ -353,8 +353,9 @@ const ProductDetail = () => {
   const handleQuickAddCode = async (values) => {
     try {
       setQuickInputLoading(true);
-      await codeAPI.addCode(id, values);
-      message.success('编码添加成功');
+      const res = await codeAPI.addCode(id, values);
+      // 醒目的成功提示（绿色横幅 + 提示音），比顶部小 toast 更直观
+      quickInputRef.current?.showSuccess(res.data?.code || values.code);
       loadCodes();
     } catch (error) {
       console.error('添加编码失败:', error);

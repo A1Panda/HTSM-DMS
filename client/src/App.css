@@ -607,8 +607,8 @@
 
 /* ===== 快速录入成功提示 ===== */
 .quick-code-input.is-success .ant-input-affix-wrapper {
-  border-color: var(--htsm-state-success) !important;
-  box-shadow: 0 0 0 3px var(--htsm-state-success-soft) !important;
+  border-color: var(--success-from, var(--htsm-state-success)) !important;
+  box-shadow: 0 0 0 3px var(--success-glow-soft, var(--htsm-state-success-soft)) !important;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 
@@ -623,9 +623,9 @@
   gap: 12px;
   padding: 10px 16px;
   border-radius: var(--htsm-r-md);
-  background: linear-gradient(90deg, var(--htsm-state-success) 0%, #1BBF70 100%);
+  background: linear-gradient(90deg, var(--success-from, #12A05C) 0%, var(--success-to, #1BBF70) 100%);
   color: #fff;
-  box-shadow: 0 10px 26px rgba(18, 160, 92, 0.3);
+  box-shadow: 0 10px 26px var(--success-glow, rgba(18, 160, 92, 0.45));
   pointer-events: none;
   animation: quickCodeSuccessIn 0.2s ease-out, quickCodeSuccessPulse 1.1s ease-in-out 0.2s 2;
 }
@@ -663,9 +663,10 @@
 @keyframes quickCodeSuccessPulse {
   0%,
   100% {
-    box-shadow: 0 10px 26px rgba(18, 160, 92, 0.3);
+    box-shadow: 0 10px 26px var(--success-glow, rgba(18, 160, 92, 0.45));
   }
   50% {
-    box-shadow: 0 10px 26px rgba(18, 160, 92, 0.55), 0 0 0 6px rgba(18, 160, 92, 0.12);
+    box-shadow: 0 10px 34px var(--success-glow, rgba(18, 160, 92, 0.45)),
+      0 0 0 8px var(--success-glow-soft, rgba(18, 160, 92, 0.18));
   }
 }

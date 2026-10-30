@@ -33,6 +33,15 @@ const playSuccessSound = () => {
   }
 };
 
+// 成功提示的配色：四种不同的颜色按次轮换，相邻两次尽量拉开色相距离，
+// 连续扫码时每次颜色都不同、便于区分。
+const SUCCESS_THEMES = [
+  { from: '#12A05C', to: '#1BBF70', glow: 'rgba(18, 160, 92, 0.45)', glowSoft: 'rgba(18, 160, 92, 0.18)' }, // 绿
+  { from: '#D62A8C', to: '#F05CB0', glow: 'rgba(214, 42, 140, 0.45)', glowSoft: 'rgba(214, 42, 140, 0.18)' }, // 品红
+  { from: '#0E9A9A', to: '#22C7C7', glow: 'rgba(14, 154, 154, 0.45)', glowSoft: 'rgba(14, 154, 154, 0.18)' }, // 青
+  { from: '#E08A1F', to: '#F5B23B', glow: 'rgba(224, 138, 31, 0.45)', glowSoft: 'rgba(224, 138, 31, 0.18)' } // 琥珀
+];
+
 /**
  * 快速编码输入组件
  * @param {Object} props 组件属性
@@ -51,10 +60,11 @@ const QuickCodeInput = forwardRef(({
   const [duplicateWarning, setDuplicateWarning] = useState(false);
   const [duplicateCode, setDuplicateCode] = useState('');
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
-  const [successCode, setSuccessCode] = useState(''); // 最近一次成功录入的编码
+  const [success, setSuccess] = useState(null); // 最近一次成功录入：{ code, seq }
   const inputRef = useRef(null);
   const needRefocusRef = useRef(false); // 提交完成后是否需要重新聚焦
   const successTimerRef = useRef(null); // 成功提示自动消失定时器
+  const successSeqRef = useRef(0); // 成功次数：用于每次重播动画并轮换配色
 
   // 组件挂载时自动聚焦
   useEffect(() => {
@@ -124,7 +134,7 @@ const QuickCodeInput = forwardRef(({
   const showDuplicate = (duplicateValue) => {
     // 同一时刻只展示一种提示
     if (successTimerRef.current) clearTimeout(successTimerRef.current);
-    setSuccessCode('');
+    setSuccess(null);
     setDuplicateWarning(true);
     setDuplicateCode(duplicateValue || '');
 
@@ -146,10 +156,12 @@ const QuickCodeInput = forwardRef(({
     setDuplicateWarning(false);
     setDuplicateCode('');
     setConfirmModalVisible(false);
-    setSuccessCode(codeValue || '');
+    // seq 递增：既用于轮换背景色，也作为 key 让横幅每次重新挂载、重播动画
+    successSeqRef.current += 1;
+    setSuccess({ code: codeValue || '', seq: successSeqRef.current });
     playSuccessSound();
     if (successTimerRef.current) clearTimeout(successTimerRef.current);
-    successTimerRef.current = setTimeout(() => setSuccessCode(''), 2500);
+    successTimerRef.current = setTimeout(() => setSuccess(null), 2500);
   };
 
   // 暴露给父组件：服务端判定重复 / 录入成功时调用
@@ -160,10 +172,21 @@ const QuickCodeInput = forwardRef(({
     if (successTimerRef.current) clearTimeout(successTimerRef.current);
   }, []);
 
+  // 每次成功按 seq 轮换配色（seq 从 1 开始，所以减 1 让首次为列表第一种颜色）
+  const successTheme = SUCCESS_THEMES[(success ? success.seq - 1 : 0) % SUCCESS_THEMES.length];
+
   return (
     <div
-      className={`quick-code-input${successCode ? ' is-success' : ''}`}
-      style={{ display: 'flex', flexDirection: 'column', marginBottom: 16 }}
+      className={`quick-code-input${success ? ' is-success' : ''}`}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        marginBottom: 16,
+        '--success-from': successTheme.from,
+        '--success-to': successTheme.to,
+        '--success-glow': successTheme.glow,
+        '--success-glow-soft': successTheme.glowSoft
+      }}
     >
       <div style={{ position: 'relative' }}>
         <div style={{ display: 'flex' }}>
@@ -193,12 +216,12 @@ const QuickCodeInput = forwardRef(({
         </Tooltip>
         </div>
 
-        {successCode && (
-          <div className="quick-code-success">
+        {success && (
+          <div className="quick-code-success" key={success.seq}>
             <CheckCircleFilled className="quick-code-success-icon" />
             <div>
               <div className="quick-code-success-title">已成功录入系统</div>
-              <div className="quick-code-success-code">{successCode}</div>
+              <div className="quick-code-success-code">{success.code}</div>
             </div>
           </div>
         )}
